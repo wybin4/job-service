@@ -257,56 +257,69 @@ class ResumeFeedController extends Controller
                 ->select('skill_id', 'skill_rate', 'resume_id')
                 ->get()->toArray();
             $rating = array();
+            //сгруппированные по resume_id оценки работодателей
             $grouped_employer_rates = $this->_group_by($employer_rates, 'resume_id');
             foreach ($grouped_employer_rates as $ger) {
                 $unique_skill_ids = array_unique(array_map(function ($el) {
                     return $el->skill_id;
-                }, $ger));
+                }, $ger)); //выделяем уникальные skill_id из оценок по одному резюме
                 $employer_rates = array();
 
+                //проходим по оценкам работодателей за каждый навык
                 for ($i = 0; $i < count($unique_skill_ids); $i++) {
                     $usi = $unique_skill_ids[$i];
+				    //выбираем оценки одного и того же навыка разными работодателями в одном и том же резюме
                     $current_skills = array_filter($ger, function ($el) use ($usi) {
                         return $el->skill_id == $usi;
                     });
+                    //выделяем updated_at и переводим его в дни
                     $time = array_values(array_map(function ($el) {
                         return strtotime($el->updated_at->toDateString()) / (3600 * 24);
                     }, $current_skills));
+                    //выделяем оценки за навык
                     $skill_rate = array_values(array_map(function ($el) {
                         return $el->skill_rate;
                     }, $current_skills));
+                    //если оценок больше одной, то рассчет тренда по методу наименьших квадратов
                     if (count($current_skills) > 1) {
                         array_push($employer_rates, array($unique_skill_ids[$i], $this->get_trend(array($time, $skill_rate))));
-                    } else {
+                    } else { //если оценка только одна, то тренда не будет
                         array_push($employer_rates, array($unique_skill_ids[$i], array($time, $skill_rate)));
                     }
                 }
                 $employer_ema = array();
+                //получаем ema для каждой оценки
                 foreach ($employer_rates as $rate) {
                     array_push($employer_ema, array($rate[0], $this->get_ema($rate[1][1])));
                 }
                 $selfs = array();
                 $weighted_self = null;
                 for ($i = 0; $i < count($employer_ema); $i++) {
+                    //вычисляем разность между ema по каждой оценке и самооценкой студента для получения весов
                     $weighted_self = $this->get_diff($employer_ema[$i][1], $self_rates[$i]['skill_rate']);
+                    //получаем взвешенное значение самооценки
                     $weighted_self = array($employer_ema[$i][0], $weighted_self * $self_rates[$i]['skill_rate']);
                     array_push($selfs, $weighted_self);
                 }
-                $employer_average = $this->get_average($employer_ema);
-                $self_average = $this->get_average($selfs);
+                $employer_average = $this->get_average($employer_ema); //среднее по оценкам работодателей
+                $self_average = $this->get_average($selfs); //среднее по самооценке
                 array_push($rating, array($ger[0]['resume_id'], $employer_average * 0.8 + $self_average * 0.2));
             }
+            //отделяем те резюме, где есть оценки работодателей
             $used_resumes = array_map(function ($r) {
                 return $r[0];
             }, $rating);
             $ur = $used_resumes;
 
+            //выделяем резюме только с самооценкой
             $ungrouped_selfs = array_filter($self_rates, function ($rate) use ($ur) {
                 return !in_array($rate['resume_id'], $ur);
             });
+            //группируем по resume_id
             $grouped_self = array_values($this->_group_by($ungrouped_selfs, 'resume_id'));
             $self_rating = array();
             for ($i = 0; $i < count($grouped_self); $i++) {
+                //вычисляем среднее по каждому резюме и умножаем на вес
                 array_push($self_rating, array(
                     $grouped_self[$i][0]['resume_id'],
                     array_sum(array_map(function ($el) {
@@ -314,7 +327,8 @@ class ResumeFeedController extends Controller
                     }, $grouped_self[$i])) / count($grouped_self[$i]) * 0.5
                 ));
             }
-            $rating = array_merge($rating, $self_rating);
+            $rating = array_merge($rating, $self_rating); //объединяем все резюме
+            //сортируем по оценкам
             usort($rating, function ($a, $b) {
                 if ($a[1] == $b[1]) return 0;
                 return ($a[1] < $b[1]) ? 1 : -1;

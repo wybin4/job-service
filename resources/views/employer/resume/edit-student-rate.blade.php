@@ -131,7 +131,7 @@
 		flex-wrap: wrap;
 		flex-direction: row;
 		justify-content: start;
-		height: 140px;
+		min-height: 140px;
 		width: 490px;
 		margin: auto;
 		margin-top: 30px;

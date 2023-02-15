@@ -31,7 +31,8 @@ Route::group(['middleware' => ['auth:employer'], 'prefix' => 'employer', 'as' =>
 	Route::post('/create-vacancy', [VacancyController::class, 'createVacancy']);
 	Route::get('/vacancy-details/{id}', [VacancyController::class, 'vacancyDetails'])->name('vacancy-details');
 	Route::get('/find-candidates/{id}', [VacancyController::class, 'findCandidates'])->name('find-candidates');
-	//Route::post('/delete-vacancy', [VacancyController::class, 'deleteVacancy'])->name('delete-vacancy');
+	Route::get('/edit-vacancy/{id}', [VacancyController::class, 'editVacancyPage'])->name('edit-vacancy');
+	Route::post('/edit-vacancy', [VacancyController::class, 'editVacancy'])->name('edit-vacancy');
 
 	Route::get('/vacancies-list', [VacancyController::class, 'vacanciesList'])->name('vacancies-list');
 	Route::post('/add-skill', [VacancyController::class, 'addSkill'])->name('add-skill');

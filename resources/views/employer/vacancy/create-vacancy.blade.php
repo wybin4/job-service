@@ -507,8 +507,8 @@
 		<x-input id="skill-name" type="text" style="width:400px" placeholder="${placeholder}"/>
       </div>
       <div class="modal-footer">
-        <x-span type="button" id="btn-close-skill" data-bs-dismiss="modal">Отменить</x-span>
-        <x-span type="button" id="btn-add-skill">Добавить</x-span>
+        <span type="button" class="span-like-button" id="btn-close-skill" data-bs-dismiss="modal">Отменить</span>
+        <span type="button" class="span-like-button" id="btn-add-skill">Добавить</span>
       </div>
     </div>
   </div>

@@ -30,7 +30,7 @@
                     </x-nav-link>
                     @endif
                     <x-nav-link :href="route('employer.student-interaction')" :active="request()->routeIs('employer.student-interaction')">
-                        {{ __('Отклики и офферы') }}
+                        {{ __('Взаимодействия') }}
                     </x-nav-link>
                 </div>
             </div>

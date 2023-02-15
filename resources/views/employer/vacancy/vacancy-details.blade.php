@@ -73,20 +73,24 @@
 						</div>
 					</div>
 					<div class="col-md-4">
-						@if ($vacancy->status == 0)
-						<button class="button btn-archive" id="btn-archive-{{$vacancy->id}}">Архивировать</button>
-						@else
-						<button class="button btn-unarchive" id="btn-unarchive-{{$vacancy->id}}">Разрхивировать</button>
-						@endif
+						<div class="side-card second-card">
+							<h3 class="little-header-text ml-4 pt-4 pb-2">Действия</h3>
+							<button class="button btn-edit"><a href="/employer/edit-vacancy/{{$vacancy->id}}">Редактировать</a></button>
+							@if ($vacancy->status == 0)
+							<button class="button btn-archive" id="btn-archive-{{$vacancy->id}}">Архивировать</button>
+							@else
+							<button class="button btn-unarchive" id="btn-unarchive-{{$vacancy->id}}">Разрхивировать</button>
+							@endif
+						</div>
 						@if ($vacancy->status == 0)
 						@if(count(App\Models\Vacancy::find($vacancy->id)->student_response) && $vacancy->status == 0)
-						<div class="side-card" id="second-card">
+						<div class="side-card second-card">
 							<h3 class="little-header-text ml-4 pt-4 pb-2">Отклики</h3>
 							<button class="button view-btn"><a href="/employer/vacancy-responses/{{$vacancy->id}}">Просмотреть</a></button>
 						</div>
 						@endif
 						@if(count(App\Models\Vacancy::find($vacancy->id)->employer_offer) && $vacancy->status == 0)
-						<div class="side-card" id="second-card">
+						<div class="side-card second-card">
 							<h3 class="little-header-text ml-4 pt-4 pb-2">Офферы</h3>
 							<button class="button view-btn"><a href="/employer/vacancy-offers/{{$vacancy->id}}">Просмотреть</a></button>
 						</div>
@@ -94,6 +98,28 @@
 						@endif
 						<div class="side-card" id="first-card">
 							<h3 class="little-header-text ml-4 pt-4 pb-2">Информация</h3>
+							<div class="side-info">
+								<div class="row">
+									<div class="col-md-auto side-sample-pic">
+										<i class="fa-solid fa-money-bill-wave"></i>
+									</div>
+									<div class="col-md-auto">
+										<div class="col-value">@if ($vacancy->salary != 0) {{$vacancy->salary}}₽ @else Без оплаты @endif</div>
+										<div class="table-header">Зарплата</div>
+									</div>
+								</div>
+							</div>
+							<div class="side-info">
+								<div class="row">
+									<div class="col-md-auto side-sample-pic">
+										<i class="fa-solid fa-medal"></i>
+									</div>
+									<div class="col-md-auto">
+										<div class="col-value">@if ($vacancy->work_experience != 0) {{$vacancy->work_experience . ' ' .YearTextArg($vacancy->work_experience)}} @else Без опыта @endif</div>
+										<div class="table-header">Опыт работы</div>
+									</div>
+								</div>
+							</div>
 							<div class="side-info">
 								<div class="row">
 									<div class="col-md-auto side-sample-pic">
@@ -108,7 +134,7 @@
 							<div class="side-info">
 								<div class="row">
 									<div class="col-md-auto side-sample-pic">
-										<i class="fa-regular fa-address-book"></i>
+										<i class="fa-solid fa-id-card"></i>
 									</div>
 									<div class="col-md-auto">
 										<div class="col-value contacts">@if ($vacancy->contacts) {{$vacancy->contacts}} @else {{Auth::guard('employer')->user()->email}} @endif</div>
@@ -130,7 +156,7 @@
 							<div class="side-info pb-5">
 								<div class="row">
 									<div class="col-md-auto side-sample-pic">
-										<i class="fa-regular fa-clock"></i>
+										<i class="fa-solid fa-user-clock"></i>
 									</div>
 									<div class="col-md-auto">
 										<div class="col-value">{{$vacancy->type_of_employment->type_of_employment_name}}</div>
@@ -139,7 +165,7 @@
 								</div>
 							</div>
 						</div>
-						<div class="side-card" id="second-card">
+						<div class="side-card" class="second-card">
 							<h3 class="little-header-text ml-4 pt-4 pb-2">О вакансии</h3>
 							@php
 							$currentDate = $vacancy->created_at;
@@ -294,7 +320,7 @@
 
 
 			#first-card,
-			#second-card {
+			.second-card {
 				margin-top: 30px;
 			}
 
@@ -316,10 +342,16 @@
 				margin-top: -5px;
 			}
 
+			.btn-edit,
 			.btn-archive,
 			.btn-unarchive {
-				margin-top: 40px;
-				margin-left: 280px
+				margin: 10px 0px 5px 20px;
+			}
+
+			.btn-edit:last-child,
+			.btn-archive:last-child,
+			.btn-unarchive:last-child {
+				margin-bottom: 30px;
 			}
 
 			.dot,

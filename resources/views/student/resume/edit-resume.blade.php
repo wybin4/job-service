@@ -4,7 +4,7 @@
 <head>
 	<script src="/js/multi-select.js"></script>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-wEmeIV1mKuiNpC+IOBjI7aAzPcEZeedi5yW5f2yOq55WWLwNGmvvx4Um1vskeMj0" crossorigin="anonymous">
 	<link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
 	<script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
@@ -16,12 +16,13 @@
 <div id="blurable-content">
 	<x-student-layout>
 		<div class="tabs-div">
-			<div class="tab" id="add-resume"><i class="fa-solid fa-file-circle-plus"></i><span style="padding-left:10px">Добавление резюме</span></div>
+			<div class="tab" id="add-resume"><i class="fa-solid fa-file-circle-plus"></i><span style="padding-left:10px">Редактирование резюме</span></div>
 			<div class="tab" id="rate-skills"><i class="fa-regular fa-star"></i><span style="padding-left:10px">Оценка навыков</span></div>
 		</div>
 		<x-big-card>
 			<x-errors class="mb-4" :errors="$errors" />
-			<form method="POST" action="{{ route('student.create-resume') }}">
+			<form method="POST" action="{{ route('student.edit-resume') }}">
+				<input type="hidden" name="resume_id" value="{{$resume->id}}" />
 				<div id="rating-card" style="display:none">
 					<h2 class="medium-text text-center">Оценка навыков</h2>
 					<p class="block font-medium text-sm text-muted" style="margin-top:5px">Оцените ваши навыки, чтобы сделать резюме более релевантным</p>
@@ -32,12 +33,8 @@
 
 					<div id="rate-area"></div>
 					<div class="d-flex justify-content-center" style="margin-top:20px;">
-						<input name="newsletter_subscription" id="newsletter_subscription" type="checkbox" class="checkbox" />
-						<x-label for="newsletter_subscription" class="ml-2">Подписаться на уведомления о новых вакансиях</x-label>
-					</div>
-					<div class="d-flex justify-content-center" style="margin-top:20px;">
-						<button class="ml-4 button">
-							{{ __('Добавить резюме') }}
+						<button class="ml-4 button save-resume">
+							{{ __('Сохранить резюме') }}
 						</button>
 					</div>
 					<style>
@@ -55,50 +52,25 @@
 					</style>
 				</div>
 				<div id="resume-card">
-					<h2 class="medium-text pb-2 text-center">Добавление резюме</h2>
-					<div id="front-errors"></div>
-
+					<h2 class="header-text text-center">Редактирование резюме</h2>
+					<x-errors class="mb-4 mt-3" :errors="$errors" />
 					@csrf
-					<div id="profession_id" style="margin-top:20px"></div>
+					<div id="profession_id"></div>
+					<div style="margin-top:20px">
+						<x-label :value="__('Сфера деятельности')" />
+						<input class="input noneditable-input" value="{{$sphere->sphere_of_activity_name}}" readonly />
+					</div>
 					<div>
-						<x-label for="select-1" :value="__('Сфера деятельности')" style="margin-top:20px" />
-						<div class="select-div">
-							<input autocomplete="off" id="select-1" class="chosen-value" type="text" value="">
-							<ul class="value-list" id="value-list-1">
-								@foreach($sphere as $val) <li value="{{ $val->id}}" selected>{{ $val->sphere_of_activity_name}}</li>
-								@endforeach
-							</ul>
-						</div>
+						<x-label :value="__('Категория')" style="margin-top:20px" />
+						<input class="input noneditable-input" value="{{$category->subsphere_of_activity_name}}" readonly />
 					</div>
-
-					<div id="select-2-div" style="display:none;margin-top:20px">
-						<div class="select-div">
-							<x-label for="select-2" :value="__('Категория')" />
-
-							<input autocomplete="off" id="select-2" class="chosen-value" type="text" value="">
-							<ul class="value-list" id="value-list-2">
-								@foreach($category as $val) <li class="li-2" value="{{ $val->id}}" selected>{{ $val->subsphere_of_activity_name}}</li>
-								@endforeach
-							</ul>
-						</div>
-					</div>
-					<div id="select-3-div" style="display:none;margin-top:20px">
-						<div class="select-div">
-							<x-label for="select-3" :value="__('Профессия')" />
-
-							<input autocomplete="off" id="select-3" class="chosen-value" type="text" value="">
-							<ul class="value-list" id="value-list-3">
-								@foreach($profession as $val) <li class="li-3" value="{{ $val->id}}" selected>{{ $val->profession_name}}</li>
-								@endforeach
-							</ul>
-						</div>
-						<div>
-							<p id="add-profession" style="cursor:pointer;font-size:13px;" class="selected-text">Не нашли подходящую профессию?</p>
-						</div>
+					<div>
+						<x-label :value="__('Профессия')" style="margin-top:20px" />
+						<input class="input noneditable-input" value="{{$profession->profession_name}}" readonly />
 					</div>
 					<div style="margin-top:20px">
-						<x-label for="hard_skills" :value="__('Навыки')" style="margin-top:20px" />
-						<select name="hard_skills[]" id="hard_skills" multiple multiselect-search="true" multiselect-select-all="true" multiselect-max-items="3">
+						<x-label for="hard_skills" :value="__('Добавить навыки')" style="margin-top:20px" />
+						<select class="input" name="hard_skills[]" id="hard_skills" multiple multiselect-search="true" multiselect-select-all="true" multiselect-max-items="3">
 							@foreach($skill as $val)
 							@if($val->skill_type == 1)
 							<option value="{{ $val->id}}">{{ $val->skill_name}}</option>
@@ -106,12 +78,12 @@
 							@endforeach
 						</select>
 						<div>
-							<p id="add-hard-skill" style="cursor:pointer;font-size:13px;" class="selected-text">Не нашли подходящий навык?</p>
+							<p id="add-hard-skill" style="cursor:pointer;font-size:13px;" class="ml-500 text-indigo-700 dark:text-indigo-500">Не нашли подходящий навык?</p>
 						</div>
 					</div>
 					<div style="margin-top:20px">
-						<x-label for="soft_skills" :value="__('Качества')" style="margin-top:20px" />
-						<select class="input" name="soft_skills[]" id="soft_skills" multiple multiselect-search="true" multiselect-select-all="true" multiselect-max-items="3">
+						<x-label for="soft_skills" :value="__('Добавить качества')" style="margin-top:20px" />
+						<select style="width:580px" name="soft_skills[]" id="soft_skills" multiple multiselect-search="true" multiselect-select-all="true" multiselect-max-items="3">
 							@foreach($skill as $val)
 							@if($val->skill_type == 0)
 							<option value="{{ $val->id}}">{{ $val->skill_name}}</option>
@@ -119,27 +91,53 @@
 							@endforeach
 						</select>
 						<div>
-							<p id="add-soft-skill" style="cursor:pointer;font-size:13px;" class="selected-text">Не нашли подходящее качество?</p>
+							<p id="add-soft-skill" style="cursor:pointer;font-size:13px;" class="ml-500 text-indigo-700 dark:text-indigo-500">Не нашли подходящее качество?</p>
 						</div>
 					</div>
 					<div style="margin-top:20px">
-						<x-label for="normal-select-2" :value="__('Вид занятости')" />
-						<select id="normal-select-2" class="normal-single-selector" name="type_of_employment" placeholder-text="ㅤ">
-							@foreach($type_of_employment as $val)
-							<option value="{{ $val->id}}" class="select-dropdown__list-item">{{ $val->type_of_employment_name}}</option>
-							@endforeach
-						</select>
+						<x-label :value="__('Вид занятости')" />
+						<input class="input noneditable-input" value="{{$type_of_employment->type_of_employment_name}}" readonly />
 					</div>
 					<div style="margin-top:20px">
-						<x-label for="normal-select-3" :value="__('Тип работы')" />
-						<select id="normal-select-3" class="normal-single-selector" name="work_type" placeholder-text="ㅤ">
-							@foreach($work_type as $val)
-							<option value="{{ $val->id}}" class="select-dropdown__list-item">{{ $val->work_type_name}}</option>
-							@endforeach
-						</select>
+						<x-label :value="__('Тип работы')" />
+						<input class="input noneditable-input" value="{{$work_type->work_type_name}}" readonly />
 					</div>
 					<div id="work-exp-div" class="card-div">
 						<x-label for="btn-add-work-exp">Опыт работы</x-label>
+						@foreach ($work_experiences as $work_experience)
+						<div class="ready-div" id="ready-work-div-{{$work_experience->id}}">
+							<div class="input-hidden-area">
+								<input type="hidden" name="work_experience_id[]" value="{{$work_experience->id}}" class="hidden-input" />
+								<input type="hidden" name="company_name[]" value="{{$work_experience->company_name}}" class="hidden-input" />
+								<input type="hidden" name="company_location[]" value="{{$work_experience->location}}" class="hidden-input" />
+								<input type="hidden" name="work_title[]" value="{{$work_experience->work_title}}" class="hidden-input" />
+								<input type="hidden" name="work_date_start[]" value="{{$work_experience->date_start}}" class="hidden-input" />
+								<input type="hidden" name="work_date_end[]" value="{{$work_experience->date_end}}" class="hidden-input" />
+								<input type="hidden" name="work_description[]" value="{{$work_experience->description}}" />
+							</div>
+							<div class="row">
+								<div class="col-md-10 work-view">
+									<p class="card-name">{{$work_experience->company_name}}</p>
+									<p class="card-title">{{$work_experience->work_title}}</p>
+									<p>
+										@if ($work_experience->date_start != '0-00-00')
+										<span class="card-date">{{date('m/y', strtotime($work_experience->date_start . ' +1 day'))}} - {{date('m/y', strtotime($work_experience->date_end . ' +1 day'))}}</span>
+										@endif
+										@if ($work_experience->location && $work_experience->date_start != '0-00-00')
+										|
+										@endif
+										@if ($work_experience->location)
+										<span class="card-location">{{$work_experience->location}}</span>
+										@endif
+									</p>
+								</div>
+								<div class="col-md-2">
+									<i class="fa-solid fa-pen work-exp-edit" id="work-exp-edit-{{$work_experience->id}}" style="margin-top:3px;cursor:pointer;margin-left:10px;"></i>
+									<i class="fa-solid fa-trash work-exp-delete" style="margin-top:3px;cursor:pointer;margin-left:5px;"></i>
+								</div>
+							</div>
+						</div>
+						@endforeach
 						<p id="btn-add-work-exp" style="margin-top:10px;cursor:pointer;"><i style="margin-top:10px;" class="fa-solid fa-briefcase"></i><span style="padding-left:10px">Добавить сведения об опыте работы</span></p>
 						<div id="area-add-work-exp" style="display:none">
 							<div style="margin-top:20px">
@@ -207,6 +205,40 @@
 					<!---->
 					<div id="edu-div" class="card-div">
 						<x-label for="btn-add-edu">Образование</x-label>
+						@foreach ($educations as $education)
+						<div class="ready-div" id="ready-edu-div-{{$education->id}}">
+							<div class="input-hidden-area">
+								<input type="hidden" name="education_id[]" value="{{$education->id}}" class="hidden-input" />
+								<input type="hidden" name="university_name[]" value="{{$education->university_name}}" class="hidden-input" />
+								<input type="hidden" name="edu_location[]" value="{{$education->location}}" class="hidden-input" />
+								<input type="hidden" name="speciality_name[]" value="{{$education->speciality_name}}" class="hidden-input" />
+								<input type="hidden" name="edu_date_start[]" value="{{$education->date_start}}" class="hidden-input" />
+								<input type="hidden" name="edu_date_end[]" value="{{$education->date_end}}" class="hidden-input" />
+								<input type="hidden" name="edu_description[]" value="{{$education->description}}" />
+							</div>
+							<div class="row">
+								<div class="col-md-10 edu-view">
+									<p class="card-name">{{$education->university_name}}</p>
+									<p class="card-title">{{$education->speciality_name}}</p>
+									<p>
+										@if ($education->date_start != '0-00-00')
+										<span class="card-date">{{date('m/y', strtotime($education->date_start . ' +1 day'))}} - {{date('m/y', strtotime($education->date_end . ' +1 day'))}}</span>
+										@endif
+										@if ($education->location && $education->date_start != '0-00-00')
+										|
+										@endif
+										@if ($education->location)
+										<span class="card-location">{{$education->location}}</span>
+										@endif
+									</p>
+								</div>
+								<div class="col-md-2">
+									<i class="fa-solid fa-pen edu-edit" id="edu-edit-{{$education->id}}" style="margin-top:3px;cursor:pointer;margin-left:10px;"></i>
+									<i class="fa-solid fa-trash edu-delete" style="margin-top:3px;cursor:pointer;margin-left:5px;"></i>
+								</div>
+							</div>
+						</div>
+						@endforeach
 						<p id="btn-add-edu" style="margin-top:10px;cursor:pointer;"><i style="margin-top:10px" class="fa-solid fa-graduation-cap"></i><span style="padding-left:10px">Добавить сведения об образовании</span></p>
 						<div id="area-add-edu" style="display:none">
 							<div style="margin-top:20px">
@@ -273,6 +305,25 @@
 					<!---->
 					<div id="course-div" class="card-div">
 						<x-label for="btn-add-course">Курсы</x-label>
+						@foreach ($courses as $course)
+						<div class="ready-div" id="ready-course-div-{{$course->id}}">
+							<div class="input-hidden-area">
+								<input type="hidden" name="course_id[]" value="{{$course->id}}" class="hidden-input" />
+								<input type="hidden" name="platform_name[]" value="{{$course->platform_name}}" class="hidden-input" />
+								<input type="hidden" name="course_name[]" value="{{$course->course_name}}" class="hidden-input" />
+							</div>
+							<div class="row">
+								<div class="col-md-10 course-view">
+									<p class="card-name">{{$course->platform_name}}</p>
+									<p class="card-title">{{$course->course_name}}</p>
+								</div>
+								<div class="col-md-2">
+									<i class="fa-solid fa-pen course-edit" id="course-edit-{{$course->id}}" style="margin-top:3px;cursor:pointer;margin-left:10px;"></i>
+									<i class="fa-solid fa-trash course-delete" style="margin-top:3px;cursor:pointer;margin-left:5px;"></i>
+								</div>
+							</div>
+						</div>
+						@endforeach
 						<p id="btn-add-course" style="margin-top:10px;cursor:pointer;"><i style="margin-top:10px" class="fa-solid fa-chalkboard-user"></i><span style="padding-left:10px">Добавить сведения о пройденных курсах</span></p>
 						<div id="area-add-course" style="display:none">
 							<div style="margin-top:20px">
@@ -313,8 +364,8 @@
 						</div>
 					</div>
 					<div style="margin-top:20px;width:var(--input-width);">
-						<x-label for="about_me" :value="__('Обо мне')" />
-						<textarea id="about_me" type="text" name="about_me"></textarea>
+						<x-label for="about_me" :value="__('Описание резюме')" />
+						<textarea id="about_me" type="text" name="about_me">{{$resume->about_me}}</textarea>
 						<script>
 							const easyMDE = new EasyMDE({
 								element: document.getElementById('about_me'),
@@ -392,160 +443,139 @@
 	</x-student-layout>
 </div>
 <script>
-	function open_rate_area() {
-		$('#rate-area').empty();
-		$('#front-errors').empty();
-		const hard_skills = $('#hard_skills').val();
-		if (hard_skills && $('#select-1').val() && $('#select-2').val() && $('#select-3').val()) {
+	/////
+	////
+
+	function create_popup(status, placeholder) {
+		const name = status == "навык" ? status + "a" : status == "навык" ? status.substring(0, status.length - 1) + "a" : status.substring(0, status.length - 1) + "и";
+		const popup = `<div class="modal" id="skill-modal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="text-2xl font-bold text-center">Добавить ${status}</h2>
+      </div>
+      <div class="modal-body">
+		<div id="add-skill-error"></div>
+        <x-label :value="__('Название ${name}')" />
+		<x-input id="skill-name" type="text" style="width:400px" placeholder="${placeholder}"/>
+      </div>
+      <div class="modal-footer">
+        <span type="button" class="span-like-button" id="btn-close-skill" data-bs-dismiss="modal">Отменить</span>
+        <span type="button" class="span-like-button" id="btn-add-skill">Добавить</span>
+      </div>
+    </div>
+  </div>
+</div>`;
+		return popup;
+	}
+
+	function show_popup() {
+		$('#skill-modal').show();
+		//запрещаем скролл
+		$('html, body').css({
+			overflow: 'hidden',
+			height: '100%'
+		});
+		//добавляем блюр
+		$('#blurable-content').addClass("blur");
+		$('#btn-close-skill').click(function() {
+			$('#skill-modal').remove();
+			// восстанавливаем скролл
+			$('html, body').css({
+				overflow: 'auto',
+				height: 'auto'
+			});
+			//убираем блюр
+			$('#blurable-content').removeClass("blur")
+		})
+	}
+	$('#add-hard-skill').click(function() {
+		let popup = create_popup("навык", "Например: JavaFX, Node.js");
+		$('#add-hard-skill-area').append(popup);
+		show_popup();
+		$('#btn-add-skill').click(function() {
+			const skill_name = $('#skill-name').val();
 			let all_hard_skills = <?php echo json_encode($skill); ?>;
 			all_hard_skills = all_hard_skills.filter(val => {
-				return hard_skills.includes(String(val.id))
+				return val.skill_type === 1
 			})
-			for (let i = 0; i < hard_skills.length; i++) {
-				const id = `rating-${hard_skills[i]}`;
-				$('#rate-area').append(`
-						<div class="rate-div">
-						<x-label for="${id}">${all_hard_skills[i].skill_name}</x-label>
-						<select id="${id}" name="skill_rate[]">
-							<option value="1">1</option>
-							<option value="2">2</option>
-							<option value="3">3</option>
-							<option value="4">4</option>
-							<option value="5">5</option>
-						</select>
-						</div>\n
-						`);
-				$(function() {
-					$('#' + id).barrating({
-						theme: 'fontawesome-stars'
-					});
+			all_hard_skills = all_hard_skills.filter(val => {
+				return val.skill_name.toLowerCase() == String(skill_name).toLowerCase()
+			})
+			if (all_hard_skills.length == 0 && skill_name != "") {
+				// добавляем скилл
+				$.ajax({
+					url: '{{ route("student.add-skill") }}',
+					type: "POST",
+					data: {
+						'skill_name': skill_name,
+						'skill_type': 1
+					},
+					headers: {
+						'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+					},
+					success: function(data) {
+						console.log("Добавили навык!")
+					},
+					error: function(msg) {
+						console.log("Не получилось добавить навык")
+					}
 				});
+				// перезагружаем страницу, чтобы применить изменения
+				location.reload();
+			} else if (all_hard_skills.length !== 0) {
+				$('#add-skill-error').append(`<p class="font-medium text-red-600">Такой навык уже существует</p>`);
+			} else if (skill_name == "") {
+				$('#add-skill-error').append(`<p class="font-medium text-red-600">Поле не может быть пустым</p>`);
 			}
-			$('#resume-card').hide();
-			$('#rating-card').show();
-			$('#rate-skills').css('background-color', 'var(--active-tab)');
-			$('#rate-skills').css('padding', '10px 10px 10px 5px');
-			$('#rate-skills').css('border-radius', '8px');
-			$('#add-resume').css('background-color', 'transparent');
-			$('#add-resume').css('padding', '0px');
-			$('#add-resume').css('border-radius', '0px');
-		} else if (!$('#select-1').val()) { //если не указана сфера деят
-			$('html,body').scrollTop(0);
-			$('#front-errors').append(`<div class="alert alert-danger">Добавьте сферу деятельности!</div>`)
-		} else if (!$('#select-2').val()) { //если не указана категория
-			$('html,body').scrollTop(0);
-			$('#front-errors').append(`<div class="alert alert-danger">Добавьте категорию!</div>`)
-		} else if (!$('#select-3').val()) { //если не указана профессия
-			$('html,body').scrollTop(0);
-			$('#front-errors').append(`<div class="alert alert-danger">Добавьте профессию!</div>`)
-		} else if (!hard_skills) { //если не указаны навыки
-			$('html,body').scrollTop(0);
-			$('#front-errors').append(`<div class="alert alert-danger">Добавьте ваши навыки!</div>`)
-		}
-	}
-	$('#next-page').on('click', open_rate_area);
+		})
+	})
 
-	////
-
-	////
-	function createSingleSelect() {
-		var select = document.getElementsByClassName('normal-single-selector'),
-			liElement,
-			ulElement,
-			optionValue,
-			iElement,
-			optionText,
-			selectDropdown,
-			elementParentSpan;
-
-		for (var select_i = 0, len = select.length; select_i < len; select_i++) {
-			//console.log('selects init');
-
-			select[select_i].style.display = 'none';
-			wrapElement(document.getElementById(select[select_i].id), document.createElement('div'), select_i, select[select_i].getAttribute('placeholder-text'));
-
-			for (var i = 0; i < select[select_i].options.length; i++) {
-				liElement = document.createElement("li");
-				optionValue = select[select_i].options[i].value;
-				optionText = document.createTextNode(select[select_i].options[i].text);
-				liElement.className = 'select-dropdown__list-item';
-				liElement.setAttribute('data-value', optionValue);
-				liElement.appendChild(optionText);
-				ulElement.appendChild(liElement);
-
-				liElement.addEventListener('click', function() {
-					displyUl(this);
-				}, false);
+	$('#add-soft-skill').click(function() {
+		let popup = create_popup("качество", "Например: дар убеждения, креативность");
+		$('#add-soft-skill-area').append(popup);
+		show_popup();
+		$('#btn-add-skill').click(function() {
+			const skill_name = $('#skill-name').val();
+			let all_soft_skills = <?php echo json_encode($skill); ?>;
+			all_soft_skills = all_soft_skills.filter(val => {
+				return val.skill_type === 0
+			})
+			all_soft_skills = all_soft_skills.filter(val => {
+				return val.skill_name.toLowerCase() == String(skill_name).toLowerCase()
+			})
+			if (all_soft_skills.length == 0 && skill_name != "") {
+				// добавляем скилл
+				$.ajax({
+					url: '{{ route("student.add-skill") }}',
+					type: "POST",
+					data: {
+						'skill_name': skill_name,
+						'skill_type': 0
+					},
+					headers: {
+						'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+					},
+					success: function(data) {
+						console.log("Добавили качество!")
+					},
+					error: function(msg) {
+						console.log("Не получилось добавить качество")
+					}
+				});
+				// перезагружаем страницу, чтобы применить изменения
+				location.reload();
+			} else if (all_soft_skills.length !== 0) {
+				$('#add-skill-error').append(`<p class="font-medium text-red-600">Такое качество уже существует</p>`);
+			} else if (skill_name == "") {
+				$('#add-skill-error').append(`<p class="font-medium text-red-600">Поле не может быть пустым</p>`);
 			}
-		}
+		})
+	})
 
-		function wrapElement(el, wrapper, i, placeholder) {
-			el.parentNode.insertBefore(wrapper, el);
-			wrapper.appendChild(el);
 
-			document.addEventListener('click', function(e) {
-				let clickInside = wrapper.contains(e.target);
-				if (!clickInside) {
-					let menu = wrapper.getElementsByClassName('select-dropdown__list');
-					menu[0].classList.remove('active');
-				}
-			});
 
-			var buttonElement = document.createElement("button"),
-				spanElement = document.createElement("span"),
-				spanText = document.createTextNode(placeholder);
-			iElement = document.createElement("i");
-			ulElement = document.createElement("ul");
-
-			wrapper.className = 'select-dropdown select-dropdown--' + i;
-			buttonElement.className = 'select-dropdown__button select-dropdown__button--' + i;
-			buttonElement.setAttribute('data-value', '');
-			buttonElement.setAttribute('type', 'button');
-			spanElement.className = 'select-dropdown select-dropdown--' + i;
-			iElement.className = 'zmdi zmdi-chevron-down';
-			ulElement.className = 'select-dropdown__list select-dropdown__list--' + i;
-			ulElement.id = 'select-dropdown__list-' + i;
-
-			wrapper.appendChild(buttonElement);
-			spanElement.appendChild(spanText);
-			buttonElement.appendChild(spanElement);
-			buttonElement.appendChild(iElement);
-			wrapper.appendChild(ulElement);
-		}
-
-		function displyUl(element) {
-
-			if (element.tagName == 'BUTTON') {
-				selectDropdown = element.parentNode.getElementsByTagName('ul');
-				for (var i = 0, len = selectDropdown.length; i < len; i++) {
-					selectDropdown[i].classList.toggle("active");
-				}
-			} else if (element.tagName == 'LI') {
-				var selectId = element.parentNode.parentNode.getElementsByTagName('select')[0];
-				selectElement(selectId.id, element.getAttribute('data-value'));
-				elementParentSpan = element.parentNode.parentNode.getElementsByTagName('span');
-				element.parentNode.classList.toggle("active");
-				elementParentSpan[0].textContent = element.textContent;
-				elementParentSpan[0].parentNode.setAttribute('data-value', element.getAttribute('data-value'));
-			}
-
-		}
-
-		function selectElement(id, valueToSelect) {
-			var element = document.getElementById(id);
-			element.value = valueToSelect;
-			element.setAttribute('selected', 'selected');
-		}
-		var buttonSelect = document.getElementsByClassName('select-dropdown__button');
-		for (var i = 0, len = buttonSelect.length; i < len; i++) {
-			buttonSelect[i].addEventListener('click', function(e) {
-				e.preventDefault();
-				displyUl(this);
-			}, false);
-		}
-	}
-	createSingleSelect();
-
+	/** */
 	function createSelect() {
 		var select = document.getElementsByClassName('single-selector'),
 			liElement,
@@ -644,6 +674,7 @@
 	}
 
 	function edit_smth() {
+
 		$("#add-work-time-area").empty();
 		$("#edit-work-time-area").empty();
 		$("#add-edu-time-area").empty();
@@ -678,11 +709,13 @@
 			add_month('#edit-normal-select-' + i);
 		}
 	}
+
 	$('#btn-add-work-exp').click(function() {
 		edit_smth();
+		createSelect();
+
 		$('#btn-add-work-exp').hide();
 		$('#area-add-work-exp').show();
-		createSelect();
 	});
 
 	function reset_work_values(status) {
@@ -742,6 +775,7 @@
 			//
 			let ready_work_experience = `
 			<div class="input-hidden-area">
+				<input type="hidden" name="work_experience_id[]" value="-1" class="hidden-input" />
 				<input type="hidden" name="company_name[]" value="${company_name}" class="hidden-input"/>
 				<input type="hidden" name="company_location[]" value="${company_location}" class="hidden-input"/>
 				<input type="hidden" name="work_title[]" value="${work_title}" class="hidden-input"/>
@@ -769,14 +803,15 @@
 				let id = ($(this).attr('id')).split('-');
 				id = id[id.length - 1];
 				$("#id-work-edit").val(id);
+
 				const values = our_div.find(".input-hidden-area");
 				let company_name = values.children('input[name="company_name[]"]').val();
 				let company_location = values.children('input[name="company_location[]"]').val();
 				let work_title = values.children('input[name="work_title[]"]').val();
 				let work_date_start = values.children('input[name="work_date_start[]"]').val();
-				let work_date_end = values.children('input[name="work_date_end[]"]').val();
 				let work_month_start = work_date_start.split('-')[1];
 				let work_year_start = work_date_start.split('-')[0];
+				let work_date_end = values.children('input[name="work_date_end[]"]').val();
 				let work_month_end = work_date_end.split('-')[1];
 				let work_year_end = work_date_end.split('-')[0];
 				let work_description = values.children('input[name="work_description[]"]').val();
@@ -815,6 +850,62 @@
 		}
 		reset_work_values('add');
 	});
+	$('.work-exp-delete').on('click', function() {
+		$(this).closest('.ready-div').remove();
+	})
+	$('.work-exp-edit').on('click', function() {
+
+		const our_div = $(this).closest('.ready-div');
+		let id = ($(this).attr('id')).split('-');
+		id = id[id.length - 1];
+		$("#id-work-edit").val(id);
+
+		const values = our_div.find(".input-hidden-area");
+		let company_name = values.children('input[name="company_name[]"]').val();
+		let company_location = values.children('input[name="company_location[]"]').val();
+		let work_title = values.children('input[name="work_title[]"]').val();
+		let work_date_start = values.children('input[name="work_date_start[]"]').val();
+		let work_month_start = work_date_start.split('-')[1];
+		let work_year_start = work_date_start.split('-')[0];
+		let work_date_end = values.children('input[name="work_date_end[]"]').val();
+		let work_month_end = work_date_end.split('-')[1];
+		let work_year_end = work_date_end.split('-')[0];
+		let work_description = values.children('input[name="work_description[]"]').val();
+		$('#btn-add-work-exp').hide();
+		$('#area-edit-work-exp').show();
+		our_div.hide();
+		$('#edit_company_name').val(company_name);
+		$('#edit_company_location').val(company_location);
+		$('#edit_work_title').val(work_title);
+		edit_smth();
+		$(`#edit-normal-select-4`).attr("placeholder-text", $(`#edit-normal-select-4 option[value="${work_month_start}"]`).text());
+		$(`#edit-normal-select-5`).attr("placeholder-text", $(`#edit-normal-select-5 option[value="${work_year_start}"]`).text());
+		$(`#edit-normal-select-6`).attr("placeholder-text", $(`#edit-normal-select-6 option[value="${work_month_end}"]`).text());
+		$(`#edit-normal-select-7`).attr("placeholder-text", $(`#edit-normal-select-7 option[value="${work_year_end}"]`).text());
+
+		$(`#edit-normal-select-4 option[value="${work_month_start}"]`).attr("selected", true);
+		$(`#edit-normal-select-5 option[value="${work_year_start}"]`).attr("selected", true);
+		$(`#edit-normal-select-6 option[value="${work_month_end}"]`).attr("selected", true);
+		$(`#edit-normal-select-7 option[value="${work_year_end}"]`).attr("selected", true);
+		createSelect();
+
+		//$('#edit_work_date_start').val(work_date_start);
+		//$('#edit_work_date_end').val(work_date_end);
+		$('#edit_work_description').val(work_description);
+		//
+		//
+		$('#delete-editable-work-exp').click({
+				our_div: our_div,
+			},
+			function() {
+				our_div.show();
+				$('#btn-add-work-exp').show();
+				$('#area-edit-work-exp').hide();
+				reset_work_values('edit');
+			})
+		//
+
+	})
 
 	function add_year(selector_name) {
 		const selector = $(selector_name);
@@ -871,22 +962,14 @@
 		$('#btn-add-work-exp').show();
 		$('#area-edit-work-exp').hide();
 	})
-	add_year('#add-normal-select-5');
-	add_year('#add-normal-select-7');
-	add_year('#edit-normal-select-5');
-	add_year('#edit-normal-select-7');
-	add_year('#add-normal-select-9');
-	add_year('#add-normal-select-11');
-	add_year('#edit-normal-select-9');
-	add_year('#edit-normal-select-11');
 	//
 	//
 	$('#btn-add-edu').click(function() {
 		edit_smth();
+		createSelect();
 
 		$('#btn-add-edu').hide();
 		$('#area-add-edu').show();
-		createSelect();
 
 	});
 
@@ -943,11 +1026,11 @@
 			let edu_month_date_end = $('#add-normal-select-10').val();
 			let edu_date_start = edu_year_date_start + "-" + edu_month_date_start + "-00";
 			let edu_date_end = edu_year_date_end + "-" + edu_month_date_end + "-00";
-
 			let edu_description = $('#add_edu_description').val();
 			//
 			let ready_edu_experience = `
 			<div class="input-hidden-area">
+				<input type="hidden" name="education_id[]" value="-1" class="hidden-input" />
 				<input type="hidden" name="university_name[]" value="${university_name}" class="hidden-input"/>
 				<input type="hidden" name="edu_location[]" value="${edu_location}" class="hidden-input"/>
 				<input type="hidden" name="speciality_name[]" value="${speciality_name}" class="hidden-input"/>
@@ -1006,6 +1089,7 @@
 				$(`#edit-normal-select-10 option[value="${edu_month_end}"]`).attr("selected", true);
 				$(`#edit-normal-select-11 option[value="${edu_year_end}"]`).attr("selected", true);
 				createSelect();
+
 				$('#edit_edu_description').val(edu_description);
 				//
 				//
@@ -1023,6 +1107,58 @@
 		}
 		reset_edu_values('add');
 	});
+	$('.edu-delete').on('click', function() {
+		$(this).closest('.ready-div').remove();
+	})
+	$('.edu-edit').on('click', function() {
+		const our_div = $(this).closest('.ready-div');
+		let id = ($(this).attr('id')).split('-');
+		id = id[id.length - 1];
+		$("#id-edu-edit").val(id);
+		const values = our_div.find(".input-hidden-area");
+		let university_name = values.children('input[name="university_name[]"]').val();
+		let speciality_name = values.children('input[name="speciality_name[]"]').val();
+		let edu_location = values.children('input[name="edu_location[]"]').val();
+		let edu_date_start = values.children('input[name="edu_date_start[]"]').val();
+		let edu_date_end = values.children('input[name="edu_date_end[]"]').val();
+		let edu_month_start = edu_date_start.split('-')[1];
+		let edu_year_start = edu_date_start.split('-')[0];
+		let edu_month_end = edu_date_end.split('-')[1];
+		let edu_year_end = edu_date_end.split('-')[0];
+		let edu_description = values.children('input[name="edu_description[]"]').val();
+		///
+		$('#btn-add-edu').hide();
+		$('#area-edit-edu').show();
+		our_div.hide();
+		$('#edit_university_name').val(university_name);
+		$('#edit_edu_location').val(edu_location);
+		$('#edit_speciality_name').val(speciality_name);
+		edit_smth();
+
+		$(`#edit-normal-select-8`).attr("placeholder-text", $(`#edit-normal-select-8 option[value="${edu_month_start}"]`).text());
+		$(`#edit-normal-select-9`).attr("placeholder-text", $(`#edit-normal-select-9 option[value="${edu_year_start}"]`).text());
+		$(`#edit-normal-select-10`).attr("placeholder-text", $(`#edit-normal-select-10 option[value="${edu_month_end}"]`).text());
+		$(`#edit-normal-select-11`).attr("placeholder-text", $(`#edit-normal-select-11 option[value="${edu_year_end}"]`).text());
+
+		$(`#edit-normal-select-8 option[value="${edu_month_start}"]`).attr("selected", true);
+		$(`#edit-normal-select-9 option[value="${edu_year_start}"]`).attr("selected", true);
+		$(`#edit-normal-select-10 option[value="${edu_month_end}"]`).attr("selected", true);
+		$(`#edit-normal-select-11 option[value="${edu_year_end}"]`).attr("selected", true);
+		createSelect();
+		$('#edit_edu_description').val(edu_description);
+		//
+		//
+		$('#delete-editable-edu').click({
+				our_div: our_div,
+			},
+			function() {
+				our_div.show();
+				$('#btn-add-edu').show();
+				$('#area-edit-edu').hide();
+				reset_edu_values('edit');
+			})
+		//
+	})
 	$('#edit-edu').click(function() {
 		const id = $("#id-edu-edit").val();
 		const our_div = $(`#ready-edu-div-${id}`);
@@ -1085,6 +1221,7 @@
 			//
 			let ready_course = `
 			<div class="input-hidden-area">
+				<input type="hidden" name="course_id[]" value="-1" class="hidden-input"/>
 				<input type="hidden" name="platform_name[]" value="${platform_name}" class="hidden-input"/>
 				<input type="hidden" name="course_name[]" value="${course_name}" class="hidden-input"/>
 			</div>`;
@@ -1136,6 +1273,38 @@
 			reset_course_values('add');
 		}
 	});
+	$('.course-delete').on('click', function() {
+		$(this).closest('.ready-div').remove();
+	})
+	$('.course-edit').on('click', function() {
+		const our_div = $(this).closest('.ready-div')
+		let id = ($(this).attr('id')).split('-');
+		id = id[id.length - 1];
+		$("#id-course-edit").val(id);
+		const values = our_div.find(".input-hidden-area");
+		let platform_name = values.children('input[name="platform_name[]"]').val();
+		let course_name = values.children('input[name="course_name[]"]').val();
+		///
+		$('#btn-add-course').hide();
+		$('#area-edit-course').show();
+		our_div.hide();
+		$('#edit_platform_name').val(platform_name);
+		$('#edit_course_name').val(course_name);
+		//
+		//
+		$('#delete-editable-course').click({
+				our_div: our_div,
+			},
+			function() {
+				our_div.show();
+				$('#btn-add-course').show();
+				$('#area-edit-course').hide();
+				reset_course_values('edit');
+			})
+		const course_view = our_div.find(".course-view");
+		//
+
+	})
 	$('#edit-course').click(function() {
 		const id = $("#id-course-edit").val();
 		const our_div = $(`#ready-course-div-${id}`);
@@ -1155,217 +1324,52 @@
 		$('#btn-add-course').show();
 		$('#area-edit-course').hide();
 	})
-	/////
-	////
-	////
-	let inputField1 = document.getElementById('select-1');
-	let dropdown1 = document.getElementById("value-list-1");
-	let dropdownArray1 = [...dropdown1.querySelectorAll('li')];
-
-	//////
 
 
-	inputField2 = document.getElementById('select-2');
-	dropdown2 = document.getElementById("value-list-2");
-	dropdownArray2 = [...dropdown2.querySelectorAll('li')];
+	/** */
 
-	///////
-	inputField3 = document.getElementById('select-3');
-	dropdown3 = document.getElementById("value-list-3");
-	dropdownArray3 = [...dropdown3.querySelectorAll('li')];
-	///////
-
-
-	function closeDropdown(dropdown) {
-		dropdown.classList.remove('open');
-	}
-	closeDropdown(dropdown1);
-
-	inputField1.addEventListener('input', () => {
-		let valueArray1 = [];
-		dropdownArray1.forEach(item => {
-			valueArray1.push(item.textContent);
-		});
-		dropdown1.classList.add('open');
-		let inputValue = inputField1.value.toLowerCase();
-		let valueSubstring;
-		if (inputValue.length > 0) {
-			for (let j = 0; j < valueArray1.length; j++) {
-				if (!(inputValue.substring(0, inputValue.length) === valueArray1[j].substring(0, inputValue.length).toLowerCase())) {
-					dropdownArray1[j].classList.add('closed');
-				} else {
-					dropdownArray1[j].classList.remove('closed');
-				}
-			}
-		} else {
-			for (let i = 0; i < dropdownArray1.length; i++) {
-				dropdownArray1[i].classList.remove('closed');
-			}
-		}
-	});
-
-	dropdownArray1.forEach(item => {
-		item.addEventListener('click', (evt) => {
-			inputField1.value = item.textContent;
-
-			//получаем категории для соответствующей сферы
-			$('#select-2-div').show();
-			let category = <?php echo json_encode($category); ?>;
-			category = category.filter(val => {
-				return val.sphere_id == item.value
+	function open_rate_area() {
+		$('#rate-area').empty();
+		const hard_skills = $('#hard_skills').val();
+		if (hard_skills) {
+			let all_hard_skills = <?php echo json_encode($skill); ?>;
+			all_hard_skills = all_hard_skills.filter(val => {
+				return hard_skills.includes(String(val.id))
 			})
-			let list = ``;
-			for (let i = 0; i < category.length; i++) {
-				list += `<li class="li-2" value="` + category[i].id + `" selected>` + category[i].subsphere_of_activity_name + `</li>\n`;
-			}
-			dropdown2.innerHTML = list;
-			dropdownArray2 = [...dropdown2.querySelectorAll('li')];
-			dropdownArray2.forEach(item => {
-				item.addEventListener('click', (evt) => {
-					inputField2.value = item.textContent;
-					$('#select-3-div').show();
-					//получаем профессии для соответствующей категории
-					let profession = <?php echo json_encode($profession); ?>;
-					profession = profession.filter(val => {
-						return val.subsphere_id == item.value
-					})
-					let list = ``;
-					for (let i = 0; i < profession.length; i++) {
-						list += `<li class="li-3" value="` + profession[i].id + `" selected>` + profession[i].profession_name + `</li>\n`;
-					}
-					dropdown3.innerHTML = list;
-					dropdownArray3 = [...dropdown3.querySelectorAll('li')];
-					dropdownArray3.forEach(item => {
-						item.addEventListener('click', (evt) => {
-							inputField3.value = item.textContent;
-
-							const profession_id = `<input type="hidden" name="profession_id" value="${item.value}" />`;
-							document.getElementById('profession_id').innerHTML += profession_id;
-
-
-							dropdownArray3.forEach(dropdown3 => {
-								dropdown3.classList.add('closed');
-							});
-						});
-					})
-					//
-					dropdownArray2.forEach(dropdown2 => {
-						dropdown2.classList.add('closed');
+			for (let i = 0; i < hard_skills.length; i++) {
+				const id = `rating-${hard_skills[i]}`;
+				$('#rate-area').append(`
+						<div class="rate-div">
+						<x-label for="${id}">${all_hard_skills[i].skill_name}</x-label>
+						<select id="${id}" name="skill_rate[]">
+							<option value="1">1</option>
+							<option value="2">2</option>
+							<option value="3">3</option>
+							<option value="4">4</option>
+							<option value="5">5</option>
+						</select>
+						</div>\n
+						`);
+				$(function() {
+					$('#' + id).barrating({
+						theme: 'fontawesome-stars'
 					});
 				});
-			})
-			dropdownArray1.forEach(dropdown1 => {
-				dropdown1.classList.add('closed');
-			});
-		});
-	})
-
-	inputField1.addEventListener('focus', () => {
-		dropdown1.classList.remove('open');
-		inputField1.placeholder = 'Поиск';
-		dropdown1.classList.add('open');
-		dropdownArray1.forEach(dropdown1 => {
-			dropdown1.classList.remove('closed');
-		});
-	});
-
-	inputField1.addEventListener('blur', () => {
-		dropdown1.classList.remove('open');
-	});
-
-	/////
-
-	closeDropdown(dropdown2);
-
-	inputField2.addEventListener('input', () => {
-		let valueArray2 = [];
-		dropdownArray2.forEach(item => {
-			valueArray2.push(item.textContent);
-		});
-		dropdown2.classList.add('open');
-		let inputValue = inputField2.value.toLowerCase();
-		let valueSubstring;
-		if (inputValue.length > 0) {
-			for (let j = 0; j < valueArray2.length; j++) {
-				if (!(inputValue.substring(0, inputValue.length) === valueArray2[j].substring(0, inputValue.length).toLowerCase())) {
-					dropdownArray2[j].classList.add('closed');
-				} else {
-					dropdownArray2[j].classList.remove('closed');
-				}
 			}
+			$('#resume-card').hide();
+			$('#rating-card').show();
+			$('#rate-skills').css('background-color', 'var(--active-tab)');
+			$('#rate-skills').css('padding', '10px 10px 10px 5px');
+			$('#rate-skills').css('border-radius', '8px');
+			$('#add-resume').css('background-color', 'transparent');
+			$('#add-resume').css('padding', '0px');
+			$('#add-resume').css('border-radius', '0px');
 		} else {
-			for (let i = 0; i < dropdownArray2.length; i++) {
-				dropdownArray2[i].classList.remove('closed');
-			}
+			$(".save-resume").trigger('click');
 		}
-	});
-
-	/*dropdownArray2.forEach(item => {
-		item.addEventListener('click', (evt) => {
-			inputField2.value = item.textContent;
-			dropdownArray2.forEach(dropdown2 => {
-				dropdown2.classList.add('closed');
-			});
-		});
-	})*/
-
-	inputField2.addEventListener('focus', () => {
-		dropdown1.classList.remove('open');
-		inputField2.placeholder = 'Поиск';
-		dropdown2.classList.add('open');
-		dropdownArray2.forEach(dropdown2 => {
-			dropdown2.classList.remove('closed');
-		});
-	});
-
-	inputField2.addEventListener('blur', () => {
-		dropdown2.classList.remove('open');
-	});
-
-	////////
-
-	closeDropdown(dropdown3);
-
-	inputField3.addEventListener('input', () => {
-		let valueArray3 = [];
-		dropdownArray3.forEach(item => {
-			valueArray3.push(item.textContent);
-		});
-		dropdown3.classList.add('open');
-		let inputValue = inputField3.value.toLowerCase();
-		let valueSubstring;
-		if (inputValue.length > 0) {
-			for (let j = 0; j < valueArray3.length; j++) {
-				if (!(inputValue.substring(0, inputValue.length) === valueArray3[j].substring(0, inputValue.length).toLowerCase())) {
-					dropdownArray3[j].classList.add('closed');
-				} else {
-					dropdownArray3[j].classList.remove('closed');
-				}
-			}
-		} else {
-			for (let i = 0; i < dropdownArray3.length; i++) {
-				dropdownArray3[i].classList.remove('closed');
-			}
-		}
-	});
-
-	inputField3.addEventListener('focus', () => {
-		inputField3.placeholder = 'Поиск';
-		dropdown3.classList.add('open');
-		dropdownArray3.forEach(dropdown3 => {
-			dropdown3.classList.remove('closed');
-		});
-	});
-
-	inputField3.addEventListener('blur', () => {
-		dropdown3.classList.remove('open');
-	});
-	/////
-	/////
-	/////////
-	///////
-
+	}
 	$('#rate-skills').on('click', open_rate_area);
+
 	$('#add-resume').click(function() {
 		$('#resume-card').show();
 		$('#rating-card').hide();
@@ -1376,186 +1380,7 @@
 		$('#rate-skills').css('padding', '0px');
 		$('#rate-skills').css('border-radius', '0px');
 	});
-
-	////
-	/////
-	////
-
-	function create_popup(status, placeholder) {
-		const name = status == "навык" ? status + "a" : status == "качество" ? status.substring(0, status.length - 1) + "a" : status.substring(0, status.length - 1) + "и";
-		const popup = `<div class="modal" id="skill-modal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2 class="little-header-text">Добавить ${status}</h2>
-      </div>
-      <div class="modal-body">
-		<div id="add-skill-error"></div>
-        <x-label :value="__('Название ${name}')" />
-		<x-input id="skill-name" type="text" style="width:400px" placeholder="${placeholder}"/>
-      </div>
-      <div class="modal-footer">
-	  <div style="margin-top:20px">
-	<span class="span-like-button" type="button" id="btn-close-skill" data-bs-dismiss="modal">
-		Отменить
-	</span>
-	<span class="span-like-button ml-4" type="button" id="btn-add-skill">
-	Добавить
-	</span>
-</div>
-      </div>
-    </div>
-  </div>
-</div>`;
-		return popup;
-	}
-
-	function show_popup() {
-		$('#skill-modal').show();
-		//запрещаем скролл
-		$('html, body').css({
-			overflow: 'hidden',
-			height: '100%'
-		});
-		//добавляем блюр
-		$('#blurable-content').addClass("blur");
-		$('#btn-close-skill').click(function() {
-			$('#skill-modal').remove();
-			// восстанавливаем скролл
-			$('html, body').css({
-				overflow: 'auto',
-				height: 'auto'
-			});
-			//убираем блюр
-			$('#blurable-content').removeClass("blur")
-		})
-	}
-	$('#add-hard-skill').click(function() {
-		let popup = create_popup("навык", "Например: JavaFX, Node.js");
-		$('#add-hard-skill-area').append(popup);
-		show_popup();
-		$('#btn-add-skill').click(function() {
-			const skill_name = $('#skill-name').val();
-			let all_hard_skills = <?php echo json_encode($skill); ?>;
-			all_hard_skills = all_hard_skills.filter(val => {
-				return val.skill_type === 1
-			})
-			all_hard_skills = all_hard_skills.filter(val => {
-				return val.skill_name.toLowerCase() == String(skill_name).toLowerCase()
-			})
-			if (all_hard_skills.length == 0 && skill_name != "") {
-				// добавляем скилл
-				$.ajax({
-					url: '{{ route("student.add-skill") }}',
-					type: "POST",
-					data: {
-						'skill_name': skill_name,
-						'skill_type': 1
-					},
-					headers: {
-						'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-					},
-					success: function(data) {
-						console.log("Добавили навык!")
-					},
-					error: function(msg) {
-						console.log("Не получилось добавить навык")
-					}
-				});
-				// перезагружаем страницу, чтобы применить изменения
-				location.reload();
-			} else if (all_hard_skills.length !== 0) {
-				$('#add-skill-error').append(`<div class="alert alert-danger">Такой навык уже существует</div>`);
-			} else if (skill_name == "") {
-				$('#add-skill-error').append(`<div class="alert alert-danger">Поле не может быть пустым</div>`);
-			}
-		})
-	})
-
-	$('#add-soft-skill').click(function() {
-		let popup = create_popup("качество", "Например: дар убеждения, креативность");
-		$('#add-soft-skill-area').append(popup);
-		show_popup();
-		$('#btn-add-skill').click(function() {
-			const skill_name = $('#skill-name').val();
-			let all_soft_skills = <?php echo json_encode($skill); ?>;
-			all_soft_skills = all_soft_skills.filter(val => {
-				return val.skill_type === 0
-			})
-			all_soft_skills = all_soft_skills.filter(val => {
-				return val.skill_name.toLowerCase() == String(skill_name).toLowerCase()
-			})
-			if (all_soft_skills.length == 0 && skill_name != "") {
-				// добавляем скилл
-				$.ajax({
-					url: '{{ route("student.add-skill") }}',
-					type: "POST",
-					data: {
-						'skill_name': skill_name,
-						'skill_type': 0
-					},
-					headers: {
-						'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-					},
-					success: function(data) {
-						console.log("Добавили качество!")
-					},
-					error: function(msg) {
-						console.log("Не получилось добавить качество")
-					}
-				});
-				// перезагружаем страницу, чтобы применить изменения
-				location.reload();
-			} else if (all_soft_skills.length !== 0) {
-				$('#add-skill-error').append(`<div class="alert alert-danger">Такое качество уже существует</div>`);
-			} else if (skill_name == "") {
-				$('#add-skill-error').append(`<div class="alert alert-danger">Поле не может быть пустым</div>`);
-			}
-		})
-	})
-
-	$('#add-profession').click(function() {
-		let popup = create_popup("профессию", "Например: UX/UI-дизайнер, Разработчик на Node.js");
-		$('#add-profession-area').append(popup);
-		show_popup();
-		$('#btn-add-skill').click(function() {
-			const profession_name = $('#skill-name').val();
-			let category = <?php echo json_encode($category); ?>;
-			category = category.filter(val => {
-				return val.subsphere_of_activity_name == $('#select-2').val()
-			})
-			let all_professions = <?php echo json_encode($profession); ?>;
-			all_professions = all_professions.filter(val => {
-				return val.profession_name.toLowerCase() == String(profession_name).toLowerCase()
-			})
-			if (all_professions.length == 0 && profession_name != "") {
-				// добавляем скилл
-				$.ajax({
-					url: '{{ route("student.add-profession") }}',
-					type: "POST",
-					data: {
-						'profession_name': profession_name,
-						'subsphere_id': category[0].id
-					},
-					headers: {
-						'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-					},
-					success: function(data) {
-						console.log("Добавили профессию!")
-					},
-					error: function(msg) {
-						console.log("Не получилось добавить профессию")
-					}
-				});
-				// перезагружаем страницу, чтобы применить изменения
-				location.reload();
-			} else if (all_professions.length !== 0) {
-				$('#add-skill-error').append(`<div class="alert alert-danger">Такая профессия уже существует</div>`);
-			} else if (profession_name == "") {
-				$('#add-skill-error').append(`<div class="alert alert-danger">Поле не может быть пустым</div>`);
-			}
-		})
-	})
+	$('#next-page').on('click', open_rate_area);
 </script>
 <style>
 	.blur {
@@ -1563,11 +1388,62 @@
 		filter: blur(3px);
 	}
 
+	.form-check-input,
+	.label::after,
+	.form-check-input::after {
+		border: 1px solid #D1D5DB;
+	}
+
+	.form-check-input:checked {
+		background-color: rgb(129 140 248) !important;
+		border: solid 1px rgb(129 140 248);
+	}
+
+	.form-check-label {
+		padding-top: 3px;
+	}
+
+	.form-check-input:focus {
+		color: black;
+		outline: 0;
+		border: 1px solid #D1D5DB !important;
+		box-shadow: none !important
+	}
+
+
+	/** */
+
+	.noneditable-input {
+		border: solid 1px var(--border-color) !important;
+		border-radius: 8px !important;
+		padding-left: 12px;
+	}
+
+	.noneditable-input:active,
+	.noneditable-input:focus {
+		border: solid 1px var(--hover-border-color) !important;
+		box-shadow: var(--tw-ring-inset) 0 0 0 3px var(--hover-box-shadow-color) !important;
+		outline: none !important;
+	}
+
+
+	/** */
+
 	#area-add-work-exp .select-dropdown__button,
 	#area-edit-edu .select-dropdown__button,
 	#area-edit-work-exp .select-dropdown__button,
 	#area-add-edu .select-dropdown__button {
 		width: 130px !important;
+	}
+
+	#add-work-time-area,
+	#edit-work-time-area,
+	#add-edu-time-area,
+	#edit-edu-time-area {
+		display: flex;
+		justify-content: space-around;
+		width: 580px;
+		margin-left: -5px;
 	}
 
 	.card-div {
@@ -1585,16 +1461,6 @@
 		border: 1px solid var(--border-color);
 		padding: 20px;
 		border-radius: 8px;
-	}
-
-	#add-work-time-area,
-	#edit-work-time-area,
-	#add-edu-time-area,
-	#edit-edu-time-area {
-		display: flex;
-		justify-content: space-around;
-		width: 580px;
-		margin-left: -5px;
 	}
 
 	.ready-div {

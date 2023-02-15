@@ -65,6 +65,9 @@
 									</x-slot>
 									<x-slot name="content">
 										@if ($vacancy->status == 0)
+										<x-dropdown-link class="edit-btn" href="edit-vacancy/{{$vacancy->id}}">
+											Редактировать
+										</x-dropdown-link>
 										<x-dropdown-link class="archive-btn" id="archive-btn-all-{{$vacancy->id}}" onclick="click_to_archive(this.id)">
 											Архивировать
 										</x-dropdown-link>
@@ -129,6 +132,9 @@
 										</button>
 									</x-slot>
 									<x-slot name="content">
+										<x-dropdown-link class="edit-btn" href="edit-vacancy/{{$vacancy->id}}">
+											Редактировать
+										</x-dropdown-link>
 										<x-dropdown-link class="archive-btn" id="archive-btn-active-{{$vacancy->id}}" onclick="click_to_archive(this.id)">
 											Архивировать
 										</x-dropdown-link>
@@ -319,6 +325,7 @@
 	}
 
 	.archive-btn,
+	.edit-btn,
 	.unarchive-btn {
 		cursor: pointer;
 	}

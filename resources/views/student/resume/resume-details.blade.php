@@ -140,11 +140,16 @@
 					@endif
 				</div>
 				<div class="col-md-4">
-					@if ($resume->status == 0)
-					<button class="button" id="btn-archive">Архивировать</button>
-					@else
-					<button class="button btn-unarchive" id="unarchive-btn-{{$resume->id}}">Разархивировать</button>
-					@endif
+					<div class="side-card second-card">
+						<h3 class="little-header-text ml-4 pt-4 pb-2">Действия</h3>
+						@if ($resume->status == 0)
+						<button class="button btn-edit"><a href="/student/edit-resume/{{$resume->id}}">Редактировать</a></button>
+
+						<button class="button btn-archive">Архивировать</button>
+						@else
+						<button class="button btn-unarchive" id="unarchive-btn-{{$resume->id}}">Разархивировать</button>
+						@endif
+					</div>
 					<div class="side-card" id="first-card">
 						<h3 class="little-header-text ml-4 pt-4 pb-2">Информация</h3>
 						<div class="side-info">
@@ -161,7 +166,7 @@
 						<div class="side-info">
 							<div class="row">
 								<div class="col-md-auto side-sample-pic">
-									<i class="fa-regular fa-address-book"></i>
+									<i class="fa-solid fa-id-card"></i>
 								</div>
 								<div class="col-md-auto">
 									<div class="col-value contacts">{{Auth::User()->email}}</div>
@@ -183,7 +188,7 @@
 						<div class="side-info pb-5">
 							<div class="row">
 								<div class="col-md-auto side-sample-pic">
-									<i class="fa-regular fa-clock"></i>
+									<i class="fa-solid fa-user-clock"></i>
 								</div>
 								<div class="col-md-auto">
 									<div class="col-value">{{$resume->type_of_employment->type_of_employment_name}}</div>
@@ -192,7 +197,7 @@
 							</div>
 						</div>
 					</div>
-					<div class="side-card" id="second-card">
+					<div class="side-card second-card">
 						<h3 class="little-header-text ml-4 pt-4 pb-2">О резюме</h3>
 						@if($resume->status == 0)
 						@php
@@ -379,22 +384,21 @@
 		padding: 0 10px;
 	}
 
-	#first-card {
-		margin-top: 60px;
-	}
-
-	#second-card {
+	#first-card,
+	.second-card {
 		margin-top: 30px;
 	}
 
-	#btn-archive {
-		margin-top: 40px;
-		margin-left: 150px
+	.btn-edit,
+	.btn-archive,
+	.btn-unarchive {
+		margin: 10px 0px 5px 20px;
 	}
 
-	.btn-unarchive {
-		margin-top: 40px;
-		margin-left: 130px
+	.btn-edit:last-child,
+	.btn-archive:last-child,
+	.btn-unarchive:last-child {
+		margin-bottom: 30px;
 	}
 
 	.side-info {
@@ -432,7 +436,7 @@
 	}
 </style>
 <script>
-	$("#btn-archive").on('click', function() {
+	$(".btn-archive").on('click', function() {
 
 		$.ajax({
 			url: '{{ route("student.archive-resume") }}',

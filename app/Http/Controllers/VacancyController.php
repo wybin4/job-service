@@ -15,8 +15,12 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\sendStudentVacancyLink;
 use App\Models\Employer;
 use App\Models\Resume;
+use App\Models\SphereOfActivity;
 use App\Models\StudentSkill;
+use App\Models\SubsphereOfActivity;
+use App\Models\TypeOfEmployment;
 use App\Models\WorkExperience;
+use App\Models\WorkType;
 use DateTime;
 
 class VacancyController extends Controller
@@ -34,10 +38,10 @@ class VacancyController extends Controller
 			array_push($ids, $employer_vacancies_ids[$i]->id);
 		}
 		$binded_vacancies = DB::table('vacancies')
-		->join('interactions', 'vacancies.id', '=', 'interactions.vacancy_id')
-		->whereIn('interactions.vacancy_id', $ids)
-		->select('student_id')
-		->get();
+			->join('interactions', 'vacancies.id', '=', 'interactions.vacancy_id')
+			->whereIn('interactions.vacancy_id', $ids)
+			->select('student_id')
+			->get();
 		//массив id студентов, которых нужно исключить
 		$student_ids = array();
 		for ($i = 0; $i < count($binded_vacancies); $i++) {
@@ -111,6 +115,74 @@ class VacancyController extends Controller
 			->get();
 
 		return view('employer.vacancy.vacancy-details', compact('vacancy', 'description', 'vacancy_skills'));
+	}
+	public function editVacancyPage($id)
+	{
+		$vacancy = Vacancy::find($id);
+		if ($vacancy->description) {
+			$description = nl2br(\Illuminate\Support\Str::markdown($vacancy->description));
+		} else $description = "";
+		$profession = Profession::find($vacancy->profession_id);
+		$category = SubsphereOfActivity::find($profession->subsphere_id);
+		$sphere = SphereOfActivity::find($category->sphere_id);
+
+		$type_of_employment = TypeOfEmployment::find($vacancy->type_of_employment_id);
+		$work_type = WorkType::find($vacancy->work_type_id);
+		$vacancy_skills = VacancySkill::where('vacancy_id', $id)->get()->pluck('skill_id')->toArray();
+		$skill = Skill::whereNotIn('id', $vacancy_skills)->get();
+		return view('employer.vacancy.edit-vacancy', compact('vacancy', 'description', 'vacancy_skills'))->with('sphere', $sphere)
+			->with('category', $category)
+			->with('profession', $profession)
+			->with('type_of_employment', $type_of_employment)
+			->with('work_type', $work_type)
+			->with('skill', $skill);
+	}
+	public function editVacancy(Request $request)
+	{
+		$validator = Validator::make(
+			$request->all(),
+			[
+				'type_of_employment' => 'required|integer',
+				'work_type' => 'required|integer',
+				'contacts' => ['required', 'string', 'email', 'max:255']
+			]
+		);
+		if ($request->hard_skills || $request->soft_skills) {
+			$i = 0;
+			if ($request->soft_skills) {
+				foreach ($request->soft_skills as $index) {
+					VacancySkill::create([
+						'vacancy_id' => $request->vacancy_id,
+						'skill_id' => $request->soft_skills[$i]
+					]);
+					$i++;
+				}
+			}
+			$i = 0;
+			if ($request->hard_skills) {
+				foreach ($request->hard_skills as $index) {
+					VacancySkill::create([
+						'vacancy_id' => $request->vacancy_id,
+						'skill_id' => $request->hard_skills[$i],
+						'skill_rate' => $request->skill_rate[$i] ?? 0
+					]);
+					$i++;
+				}
+			}
+		}
+		$vacancy = Vacancy::find($request->vacancy_id);
+		if ($request->salary === null) {
+			$salary = 0;
+		} else $salary = $request->salary;
+		if ($request->work_experience === null) {
+			$work_experience = 0;
+		} else $work_experience = $request->work_experience;
+		$vacancy->work_experience = $work_experience;
+		$vacancy->salary = $salary;
+		$vacancy->contacts = $request->contacts;
+		$vacancy->description = $request->description;
+		$vacancy->save();
+		return redirect(RouteServiceProvider::EMPLOYER_HOME);
 	}
 	public function unarchiveVacancy(Request $request)
 	{

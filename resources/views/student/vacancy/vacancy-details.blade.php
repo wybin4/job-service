@@ -87,10 +87,32 @@
 							<div class="side-info">
 								<div class="row">
 									<div class="col-md-auto side-sample-pic">
+										<i class="fa-solid fa-money-bill-wave"></i>
+									</div>
+									<div class="col-md-auto">
+										<div class="col-value">@if ($vacancy->salary != 0) {{$vacancy->salary}}₽ @else Без оплаты @endif</div>
+										<div class="table-header">Зарплата</div>
+									</div>
+								</div>
+							</div>
+							<div class="side-info">
+								<div class="row">
+									<div class="col-md-auto side-sample-pic">
+										<i class="fa-solid fa-medal"></i>
+									</div>
+									<div class="col-md-auto">
+										<div class="col-value">@if ($vacancy->work_experience != 0) {{$vacancy->work_experience . ' ' .YearTextArg($vacancy->work_experience)}} @else Без опыта @endif</div>
+										<div class="table-header">Опыт работы</div>
+									</div>
+								</div>
+							</div>
+							<div class="side-info">
+								<div class="row">
+									<div class="col-md-auto side-sample-pic">
 										<i class="fa-solid fa-location-dot"></i>
 									</div>
 									<div class="col-md-auto">
-										<div class="col-value">@if ($vacancy->location) {{explode(",", $vacancy->location)[0]}} @else {{explode(",", $employer->location)[0]}} @endif</div>
+										<div class="col-value">@if ($vacancy->location) {{explode(",", $vacancy->location)[0]}} @else {{explode(",", Auth::guard('employer')->user()->location)[0]}} @endif</div>
 										<div class="table-header">Местоположение</div>
 									</div>
 								</div>
@@ -98,10 +120,10 @@
 							<div class="side-info">
 								<div class="row">
 									<div class="col-md-auto side-sample-pic">
-										<i class="fa-regular fa-address-book"></i>
+										<i class="fa-solid fa-id-card"></i>
 									</div>
 									<div class="col-md-auto">
-										<div class="col-value contacts">@if ($vacancy->contacts) {{$vacancy->contacts}} @else {{$employer->email}} @endif</div>
+										<div class="col-value contacts">@if ($vacancy->contacts) {{$vacancy->contacts}} @else {{Auth::guard('employer')->user()->email}} @endif</div>
 										<div class="table-header">Контакты</div>
 									</div>
 								</div>
@@ -112,7 +134,7 @@
 										<i class="fa-solid fa-briefcase"></i>
 									</div>
 									<div class="col-md-auto">
-										<div class="col-value">{{$work_type->work_type_name}}</div>
+										<div class="col-value">{{$vacancy->work_type->work_type_name}}</div>
 										<div class="table-header">Тип работы</div>
 									</div>
 								</div>
@@ -120,10 +142,10 @@
 							<div class="side-info pb-5">
 								<div class="row">
 									<div class="col-md-auto side-sample-pic">
-										<i class="fa-regular fa-clock"></i>
+										<i class="fa-solid fa-user-clock"></i>
 									</div>
 									<div class="col-md-auto">
-										<div class="col-value">{{$type_of_employment->type_of_employment_name}}</div>
+										<div class="col-value">{{$vacancy->type_of_employment->type_of_employment_name}}</div>
 										<div class="table-header">Вид занятости</div>
 									</div>
 								</div>

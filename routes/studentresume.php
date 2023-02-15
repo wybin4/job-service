@@ -47,7 +47,9 @@ Route::group(['middleware' => ['auth:student'], 'prefix' => 'student', 'as' => '
 	})->name('alter-resume');
 	Route::post('/create-resume', [ResumeController::class, 'createResume'])->name('create-resume');
 	Route::get('/resume/{id}', [ResumeController::class, 'resumeDetails'])->name('resume');
-	//Route::post('/alter-resume', [ResumeController::class, 'alterResume']);
+
+	Route::get('/edit-resume/{id}', [ResumeController::class, 'editResumePage'])->name('edit-resume');
+	Route::post('/edit-resume', [ResumeController::class, 'editResume'])->name('edit-resume');
 
 	Route::get('/archive-resume', [ResumeController::class, 'archiveResume'])->name('archive-resume');
 	Route::get('/archived-resumes-feed', [ResumeController::class, 'viewArchivedResumesPage'])->name('archived-resumes-feed');
