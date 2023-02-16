@@ -26,6 +26,7 @@ class StudentResponsesController extends Controller
         ]);
         $vacancy = Vacancy::find($request->vacancy_id);
         Employer::find($vacancy->employer_id)->notify(new EmployerNotification(5, Auth::user()->id, $request->vacancy_id));
+        return redirect()->back()->with('title', 'Отправка отклика')->with('text', 'Отклик успешно отправлен');
     }
     public function myResponses(){
         $interactions = Interaction::where('student_id', Auth::user()->id)->where('interactions.type', 0)->get();

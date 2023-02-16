@@ -66,6 +66,9 @@ class VacancyResponsesController extends Controller
         if ($request->status != 9) {
             Student::find($sr->student_id)->notify(new StudentNotification($request->status, Auth::user()->id));
         }
+        if ($request->status == 3) {
+            $sr->hired_at = now();
+        }
         $sr->status = $request->status;
         if ($request->interview_data) {
             $sr->data =  [
@@ -73,5 +76,6 @@ class VacancyResponsesController extends Controller
             ];
         }
         $sr->save();
+        return redirect()->back()->with('title', $request->title)->with('text', $request->text);
     }
 }

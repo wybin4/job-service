@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Models\Interaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Student;
@@ -12,6 +13,21 @@ use Illuminate\Support\Facades\Redirect;
 
 class StudentDuties extends Controller
 {
+    public function viewPlacesOfWork()
+    {
+        $places_of_work = Interaction::where('student_id', Auth::user()->id)
+            ->where('interactions.status', '=', 8)
+            ->orWhere('interactions.status', '=', 9)
+            ->orWhere('interactions.status', '=', 3)
+            ->join('vacancies', 'vacancies.id', '=', 'interactions.vacancy_id')
+            ->join('employers', 'employers.id', '=', 'vacancies.employer_id')
+            ->select('*', 'vacancies.profession_id as vacancy_profession_id', 
+            'interactions.status as work_status', 'interactions.id as interaction_id', 
+            'interactions.updated_at as date_end', 'vacancies.location as company_location')
+            ->orderBy('interactions.created_at', 'desc')
+            ->get();
+        return view("student.places-of-work", compact('places_of_work'));
+    }
     public function viewAlterProfilePage()
     {
         return view("student.alter-profile");

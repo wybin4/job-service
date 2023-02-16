@@ -5,9 +5,17 @@
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous" />
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.css" />
+	<script src="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.js"></script>
+	<script src="{{asset('/js/toast.js')}}"></script>
 	<meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <x-employer-layout>
+	@if (session()->get('title'))
+	<script>
+		create_notify('success', '{{session()->get("title")}}', '{{session()->get("text")}}', -290, 'center');
+	</script>
+	@endif
 	<p class="header-text" style="margin-left:110px;margin-top:20px;">Мои вакансии</p>
 	<section class='center'>
 		<ul id='tabs' class='nav nav-tabs' role='tablist'>
@@ -379,12 +387,13 @@
 			},
 			success: function(data) {
 				console.log("Архивировали вакансию!")
-				location.reload();
 			},
 			error: function(msg) {
 				console.log("Не получилось архивировать вакансию")
 			}
 		});
+		location.reload();
+
 	}
 
 	function click_to_unarchive(id) {
@@ -401,12 +410,13 @@
 			},
 			success: function(data) {
 				console.log("Разархивировали вакансию!")
-				location.reload();
 			},
 			error: function(msg) {
 				console.log("Не получилось разархивировать вакансию")
 			}
 		});
+		location.reload();
+
 	}
 </script>
 

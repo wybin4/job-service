@@ -10,6 +10,10 @@
 	<script src="//api-maps.yandex.ru/2.0-stable/?load=package.standard&lang=ru-RU" type="text/javascript"></script>
 	<link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
 	<script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.css" />
+	<script src="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.js"></script>
+	<script src="{{asset('/js/toast.js')}}"></script>
+
 	<meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <div id="add-hard-skill-area"></div>
@@ -17,11 +21,21 @@
 <div id="add-profession-area"></div>
 <div id="blurable-content">
 	<x-employer-layout>
+		@if (session()->get('title'))
+		<script>
+			create_notify('success', '{{session()->get("title")}}', '{{session()->get("text")}}');
+		</script>
+		@endif
+		@if ($errors->any())
+		@foreach ($errors->all() as $error)
+		<script>
+			create_notify('error', 'Ошибка добавления вакансии', '{{$error}}');
+		</script>
+		@endforeach
+		@endif
 		<x-big-card>
 			<form method="POST" action="{{ route('employer.create-vacancy') }}">
 				<h2 class="header-text text-center">Добавление вакансии</h2>
-				<x-errors class="mb-4 mt-3" :errors="$errors" />
-				<div id="front-errors"></div>
 				@csrf
 				<div id="profession_id"></div>
 				<div>
@@ -502,9 +516,8 @@
         <h2 class="text-2xl font-bold text-center">Добавить ${status}</h2>
       </div>
       <div class="modal-body">
-		<div id="add-skill-error"></div>
         <x-label :value="__('Название ${name}')" />
-		<x-input id="skill-name" type="text" style="width:400px" placeholder="${placeholder}"/>
+		<x-input id="skill-name" type="text" style="width:400px" placeholder="${placeholder}" autocomplete="off"/>
       </div>
       <div class="modal-footer">
         <span type="button" class="span-like-button" id="btn-close-skill" data-bs-dismiss="modal">Отменить</span>
@@ -571,9 +584,9 @@
 				// перезагружаем страницу, чтобы применить изменения
 				location.reload();
 			} else if (all_hard_skills.length !== 0) {
-				$('#add-skill-error').append(`<p class="font-medium text-red-600">Такой навык уже существует</p>`);
+				create_notify('error', 'Ошибка добавления навыка', 'Такой навык уже существует', 30);
 			} else if (skill_name == "") {
-				$('#add-skill-error').append(`<p class="font-medium text-red-600">Поле не может быть пустым</p>`);
+				create_notify('error', 'Ошибка добавления навыка', 'Поле не может быть пустым', 30);
 			}
 		})
 	})
@@ -613,9 +626,9 @@
 				// перезагружаем страницу, чтобы применить изменения
 				location.reload();
 			} else if (all_soft_skills.length !== 0) {
-				$('#add-skill-error').append(`<p class="font-medium text-red-600">Такое качество уже существует</p>`);
+				create_notify('error', 'Ошибка добавления качества', 'Такое качество уже существует', 30);
 			} else if (skill_name == "") {
-				$('#add-skill-error').append(`<p class="font-medium text-red-600">Поле не может быть пустым</p>`);
+				create_notify('error', 'Ошибка добавления качества', 'Поле не может быть пустым', 30);
 			}
 		})
 	})
@@ -656,9 +669,9 @@
 				// перезагружаем страницу, чтобы применить изменения
 				location.reload();
 			} else if (all_professions.length !== 0) {
-				$('#add-skill-error').append(`<p class="font-medium text-red-600">Такая профессия уже существует</p>`);
+				create_notify('error', 'Ошибка добавления профессии', 'Такая профессия уже существует', 30);
 			} else if (profession_name == "") {
-				$('#add-skill-error').append(`<p class="font-medium text-red-600">Поле не может быть пустым</p>`);
+				create_notify('error', 'Ошибка добавления профессии', 'Поле не может быть пустым', 30);
 			}
 		})
 	})

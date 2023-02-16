@@ -2276,3 +2276,11 @@ textarea::-webkit-scrollbar-thumb {
   background-color: var(--scrollbar-color);
   border-radius: 3px;
 }
+
+.notify {
+  --notify-success: var(--link-hover-color);
+  --notify-success-progress: var(--link-hover-color);
+  --notify-error-progress: #eb5757;
+  --notify-success-shadow: var(--link-hover-color);
+  --notify-margin-top: 40px;
+}

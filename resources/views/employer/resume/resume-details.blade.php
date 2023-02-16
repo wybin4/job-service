@@ -7,6 +7,10 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment-with-locales.min.js"></script>
 	<script src="{{asset('/js/range-functions.js')}}"></script>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.css" />
+	<script src="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.js"></script>
+	<script src="{{asset('/js/toast.js')}}"></script>
+
 	<meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <div id="offer-popup">
@@ -45,6 +49,11 @@
 </div>
 <div id="blurable-content">
 	<x-employer-layout>
+		@if (session()->get('title'))
+		<script>
+			create_notify('success', '{{session()->get("title")}}', '{{session()->get("text")}}', -290, 'center');
+		</script>
+		@endif
 		<section style="background-color:rgb(254, 254, 254)">
 			<div class="row">
 				<div class="col-md-8">

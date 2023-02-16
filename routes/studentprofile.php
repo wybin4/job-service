@@ -7,4 +7,6 @@ Route::group(['middleware' => ['auth:student'], 'prefix' => 'student', 'as' => '
 	Route::get('/alter-profile', [StudentDuties::class, 'viewAlterProfilePage'])->name('alter-profile');
 	Route::post('/alter-profile', [StudentDuties::class, 'alterProfile'])->name('alter-profile');
 	Route::post('/alter-password', [StudentDuties::class, 'alterPassword'])->name('alter-password');
+
+	Route::get('/places-of-work', [StudentDuties::class, 'viewPlacesOfWork'])->name('places-of-work');
 });

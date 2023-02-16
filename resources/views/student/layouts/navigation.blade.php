@@ -64,7 +64,7 @@
                             @elseif($notification->data['type'] == 3 || $notification->data['type'] == 4)
                             @php
                             $type = " опубликовала результаты собеседования";
-                            $href = "/student/my-responses";
+                            $href = "/student/places-of-work";
                             @endphp
                             @endif
                             <x-dropdown-link class="mark-as-read" href="{{$href}}" id="{{$notification->id}}">

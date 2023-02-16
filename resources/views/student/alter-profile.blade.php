@@ -10,12 +10,16 @@
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.css" />
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.js"></script>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.css" />
+	<script src="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.js"></script>
+	<script src="{{asset('/js/toast.js')}}"></script>
+
 </head>
 <x-student-layout>
+
 	<x-big-card>
 		<div style="width:690px;">
 			<h2 class="header-text">Редактирование профиля</h2>
-			<p id="edit-errors" style="margin-top:10px;"></p>
 			<div class="row" style="margin-top: 20px;">
 				<div class="col-md-auto">
 					@if (!Auth::guard('student')->user()->image)
@@ -98,7 +102,9 @@
 		<form method="POST" action="{{ route('student.alter-password') }}" style="width:690px">
 			<h2 class="header-text">Безопасность и пароли</h2>
 			@if(session()->has('success'))
-			<div class="alert alert-success" style="margin-top:10px;">{{ session()->get('success') }}</div>
+			<script>
+				create_notify('success', 'Изменение пароля', '{{session()->get("success")}}', 20);
+			</script>
 			@elseif(session()->has('errors'))
 			<x-errors class="mb-4" :errors="$errors" style="margin-top:10px;" />
 			@endif
@@ -190,14 +196,14 @@
 						'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
 					},
 					success: function(data) {
-						$('#edit-errors').empty();
-						$('#edit-errors').append('<div class="alert alert-success">Изменения сохранены</div>');
 						console.log("Изменили профиль!")
+						create_notify('success', 'Редактирование профиля', 'Изменения сохранены', 20);
+
 					},
 					error: function(msg) {
 						if (msg.responseJSON.message) {
 							$.each(msg.responseJSON.errors, function(key, value) {
-								$('#edit-errors').append('<div class="alert alert-danger">' + value + '</div>');
+								create_notify('error', 'Редактирование профиля', value);
 							});
 						}
 						console.log("Не получилось изменить профиль")
@@ -251,14 +257,13 @@
 						'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
 					},
 					success: function(data) {
-						$('#edit-errors').empty();
-						$('#edit-errors').append('<div class="alert alert-success">Изменения сохранены</div>');
+						create_notify('success', 'Редактирование профиля', 'Изменения сохранены', 20);
 						console.log("Изменили профиль!")
 					},
 					error: function(msg) {
 						if (msg.responseJSON.message) {
 							$.each(msg.responseJSON.errors, function(key, value) {
-								$('#edit-errors').append('<div class="alert alert-danger">' + value + '</div>');
+								create_notify('error', 'Редактирование профиля', value);
 							});
 						}
 						console.log("Не получилось изменить профиль")
@@ -300,14 +305,14 @@
 			var name = files[0].name;
 			var ext = name.split('.').pop().toLowerCase();
 			if (jQuery.inArray(ext, ['gif', 'png', 'jpg', 'jpeg']) == -1) {
-				$('#edit-errors').append('<div class="alert alert-danger">Неверный формат файла</div>');
+				create_notify('error', 'Редактирование профиля', 'Неверный формат файла');
 			} else {
 				var oFReader = new FileReader();
 				oFReader.readAsDataURL(files[0]);
 				var f = document.getElementById("file").files[0];
 				var fsize = f.size || f.fileSize;
 				if (fsize > 2000000) {
-					$('#edit-errors').append('<div class="alert alert-danger">Слишком большое изображение</div>');
+					create_notify('error', 'Редактирование профиля', 'Слишком большое изображение');
 				} else {
 					let done = function(url) {
 						image.src = url;

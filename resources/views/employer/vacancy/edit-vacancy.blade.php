@@ -9,6 +9,10 @@
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-wEmeIV1mKuiNpC+IOBjI7aAzPcEZeedi5yW5f2yOq55WWLwNGmvvx4Um1vskeMj0" crossorigin="anonymous">
 	<link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
 	<script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.css" />
+	<script src="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.js"></script>
+	<script src="{{asset('/js/toast.js')}}"></script>
+
 	<meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <div id="add-hard-skill-area"></div>
@@ -16,6 +20,11 @@
 <div id="add-profession-area"></div>
 <div id="blurable-content">
 	<x-employer-layout>
+		@if (session()->get('title'))
+		<script>
+			create_notify('success', '{{session()->get("title")}}', '{{session()->get("text")}}');
+		</script>
+		@endif
 		<x-big-card>
 			<form method="POST" action="{{ route('employer.edit-vacancy') }}">
 				<input type="hidden" name="vacancy_id" value="{{$vacancy->id}}" />
@@ -190,7 +199,6 @@
         <h2 class="text-2xl font-bold text-center">Добавить ${status}</h2>
       </div>
       <div class="modal-body">
-		<div id="add-skill-error"></div>
         <x-label :value="__('Название ${name}')" />
 		<x-input id="skill-name" type="text" style="width:400px" placeholder="${placeholder}"/>
       </div>
@@ -259,9 +267,9 @@
 				// перезагружаем страницу, чтобы применить изменения
 				location.reload();
 			} else if (all_hard_skills.length !== 0) {
-				$('#add-skill-error').append(`<p class="font-medium text-red-600">Такой навык уже существует</p>`);
+				create_notify('error', 'Ошибка добавления навыка', 'Такой навык уже существует', 30);
 			} else if (skill_name == "") {
-				$('#add-skill-error').append(`<p class="font-medium text-red-600">Поле не может быть пустым</p>`);
+				create_notify('error', 'Ошибка добавления навыка', 'Поле не может быть пустым', 30);
 			}
 		})
 	})
@@ -301,9 +309,9 @@
 				// перезагружаем страницу, чтобы применить изменения
 				location.reload();
 			} else if (all_soft_skills.length !== 0) {
-				$('#add-skill-error').append(`<p class="font-medium text-red-600">Такое качество уже существует</p>`);
+				create_notify('error', 'Ошибка добавления качества', 'Такое качество уже существует', 30);
 			} else if (skill_name == "") {
-				$('#add-skill-error').append(`<p class="font-medium text-red-600">Поле не может быть пустым</p>`);
+				create_notify('error', 'Ошибка добавления качества', 'Поле не может быть пустым', 30);
 			}
 		})
 	})

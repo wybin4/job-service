@@ -6,6 +6,10 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous" />
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/simplePagination.js/1.6/jquery.simplePagination.js"></script>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.css" />
+	<script src="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.js"></script>
+	<script src="{{asset('/js/toast.js')}}"></script>
+
 	<meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <div id="interview-popup">
@@ -26,6 +30,12 @@
 </div>
 <div id="blurable-content">
 	<x-student-layout>
+		@if (session()->get('title'))
+		<script>
+			create_notify('success', '{{session()->get("title")}}', '{{session()->get("text")}}', -290, 'center');
+		</script>
+		@endif
+
 		@if (count($interactions))
 		<div class="row">
 			<div class="col-md-8">
@@ -290,18 +300,21 @@
 			data: {
 				'id': id,
 				'status': 7,
+				'text': 'Успешно отправили отказ от приёма на работу',
+				'title': 'Отправка отказа'
 			},
 			headers: {
 				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
 			},
 			success: function(data) {
 				console.log("Отправили отказ!");
-				location.reload();
 			},
 			error: function(msg) {
 				console.log("Не получилось отправить отказ")
 			}
 		});
+		location.reload();
+
 	})
 	$(".interview-data-btn").click(function() {
 		$('#blurable-content').addClass("blur");

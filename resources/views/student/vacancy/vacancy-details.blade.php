@@ -8,6 +8,10 @@
 	<script src="https://cdn.jsdelivr.net/npm/lvovich/dist/lvovich.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment-with-locales.min.js"></script>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.css" />
+	<script src="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.js"></script>
+	<script src="{{asset('/js/toast.js')}}"></script>
+
 	<meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 
@@ -18,6 +22,11 @@
 	return ($t1 == 1 && $t2 != 11 ? "год" : ($t1 >= 2 && $t1 <= 4 && ($t2 < 10 || $t2>= 20) ? "года" : "лет"));
 		}@endphp
 		<x-student-layout>
+			@if (session()->get('title'))
+			<script>
+				create_notify('success', '{{session()->get("title")}}', '{{session()->get("text")}}', -290, 'center');
+			</script>
+			@endif
 			<section style="background-color:rgb(254, 254, 254)">
 				<div class="row">
 					<div class="col-md-8">
@@ -479,12 +488,13 @@
 			},
 			success: function(data) {
 				console.log("Отправили отклик!");
-				location.reload();
 			},
 			error: function(msg) {
 				console.log("Не получилось отправить отклик")
 			}
 		});
+		location.reload();
+
 	})
 
 	$(".related-vacancy-loc").each(function(index) {

@@ -8,6 +8,10 @@
 		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous" />
 		<meta name="csrf-token" content="{{ csrf_token() }}">
 		<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.css" />
+		<script src="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.js"></script>
+		<script src="{{asset('/js/toast.js')}}"></script>
+
 	</head>
 	@php function YearTextArg($year) {
 	$year = abs($year);
@@ -16,6 +20,11 @@
 	return ($t1 == 1 && $t2 != 11 ? "год" : ($t1 >= 2 && $t1 <= 4 && ($t2 < 10 || $t2>= 20) ? "года" : "лет"));
 		}@endphp
 		<x-employer-layout>
+			@if (session()->get('title'))
+			<script>
+				create_notify('success', '{{session()->get("title")}}', '{{session()->get("text")}}', -290, 'center');
+			</script>
+			@endif
 			<section style="background-color:rgb(254, 254, 254)">
 				<div class="row">
 					<div class="col-md-8">
@@ -388,13 +397,15 @@
 						'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
 					},
 					success: function(data) {
-						console.log("Архивировали вакансию!")
-						window.location.href = "{{ route('employer.dashboard') }}";
+						console.log("Архивировали вакансию!");
+
 					},
 					error: function(msg) {
 						console.log("Не получилось архивировать вакансию")
 					}
 				});
+				location.reload();
+
 			})
 			$(".btn-unarchive").on('click', function() {
 				let id = $(this).attr('id').split('-');
@@ -410,12 +421,13 @@
 					},
 					success: function(data) {
 						console.log("Разрхивировали вакансию!")
-						window.location.href = "{{ route('employer.dashboard') }}";
 					},
 					error: function(msg) {
 						console.log("Не получилось разархивировать вакансию")
 					}
 				});
+				location.reload();
+
 			})
 		</script>
 

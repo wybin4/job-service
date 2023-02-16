@@ -17,6 +17,7 @@ class Interaction extends Model
         'student_id',
         'status',
         'type',
+        'hired_at',
         'data'
     ];
 

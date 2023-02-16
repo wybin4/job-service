@@ -55,7 +55,7 @@ class RateController extends Controller
                 ]);
             }
         }
-        return redirect(RouteServiceProvider::EMPLOYER_HOME);
+        return redirect(RouteServiceProvider::EMPLOYER_HOME)->with('title', 'Оценка работника')->with('text', 'Успешно оценили работника');
     }
     public function studentRatePage(Request $request)
     {

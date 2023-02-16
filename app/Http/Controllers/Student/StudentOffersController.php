@@ -45,5 +45,6 @@ class StudentOffersController extends Controller
 
         $sr->status = $request->status;
         $sr->save();
+        return redirect()->back()->with('title', $request->title)->with('text', $request->text);
     }
 }

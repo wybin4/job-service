@@ -182,7 +182,7 @@ class VacancyController extends Controller
 		$vacancy->contacts = $request->contacts;
 		$vacancy->description = $request->description;
 		$vacancy->save();
-		return redirect(RouteServiceProvider::EMPLOYER_HOME);
+		return redirect(RouteServiceProvider::EMPLOYER_HOME)->with('title', 'Редактирование вакансии')->with('text', 'Вакансия успешно отредактирована');
 	}
 	public function unarchiveVacancy(Request $request)
 	{
@@ -192,6 +192,7 @@ class VacancyController extends Controller
 			$new_vacancy->status = 0;
 			$new_vacancy->save();
 		}
+		return redirect(RouteServiceProvider::EMPLOYER_HOME)->with('title', 'Восстановление вакансии')->with('text', 'Вакансия успешно восстановлена');
 	}
 	public function archiveVacancy(Request $request)
 	{
@@ -199,7 +200,7 @@ class VacancyController extends Controller
 		$vacancy->archived_at = date('Y-m-d H:i:s');
 		$vacancy->status = 1;
 		$vacancy->save();
-		return redirect(RouteServiceProvider::EMPLOYER_HOME);
+		return redirect(RouteServiceProvider::EMPLOYER_HOME)->with('title', 'Архивация вакансии')->with('text', 'Вакансия успешно архивирована');
 	}
 	public function sendVacancyLink($vacancy_id, $email, $profession_name)
 	{
@@ -218,6 +219,7 @@ class VacancyController extends Controller
 			],
 			[
 				'profession_id.required' => 'Выберите профессию',
+				'contacts.required' => 'Укажите контакты',
 			]
 		);
 		if ($validator->fails()) {
@@ -288,7 +290,7 @@ class VacancyController extends Controller
 				$i++;
 			}
 		}
-		return redirect(RouteServiceProvider::EMPLOYER_HOME);
+		return redirect(RouteServiceProvider::EMPLOYER_HOME)->with('title', 'Создание вакансии')->with('text', 'Вакансия успешно создана');
 	}
 	public function addSkill(Request $request)
 	{
@@ -296,6 +298,11 @@ class VacancyController extends Controller
 			'skill_name' => $request->skill_name,
 			'skill_type' => $request->skill_type,
 		]);
+		if ($request->skill_type == 0) {
+			return redirect()->back()->with('title', 'Добавление качества')->with('text', 'Успешно добавили качество');
+		} else {
+			return redirect()->back()->with('title', 'Добавление навыка')->with('text', 'Успешно добавили навык');
+		}
 	}
 	public function addProfession(Request $request)
 	{
@@ -303,6 +310,7 @@ class VacancyController extends Controller
 			'profession_name' => $request->profession_name,
 			'subsphere_id' => $request->subsphere_id,
 		]);
+		return redirect()->back()->with('title', 'Добавление профессии')->with('text', 'Успешно добавили профессию');
 	}
 	public function vacanciesList()
 	{

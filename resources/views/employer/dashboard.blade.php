@@ -9,6 +9,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
     <script src="//api-maps.yandex.ru/2.0-stable/?load=package.standard&lang=ru-RU" type="text/javascript"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.js"></script>
+    <script src="{{asset('/js/toast.js')}}"></script>
+
 </head>
 <div id="location-popup"></div>
 <div id="choose-location-popup">
@@ -52,6 +56,11 @@
 </div>
 <div id="blurable-content">
     <x-employer-layout>
+        @if (session()->get('title'))
+        <script>
+            create_notify('success', '{{session()->get("title")}}', '{{session()->get("text")}}', -290, 'center');
+        </script>
+        @endif
         <div style="background-color:white !important">
             <input type="hidden" id="is-there-a-location" value=" {{Auth::guard('employer')->user()->location}}" />
             <div class="row first-div">

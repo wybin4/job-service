@@ -32,6 +32,7 @@ class VacancyOffersController extends Controller
         ]);
         Student::find($request->student_id)->notify(new StudentNotification(6, Auth::user()->id));
         $this->sendOfferLink($request->vacancy_id, $request->student_email, $request->topic, $request->text);
+        return redirect()->back()->with('title', 'Отправка оффера')->with('text', 'Оффер успешно отправлен');
     }
     public function sendOfferLink($vacancy_id, $email, $topic, $text)
     {

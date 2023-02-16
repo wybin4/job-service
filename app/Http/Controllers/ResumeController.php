@@ -22,6 +22,18 @@ use Illuminate\Support\Carbon;
 
 class ResumeController extends Controller
 {
+    public function addExperience(Request $request)
+    {
+        WorkExperience::create([
+            'resume_id' => Auth::User()->resume->id,
+            'company_name' => $request->company_name,
+            'location' => $request->company_location,
+            'work_title' => $request->work_title,
+            'date_start' => $request->date_start,
+            'date_end' => $request->date_end,
+        ]);
+        return redirect()->back();
+    }
     public function editResumePage($id)
     {
         $resume = Resume::find($id);
@@ -163,7 +175,7 @@ class ResumeController extends Controller
         $resume = Resume::find($request->resume_id);
         $resume->about_me = $request->about_me;
         $resume->save();
-        return redirect(RouteServiceProvider::STUDENT_HOME);
+        return redirect(RouteServiceProvider::STUDENT_HOME)->with('title', 'Редактирование резюме')->with('text', 'Резюме успешно отредактировано');
     }
     public function resumeDetails($id)
     {
@@ -195,6 +207,7 @@ class ResumeController extends Controller
             $new_resume->status = 0;
             $new_resume->save();
         }
+        return redirect()->back()->with('title', 'Восстановление резюме')->with('text', 'Резюме успешно восстановлено');
     }
     public function viewArchivedResumesPage()
     {
@@ -211,7 +224,7 @@ class ResumeController extends Controller
         $resume->archived_at = date('Y-m-d H:i:s');
         $resume->status = 1;
         $resume->save();
-        return redirect()->back();
+        return redirect()->back()->with('title', 'Архивация резюме')->with('text', 'Резюме успешно архивировано');
     }
     public function addSkill(Request $request)
     {
@@ -219,6 +232,11 @@ class ResumeController extends Controller
             'skill_name' => $request->skill_name,
             'skill_type' => $request->skill_type,
         ]);
+        if ($request->skill_type == 0) {
+            return redirect()->back()->with('title', 'Добавление качества')->with('text', 'Успешно добавили качество');
+        }else {
+            return redirect()->back()->with('title', 'Добавление навыка')->with('text', 'Успешно добавили навык');
+        }
     }
     public function addProfession(Request $request)
     {
@@ -226,6 +244,7 @@ class ResumeController extends Controller
             'profession_name' => $request->profession_name,
             'subsphere_id' => $request->subsphere_id,
         ]);
+        return redirect()->back()->with('title', 'Добавление профессии')->with('text', 'Успешно добавили профессию');
     }
     public function createResume(Request $request)
     {
@@ -324,28 +343,6 @@ class ResumeController extends Controller
                 $i++;
             }
         }
-        return redirect(RouteServiceProvider::STUDENT_HOME);
-    }
-    public function alterResume(Request $request)
-    {
-        $resume = Auth::User()->resume;
-        $validator = Validator::make($request->all(), [
-            'profession_id' => 'required',
-            'type_of_employment' => 'required',
-            'work_type' => 'required',
-        ]);
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-        $resume->fill([
-            'profession_id' => $request->profession_id,
-            'type_of_employment_id' => $request->type_of_employment,
-            'work_type_id' => $request->work_type,
-            'about_me' => $request->about_me,
-        ]);
-        $resume->save();
-        return redirect(RouteServiceProvider::STUDENT_HOME);
+        return redirect(RouteServiceProvider::STUDENT_HOME)->with('title', 'Создание резюме')->with('text', 'Резюме успешно создано');
     }
 }

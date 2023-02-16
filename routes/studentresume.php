@@ -57,4 +57,5 @@ Route::group(['middleware' => ['auth:student'], 'prefix' => 'student', 'as' => '
 
 	Route::post('/add-skill', [ResumeController::class, 'addSkill'])->name('add-skill');
 	Route::post('/add-profession', [ResumeController::class, 'addProfession'])->name('add-profession');
+	Route::post('/add-experience', [ResumeController::class, 'addExperience'])->name('add-experience');
 });

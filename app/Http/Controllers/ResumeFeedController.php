@@ -334,6 +334,7 @@ class ResumeFeedController extends Controller
                 return ($a[1] < $b[1]) ? 1 : -1;
             });
 
+
             $rate_order = array_map(function ($el) {
                 return $el[0];
             }, $rating);

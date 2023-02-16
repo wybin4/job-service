@@ -19,6 +19,7 @@ return new class extends Migration
             $table->integer('status')->default('0');
             $table->boolean('type');
             $table->json('data')->nullable();
+            $table->timestamp('hired_at')->nullable();
             $table->timestamps();
         });
     }

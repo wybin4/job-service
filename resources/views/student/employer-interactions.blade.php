@@ -34,6 +34,15 @@
 		</div>
 		<div class="col-md-3">
 			<div class="col-title font-bold mb-2">Другое</div>
+			<a class="row btn-area" href="{{ url('/student/places-of-work') }}">
+				<div class="col-md-auto btn-i">
+					<i class="fa-solid fa-building"></i>
+				</div>
+				<div class="col-md-auto">
+					<div class="btn-title">Мои места работы</div>
+					<div class="btn-text">Просмотр</div>
+				</div>
+			</a>
 		</div>
 	</div>
 </x-student-layout>

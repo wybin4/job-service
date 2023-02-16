@@ -7,6 +7,10 @@
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous" />
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/simplePagination.js/1.6/jquery.simplePagination.js"></script>
 	<meta name="csrf-token" content="{{ csrf_token() }}">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.css" />
+	<script src="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.js"></script>
+	<script src="{{asset('/js/toast.js')}}"></script>
+
 </head>
 <div id="interview-popup">
 	<div class="modal" id="interview-modal" tabindex="-1">
@@ -47,6 +51,11 @@
 </div>
 <div id="blurable-content">
 	<x-employer-layout>
+		@if (session()->get('title'))
+		<script>
+			create_notify('success', '{{session()->get("title")}}', '{{session()->get("text")}}', -280, 'center');
+		</script>
+		@endif
 		@if (count($interactions))
 		<div class="row">
 			<div class="col-md-8">
@@ -124,7 +133,7 @@
 									<x-slot name="content">
 										@if ($response->student_response_status == 0)
 										<x-dropdown-link class="reject-btn" id="reject-btn-{{$response->student_response_id}}">
-											Отказать
+											Отказать в собеседовании
 										</x-dropdown-link>
 										<x-dropdown-link class="interview-btn" id="interview-btn-{{$response->student_response_id}}">
 											Пригласить на собеседование
@@ -132,6 +141,9 @@
 										@elseif ($response->student_response_status == 2)
 										<x-dropdown-link class="work-btn" id="work-btn-{{$response->student_response_id}}">
 											Принять на работу
+										</x-dropdown-link>
+										<x-dropdown-link class="reject-before-btn" id="reject-btn-{{$response->student_offer_id}}">
+											Отказать в приёме
 										</x-dropdown-link>
 										@endif
 										@if ($response->student_response_status == 3)
@@ -263,6 +275,7 @@
 	.interview-btn,
 	.work-btn,
 	.reject-btn,
+	.reject-before-btn,
 	.dismiss-btn,
 	.dismiss-with-marks-btn {
 		cursor: pointer;
@@ -341,18 +354,22 @@
 			data: {
 				'id': id,
 				'status': 1,
+				'text': 'Успешно отправили отказ в собеседовании',
+				'title': 'Отправка отказа'
+
 			},
 			headers: {
 				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
 			},
 			success: function(data) {
 				console.log("Отправили отказ!");
-				location.reload();
 			},
 			error: function(msg) {
 				console.log("Не получилось отправить отказ")
 			}
 		});
+		location.reload();
+
 	})
 	$(".interview-btn").click(function() {
 		$('#blurable-content').addClass("blur");
@@ -386,6 +403,8 @@
 					data: {
 						'id': id,
 						'status': 2,
+						'text': 'Успешно отправили оффер кандидату',
+						'title': 'Отправка оффера',
 						'interview_data': $("#interview-data").val()
 					},
 					headers: {
@@ -393,17 +412,16 @@
 					},
 					success: function(data) {
 						console.log("Отправили оффер!");
-						location.reload();
 					},
 					error: function(msg) {
 						console.log("Не получилось отправить оффер")
 					}
 				});
+				location.reload();
+
 			} else {
-				if (!$("#edit-errors").find('.alert').length) {
-					$('#edit-errors').append('<div class="alert alert-danger">Напишите сопроводительный текст</div>');
-					$('.modal-body').css('height', '290px');
-				}
+				create_notify('error', 'Ошибка отправки оффера', 'Напишите сопроводительный текст', 30);
+
 			}
 		})
 	})
@@ -416,18 +434,45 @@
 			data: {
 				'id': id,
 				'status': 3,
+				'text': 'Успешно приняли кандидата на работу',
+				'title': 'Принятие на работу'
+
 			},
 			headers: {
 				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
 			},
 			success: function(data) {
 				console.log("Приняли на работу!");
-				location.reload();
 			},
 			error: function(msg) {
 				console.log("Не получилось принять на работу")
 			}
 		});
+		location.reload();
+	})
+	$(".reject-before-btn").click(function() {
+		let id = ($(this).attr('id')).split('-');
+		id = id[id.length - 1];
+		$.ajax({
+			url: '{{ route("employer.change-status") }}',
+			type: "POST",
+			data: {
+				'id': id,
+				'status': 4,
+				'text': 'Успешно отправили отказ кандидату',
+				'title': 'Отправка отказа'
+			},
+			headers: {
+				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+			},
+			success: function(data) {
+				console.log("Отправили отказ!");
+			},
+			error: function(msg) {
+				console.log("Не получилось отправить отказ")
+			}
+		});
+		location.reload();
 	})
 	$(".dismiss-btn").click(function() {
 		let id = ($(this).attr('id')).split('-');
@@ -438,18 +483,21 @@
 			data: {
 				'id': id,
 				'status': 9,
+				'text': 'Успешно уволили',
+				'title': 'Увольнение'
 			},
 			headers: {
 				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
 			},
 			success: function(data) {
 				console.log("Уволили!");
-				location.reload();
 			},
 			error: function(msg) {
 				console.log("Не получилось уволить")
 			}
 		});
+		location.reload();
+
 	})
 	$(".dismiss-with-marks-btn").click(function() {
 		let id = ($(this).attr('id')).split('-');
@@ -474,18 +522,20 @@
 				data: {
 					'id': id,
 					'status': 9,
+					'text': 'Успешно уволили',
+					'title': 'Увольнение'
 				},
 				headers: {
 					'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
 				},
 				success: function(data) {
 					console.log("Уволили!");
-					location.reload();
 				},
 				error: function(msg) {
 					console.log("Не получилось уволить")
 				}
 			});
+			location.reload();
 		})
 	})
 

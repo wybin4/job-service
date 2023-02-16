@@ -8,6 +8,11 @@
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-wEmeIV1mKuiNpC+IOBjI7aAzPcEZeedi5yW5f2yOq55WWLwNGmvvx4Um1vskeMj0" crossorigin="anonymous">
 	<link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
 	<script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.css" />
+	<script src="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.js"></script>
+	<script src="{{asset('/js/toast.js')}}"></script>
+
+
 	<meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <div id="add-hard-skill-area"></div>
@@ -15,6 +20,11 @@
 <div id="add-profession-area"></div>
 <div id="blurable-content">
 	<x-student-layout>
+		@if (session()->get('title'))
+		<script>
+			create_notify('success', '{{session()->get("title")}}', '{{session()->get("text")}}');
+		</script>
+		@endif
 		<div class="tabs-div">
 			<div class="tab" id="add-resume"><i class="fa-solid fa-file-circle-plus"></i><span style="padding-left:10px">Добавление резюме</span></div>
 			<div class="tab" id="rate-skills"><i class="fa-regular fa-star"></i><span style="padding-left:10px">Оценка навыков</span></div>
@@ -56,7 +66,6 @@
 				</div>
 				<div id="resume-card">
 					<h2 class="medium-text pb-2 text-center">Добавление резюме</h2>
-					<div id="front-errors"></div>
 
 					@csrf
 					<div id="profession_id" style="margin-top:20px"></div>
@@ -394,7 +403,6 @@
 <script>
 	function open_rate_area() {
 		$('#rate-area').empty();
-		$('#front-errors').empty();
 		const hard_skills = $('#hard_skills').val();
 		if (hard_skills && $('#select-1').val() && $('#select-2').val() && $('#select-3').val()) {
 			let all_hard_skills = <?php echo json_encode($skill); ?>;
@@ -431,16 +439,16 @@
 			$('#add-resume').css('border-radius', '0px');
 		} else if (!$('#select-1').val()) { //если не указана сфера деят
 			$('html,body').scrollTop(0);
-			$('#front-errors').append(`<div class="alert alert-danger">Добавьте сферу деятельности!</div>`)
+			create_notify('error', 'Ошибка добавления резюме', 'Добавьте сферу деятельности');
 		} else if (!$('#select-2').val()) { //если не указана категория
 			$('html,body').scrollTop(0);
-			$('#front-errors').append(`<div class="alert alert-danger">Добавьте категорию!</div>`)
+			create_notify('error', 'Ошибка добавления резюме', 'Добавьте категорию');
 		} else if (!$('#select-3').val()) { //если не указана профессия
 			$('html,body').scrollTop(0);
-			$('#front-errors').append(`<div class="alert alert-danger">Добавьте профессию!</div>`)
+			create_notify('error', 'Ошибка добавления резюме', 'Добавьте профессию');
 		} else if (!hard_skills) { //если не указаны навыки
 			$('html,body').scrollTop(0);
-			$('#front-errors').append(`<div class="alert alert-danger">Добавьте ваши навыки!</div>`)
+			create_notify('error', 'Ошибка добавления резюме', 'Добавьте навыки');
 		}
 	}
 	$('#next-page').on('click', open_rate_area);
@@ -1390,9 +1398,8 @@
         <h2 class="little-header-text">Добавить ${status}</h2>
       </div>
       <div class="modal-body">
-		<div id="add-skill-error"></div>
         <x-label :value="__('Название ${name}')" />
-		<x-input id="skill-name" type="text" style="width:400px" placeholder="${placeholder}"/>
+		<x-input id="skill-name" type="text" style="width:400px" placeholder="${placeholder}" autocomplete="off"/>
       </div>
       <div class="modal-footer">
 	  <div style="margin-top:20px">
@@ -1465,9 +1472,9 @@
 				// перезагружаем страницу, чтобы применить изменения
 				location.reload();
 			} else if (all_hard_skills.length !== 0) {
-				$('#add-skill-error').append(`<div class="alert alert-danger">Такой навык уже существует</div>`);
+				create_notify('error', 'Ошибка добавления навыка', 'Такой навык уже существует', 30);
 			} else if (skill_name == "") {
-				$('#add-skill-error').append(`<div class="alert alert-danger">Поле не может быть пустым</div>`);
+				create_notify('error', 'Ошибка добавления навыка', 'Поле не может быть пустым', 30);
 			}
 		})
 	})
@@ -1507,9 +1514,9 @@
 				// перезагружаем страницу, чтобы применить изменения
 				location.reload();
 			} else if (all_soft_skills.length !== 0) {
-				$('#add-skill-error').append(`<div class="alert alert-danger">Такое качество уже существует</div>`);
+				create_notify('error', 'Ошибка добавления качества', 'Такое качество уже существует', 30);
 			} else if (skill_name == "") {
-				$('#add-skill-error').append(`<div class="alert alert-danger">Поле не может быть пустым</div>`);
+				create_notify('error', 'Ошибка добавления качества', 'Поле не может быть пустым', 30);
 			}
 		})
 	})
@@ -1550,9 +1557,9 @@
 				// перезагружаем страницу, чтобы применить изменения
 				location.reload();
 			} else if (all_professions.length !== 0) {
-				$('#add-skill-error').append(`<div class="alert alert-danger">Такая профессия уже существует</div>`);
+				create_notify('error', 'Ошибка добавления профессии', 'Такая профессия уже существует', 30);
 			} else if (profession_name == "") {
-				$('#add-skill-error').append(`<div class="alert alert-danger">Поле не может быть пустым</div>`);
+				create_notify('error', 'Ошибка добавления профессии', 'Поле не может быть пустым', 30);
 			}
 		})
 	})
