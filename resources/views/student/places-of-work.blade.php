@@ -7,8 +7,16 @@
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous" />
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/simplePagination.js/1.6/jquery.simplePagination.js"></script>
 	<meta name="csrf-token" content="{{ csrf_token() }}">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.css" />
+	<script src="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.js"></script>
+	<script src="{{asset('/js/toast.js')}}"></script>
 </head>
 <x-student-layout>
+	@if (session()->get('title'))
+	<script>
+		create_notify('success', '{{session()->get("title")}}', '{{session()->get("text")}}', -290, 'center');
+	</script>
+	@endif
 	@if (count($places_of_work))
 	<div class="row">
 		<div class="col-md-8">
@@ -226,6 +234,31 @@
 	}
 </style>
 <script>
+	function paginate() {
+		let items = $("#all-works-table tbody tr");
+		let numItems = items.length;
+		let perPage = 10;
+		items.slice(perPage).hide();
+		if (numItems < perPage) {
+			$("#pagination").hide();
+		} else {
+			$("#pagination").show();
+		}
+		$("#pagination").pagination({
+			items: numItems,
+			itemsOnPage: perPage,
+			cssStyle: "light-theme",
+			prevText: "«",
+			nextText: "»",
+			onPageClick: function(pageNumber) {
+				let showFrom = perPage * (pageNumber - 1);
+				let showTo = showFrom + perPage;
+				items.hide()
+					.slice(showFrom, showTo).show();
+			}
+		});
+	}
+	paginate();
 	$(".add-exp").on('click', function() {
 		let id = $(this).attr('id');
 		id = id.split("-");
@@ -248,11 +281,11 @@
 			},
 			success: function(data) {
 				console.log("Добавили опыт!");
-				location.reload();
 			},
 			error: function(msg) {
 				console.log("Не получилось добавить опыт")
 			}
 		});
+		location.reload();
 	})
 </script>

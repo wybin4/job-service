@@ -3,7 +3,7 @@
 
 <head>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous" />
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/simplePagination.js/1.6/jquery.simplePagination.js"></script>
 	<meta name="csrf-token" content="{{ csrf_token() }}">
@@ -28,105 +28,71 @@
 	</div>
 </div>
 <div id="blurable-content">
-
 	<x-employer-layout>
 		@if (session()->get('title'))
 		<script>
 			create_notify('success', '{{session()->get("title")}}', '{{session()->get("text")}}', -280, 'center');
 		</script>
 		@endif
-		@if (count($interactions))
+		@if (count($my_workers))
 		<div class="row">
 			<div class="col-md-8">
-				<p class="medium-text mt-4" style="margin-left:160px;">Мои офферы</p>
-			</div>
-			<div class="col-md-3">
-				@if (Auth::User()->active_vacancy)
-				<button class="button search">
-					<a href="{{ route('employer.vacancies-list') }}">{{ __('Мои вакансии') }}</a>
-				</button>
-				@endif
+				<p class="medium-text mt-4" style="margin-left:160px;">Мои работники</p>
 			</div>
 		</div>
 		<section class='center'>
-			<table class='table table-hover' id="all-offers-table">
+			<table class='table table-hover' id="all-workers-table">
 				<thead>
 					<tr class='t-head'>
-						<td>Вакансия</td>
-						<td>ФИО студента</td>
-						<td>Профессия</td>
+						<td>Должность</td>
+						<td>Компания</td>
+						<td>Дата начала</td>
 						<td>Статус</td>
-						<td>Дата</td>
 						<td></td>
 					</tr>
 				</thead>
 				<tbody>
-					@foreach($interactions as $offer)
-					<tr>
-						<td>{{App\Models\Profession::find($offer->vacancy_profession_id)->profession_name}}</td>
-						<td>{{$offer->student_fio}}</td>
-						<td>{{App\Models\Profession::find($offer->resume_profession_id)->profession_name}}</td>
-						@if ($offer->student_offer_status == 0)
-						<td><span class="work-status not-considered">Не рассмотрен</span></td>
-						@elseif($offer->student_offer_status == 1)
-						<td><span class="work-status rejected">Отказ от собеседования</span></td>
-						@elseif($offer->student_offer_status == 2)
-						<td><span class="work-status interview">Собеседование</span></td>
-						@elseif($offer->student_offer_status == 3)
-						<td><span class="work-status work">Принят на работу</span></td>
-						@elseif($offer->student_offer_status == 4)
-						<td><span class="work-status rejected">Не принят на работу</span></td>
-						@elseif($offer->student_offer_status == 7)
-						<td><span class="work-status rejected">Отказ от приёма на работу</span></td>
-						@elseif($offer->student_offer_status == 8)
-						<td><span class="work-status work">Принят на работу и оценён</span></td>
-						@elseif($offer->student_offer_status == 9)
+					@foreach($my_workers as $my_worker)
+					<tr id="row-{{$my_worker->interaction_id}}">
+						<td class="work_title">{{$my_worker->profession_name}}</td>
+						<td class="company_name">{{$my_worker->name}}</td>
+						<td class="date_start">{{date_format(date_create($my_worker->hired_at), 'd.m.Y')}}</td>
+						<input type="hidden" class="date_end" value="{{date_format(date_create($my_worker->date_end), 'd.m.Y')}}" />
+						<input type="hidden" class="company_location" value="{{$my_worker->company_location}}" />
+						@if($my_worker->work_status == 3)
+						<td><span class="work-status work">Работает</span></td>
+						@elseif($my_worker->work_status == 8)
+						<td><span class="work-status work">Работает и оценён</span></td>
+						@elseif($my_worker->work_status == 9)
 						<td><span class="work-status rejected">Уволен</span></td>
 						@endif
-						<td>{{date_format(date_create($offer->student_offer_created_at), 'd.m.Y')}}</td>
 						<td>
 							<div class="hidden sm:flex sm:items-center sm:ml-4">
-								<x-dropdown align="left" width="78">
+								<x-dropdown align="left">
 									<x-slot name="trigger">
 										<button class="flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none focus:text-gray-700 focus:border-gray-300 transition duration-150 ease-in-out">
 											<div>⋮</div>
 										</button>
 									</x-slot>
 									<x-slot name="content">
-										@if($offer->student_offer_status == 2)
-										<x-dropdown-link class="work-btn" id="work-btn-{{$offer->student_offer_id}}">
-											Принять на работу
-										</x-dropdown-link>
-										<x-dropdown-link class="reject-btn" id="reject-btn-{{$offer->student_offer_id}}">
-											Отказать в приёме
-										</x-dropdown-link>
-										@endif
-										@if($offer->student_offer_status == 3)
-										<x-dropdown-link class="rate-btn" href="student-rate-page?student_id={{$offer->student_id}}&vacancy_id={{$offer->vacancy_id}}">
+										@if($my_worker->work_status == 3)
+										<x-dropdown-link class="rate-btn" href="student-rate-page?student_id={{$my_worker->student_id}}&vacancy_id={{$my_worker->vacancy_id}}">
 											Оценить
 										</x-dropdown-link>
-										@endif
-										@if($offer->student_offer_status == 8)
-										<x-dropdown-link class="rate-btn" href="student-rate-page-edit?student_id={{$offer->student_id}}&vacancy_id={{$offer->vacancy_id}}">
-											Изменить оценки
-										</x-dropdown-link>
-										<x-dropdown-link class="dismiss-btn" id="dismiss-btn-{{$offer->student_offer_id}}">
-											Уволить
-										</x-dropdown-link>
-										@endif
-										@if ($offer->student_offer_status == 3)
-										<x-dropdown-link class="dismiss-with-marks-btn" id="dismiss-with-marks-btn-{{$offer->student_offer_id}}">
-											<input type="hidden" class="student-mark" value="{{$offer->student_id}}" />
-											<input type="hidden" class="vacancy-mark" value="{{$offer->vacancy_id}}" />
+										<x-dropdown-link class="dismiss-with-marks-btn" id="dismiss-with-marks-btn-{{$my_worker->student_offer_id}}">
+											<input type="hidden" class="student-mark" value="{{$my_worker->student_id}}" />
+											<input type="hidden" class="vacancy-mark" value="{{$my_worker->vacancy_id}}" />
 											<div>Уволить</div>
 										</x-dropdown-link>
 										@endif
-										<x-dropdown-link class="view-btn" href="vacancy-details/{{$offer->vacancy_id}}">
-											Просмотреть вакансию
+										@if($my_worker->work_status == 8)
+										<x-dropdown-link class="rate-btn" href="student-rate-page-edit?student_id={{$my_worker->student_id}}&vacancy_id={{$my_worker->vacancy_id}}">
+											Изменить оценки
 										</x-dropdown-link>
-										<x-dropdown-link class="view-btn" href="resume/{{$offer->student_resume_id}}">
-											Просмотреть резюме
+										<x-dropdown-link class="dismiss-btn" id="dismiss-btn-{{$my_worker->student_offer_id}}">
+											Уволить
 										</x-dropdown-link>
+										@endif
 									</x-slot>
 								</x-dropdown>
 							</div>
@@ -140,20 +106,39 @@
 		@else
 		<div style="height:100vh;background-color:white">
 			<div class="first-div text-center">
-
-				<h1 class="big-text">Вы не отправили ни одного оффера</h1>
+				<h1 class="big-text">Вы не нанимали работников с помощью нашего сервиса</h1>
 			</div>
 		</div>
 		@endif
 	</x-employer-layout>
 </div>
 <style>
-	@import url('https://fonts.googleapis.com/css2?family=Montserrat&display=swap');
+	html {
+		overflow-x: hidden;
+	}
 
 	.blur {
 		transition: all 0.2s ease-in-out;
 		filter: blur(3px);
 	}
+
+	#interview-data {
+		width: 470px;
+		margin-bottom: 40px;
+	}
+
+	.modal-body {
+		padding: 20px;
+		padding-bottom: 40px;
+	}
+
+	.fa-xmark,
+	.interview-data-btn {
+		cursor: pointer;
+	}
+
+	/** */
+	@import url('https://fonts.googleapis.com/css2?family=Montserrat&display=swap');
 
 	.first-div {
 		margin: 0 210px;
@@ -167,7 +152,7 @@
 	}
 
 	.big-text:first-child {
-		padding-top: 80px;
+		padding-top: 50px;
 	}
 
 	/** */
@@ -189,7 +174,7 @@
 	}
 
 	.table {
-		width: 1200px !important;
+		width: 1100px !important;
 		font-size: 14px;
 		margin-left: auto;
 		margin-right: auto;
@@ -222,11 +207,10 @@
 	}
 
 	.view-btn,
+	.interview-btn,
 	.work-btn,
 	.reject-btn,
-	.rate-btn,
-	.dismiss-btn,
-	.dismiss-with-marks-btn {
+	.reject-after-btn {
 		cursor: pointer;
 	}
 
@@ -275,62 +259,14 @@
 	#pagination {
 		margin-top: 35px;
 	}
+
+	.rate-btn,
+	.dismiss-btn,
+	.dismiss-with-marks-btn {
+		cursor: pointer;
+	}
 </style>
-
-</html>
 <script>
-	$(".reject-btn").click(function() {
-		let id = ($(this).attr('id')).split('-');
-		id = id[id.length - 1];
-		$.ajax({
-			url: '{{ route("employer.change-status") }}',
-			type: "POST",
-			data: {
-				'id': id,
-				'status': 4,
-				'text': 'Успешно отправили отказ кандидату',
-				'title': 'Отправка отказа'
-
-			},
-			headers: {
-				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-			},
-			success: function(data) {
-				console.log("Отправили отказ!");
-			},
-			error: function(msg) {
-				console.log("Не получилось отправить отказ")
-			}
-		});
-		location.reload();
-
-	})
-	$(".work-btn").click(function() {
-		let id = ($(this).attr('id')).split('-');
-		id = id[id.length - 1];
-		$.ajax({
-			url: '{{ route("employer.change-status") }}',
-			type: "POST",
-			data: {
-				'id': id,
-				'status': 3,
-				'text': 'Успешно приняли кандидата на работу',
-				'title': 'Принятие на работу'
-
-			},
-			headers: {
-				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-			},
-			success: function(data) {
-				console.log("Приняли на работу!");
-			},
-			error: function(msg) {
-				console.log("Не получилось принять на работу")
-			}
-		});
-		location.reload();
-
-	})
 	$(".dismiss-btn").click(function() {
 		let id = ($(this).attr('id')).split('-');
 		id = id[id.length - 1];
@@ -342,7 +278,6 @@
 				'status': 9,
 				'text': 'Успешно уволили',
 				'title': 'Увольнение'
-
 			},
 			headers: {
 				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -382,7 +317,6 @@
 					'status': 9,
 					'text': 'Успешно уволили',
 					'title': 'Увольнение'
-
 				},
 				headers: {
 					'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -400,7 +334,7 @@
 	})
 
 	function paginate() {
-		let items = $("#all-offers-table tbody tr");
+		let items = $("#all-workers-table tbody tr");
 		let numItems = items.length;
 		let perPage = 10;
 		items.slice(perPage).hide();

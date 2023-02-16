@@ -29,10 +29,10 @@ class ResumeController extends Controller
             'company_name' => $request->company_name,
             'location' => $request->company_location,
             'work_title' => $request->work_title,
-            'date_start' => $request->date_start,
-            'date_end' => $request->date_end,
+            'date_start' => date_create($request->date_start),
+            'date_end' => date_create($request->date_end),
         ]);
-        return redirect()->back();
+        return redirect()->back()->with('title', 'Добавление опыта')->with('text', 'Опыт успешно добавлен в резюме');
     }
     public function editResumePage($id)
     {

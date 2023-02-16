@@ -6,12 +6,38 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Employer;
+use App\Models\Interaction;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\Support\Facades\Redirect;
 
 class EmployerDuties extends Controller
 {
+    public function myWorkersPage()
+    {
+        $my_workers = Employer::where('employers.id', Auth::user()->id)
+            ->join('vacancies', 'vacancies.employer_id', '=', 'employers.id')
+            ->join('interactions', 'interactions.vacancy_id', '=', 'vacancies.id')
+            ->join('students', 'students.id', '=', 'interactions.student_id')
+            ->join('professions', 'professions.id', '=', 'vacancies.profession_id')
+            ->where('interactions.status', '=', 8)
+            ->orWhere('interactions.status', '=', 9)
+            ->orWhere('interactions.status', '=', 3)
+            ->select(
+                '*',
+                'students.id as student_id',
+                'interactions.id as student_offer_id',
+                'vacancies.id as vacancy_id',
+                'interactions.status as work_status',
+                'interactions.id as interaction_id',
+                'interactions.updated_at as date_end',
+                'vacancies.location as company_location'
+            )
+            ->orderBy('interactions.created_at', 'desc')
+            ->get();
+
+        return view("employer.my-workers", compact('my_workers'));
+    }
     public function viewAlterProfilePage()
     {
         return view("employer.alter-profile");
