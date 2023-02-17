@@ -78,7 +78,8 @@
 						@if($about_me)
 						<a href="#about" class="click-tab-active click-tab"><i class="fa-regular fa-file-lines pt-2 mr-2"></i>Обо мне</a>
 						@endif
-						<a href="#skills" class="click-tab"><i class="fa-solid fa-list pt-2 mr-2"></i>Навыки</a>
+						<a href="#hard_skills" class="click-tab"><i class="fa-solid fa-list pt-2 mr-2"></i>Навыки</a>
+						<a href="#soft_skills" class="click-tab"><i class="fa-solid fa-list pt-2 mr-2"></i>Качества</a>
 						@if (count($resume->work_experience) != 0)
 						<a href="#experience" class="click-tab"><i class="fa-solid fa-table pt-2 mr-2"></i>Опыт работы</a>
 						@endif
@@ -102,11 +103,48 @@
 					</div>
 					@else <div class="mt-4"></div>
 					@endif
-					<div id="skills">
-						<div class="d-flex justify-content-start tag-area">
-							@foreach($student_skills as $ss)
-							<div class="card-tag">{{$ss->skill_name}} @if($ss->skill_rate) <span class="self-rate">{{$ss->skill_rate}}.0</span> @endif</div>
-							@endforeach
+					<div id="hard_skills">
+						<h3 class="little-header-text mb-4 mt-3">Мои навыки</h3>
+						<div class="row rate-body">
+							<div class="col-md-auto">
+								<div id="review-rate-hard" class="review-rate"></div>
+								<div class="review-count"></div>
+							</div>
+							<div class="col-md-auto">
+								@foreach($student_skills as $ss)
+								@if ($ss->skill_type == 1)
+								<div class="bar-rate">
+									<div class="skill-rate">{{$ss->skill_rate}}.0</div>
+									<div class="progress" id="skill-bar-{{$ss->skill_id}}">
+										<div class="bar"></div>
+									</div>
+									<div class="skill-name">{{$ss->skill_name}}</div>
+								</div>
+								@endif
+								@endforeach
+							</div>
+						</div>
+					</div>
+					<div id="soft_skills">
+						<h3 class="little-header-text mb-4 mt-3">Мои качества</h3>
+						<div class="row rate-body">
+							<div class="col-md-auto">
+								<div id="review-rate-soft" class="review-rate"></div>
+								<div class="review-count"></div>
+							</div>
+							<div class="col-md-auto">
+								@foreach($student_skills as $ss)
+								@if ($ss->skill_type == 0)
+								<div class="bar-rate">
+									<div class="skill-rate">{{$ss->skill_rate}}.0</div>
+									<div class="progress" id="skill-bar-{{$ss->skill_id}}">
+										<div class="bar"></div>
+									</div>
+									<div class="skill-name">{{$ss->skill_name}}</div>
+								</div>
+								@endif
+								@endforeach
+							</div>
 						</div>
 					</div>
 					@if (count($resume->work_experience) != 0)
@@ -181,15 +219,15 @@
 								<div class="review-rate"></div>
 								<div class="review-count"></div>
 							</div>
-							<div class="col-md-auto">@foreach($student_skills as $ss)
-								@if ($ss->skill_type == 1)
+							<div class="col-md-auto">
+								@foreach($student_skills as $ss)
 								<div class="bar-rate">
+									<div class="skill-rate">{{$ss->skill_rate}}.0</div>
 									<div class="progress" id="skill-bar-{{$ss->skill_id}}">
 										<div class="bar"></div>
 									</div>
 									<div class="skill-name">{{$ss->skill_name}}</div>
 								</div>
-								@endif
 								@endforeach
 							</div>
 						</div>
@@ -408,7 +446,9 @@
 		margin-bottom: 30px;
 	}
 
-	#skills {
+	#skills,
+	#soft_skills,
+	#hard_skills {
 		margin-left: 120px;
 		width: 900px;
 	}
@@ -611,6 +651,13 @@
 		display: flex;
 		margin-top: 8px;
 	}
+
+	.skill-rate {
+		margin-top: -6px;
+		margin-right: 14px;
+	}
+
+	/** */
 
 	.review-future-pic,
 	.review-pic {
@@ -827,6 +874,31 @@
 		location.reload();
 
 	})
+	let skill_rates = <?php echo json_encode($student_skills); ?>;
+	$(".progress").each(function() {
+		let skill_id = $(this).attr('id');
+		skill_id = skill_id.split('-').pop();
+		let skill = skill_rates.filter((ee) => {
+			return ee.skill_id == skill_id;
+		})
+		skill = skill[0];
+		$(this).find('.bar').css('width', skill.skill_rate / 5 * 100 + '%');
+	})
+	let hard = skill_rates.filter((sr) => {
+		return sr.skill_type == 1;
+	})
+	let soft = skill_rates.filter((sr) => {
+		return sr.skill_type == 0;
+	})
+	const sum_soft = soft.reduce(function(sum, elem) {
+		return sum + elem.skill_rate;
+	}, 0);
+	const sum_hard = hard.reduce(function(sum, elem) {
+		return sum + elem.skill_rate;
+	}, 0);
+	$("#review-rate-soft").text((sum_soft / soft.length).toFixed(2));
+	$("#review-rate-hard").text((sum_hard / hard.length).toFixed(2));
+	$(".review-count").text('В среднем');
 </script>
 
 </html>
