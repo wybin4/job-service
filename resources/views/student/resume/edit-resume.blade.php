@@ -78,7 +78,7 @@
 					</div>
 					<div style="margin-top:20px">
 						<x-label for="hard_skills" :value="__('Добавить навыки')" style="margin-top:20px" />
-						<select class="input" name="hard_skills[]" id="hard_skills" multiple multiselect-search="true" multiselect-select-all="true" multiselect-max-items="3">
+						<select class="input" name="skills[]" id="hard_skills" multiple multiselect-search="true" multiselect-select-all="true" multiselect-max-items="3">
 							@foreach($skill as $val)
 							@if($val->skill_type == 1)
 							<option value="{{ $val->id}}">{{ $val->skill_name}}</option>
@@ -91,7 +91,7 @@
 					</div>
 					<div style="margin-top:20px">
 						<x-label for="soft_skills" :value="__('Добавить качества')" style="margin-top:20px" />
-						<select style="width:580px" name="soft_skills[]" id="soft_skills" multiple multiselect-search="true" multiselect-select-all="true" multiselect-max-items="3">
+						<select style="width:580px" name="skills[]" id="soft_skills" multiple multiselect-search="true" multiselect-select-all="true" multiselect-max-items="3">
 							@foreach($skill as $val)
 							@if($val->skill_type == 0)
 							<option value="{{ $val->id}}">{{ $val->skill_name}}</option>
@@ -1337,16 +1337,24 @@
 	function open_rate_area() {
 		$('#rate-area').empty();
 		const hard_skills = $('#hard_skills').val();
-		if (hard_skills) {
-			let all_hard_skills = <?php echo json_encode($skill); ?>;
-			all_hard_skills = all_hard_skills.filter(val => {
-				return hard_skills.includes(String(val.id))
+		const soft_skills = $('#soft_skills').val();
+		let skills = [];
+		if (hard_skills && hard_skills.length) {
+			skills.push(...hard_skills)
+		}
+		if (soft_skills && soft_skills.length) {
+			skills.push(...soft_skills)
+		}
+		if (skills.length) {
+			let all_skills = <?php echo json_encode($skill); ?>;
+			all_skills = all_skills.filter(val => {
+				return skills.includes(String(val.id))
 			})
-			for (let i = 0; i < hard_skills.length; i++) {
-				const id = `rating-${hard_skills[i]}`;
+			for (let i = 0; i < skills.length; i++) {
+				const id = `rating-${skills[i]}`;
 				$('#rate-area').append(`
 						<div class="rate-div">
-						<x-label for="${id}">${all_hard_skills[i].skill_name}</x-label>
+						<x-label for="${id}">${all_skills[i].skill_name}</x-label>
 						<select id="${id}" name="skill_rate[]">
 							<option value="1">1</option>
 							<option value="2">2</option>

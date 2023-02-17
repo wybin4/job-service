@@ -107,7 +107,7 @@
 					</div>
 					<div style="margin-top:20px">
 						<x-label for="hard_skills" :value="__('Навыки')" style="margin-top:20px" />
-						<select name="hard_skills[]" id="hard_skills" multiple multiselect-search="true" multiselect-select-all="true" multiselect-max-items="3">
+						<select name="skills[]" id="hard_skills" multiple multiselect-search="true" multiselect-select-all="true" multiselect-max-items="3">
 							@foreach($skill as $val)
 							@if($val->skill_type == 1)
 							<option value="{{ $val->id}}">{{ $val->skill_name}}</option>
@@ -120,7 +120,7 @@
 					</div>
 					<div style="margin-top:20px">
 						<x-label for="soft_skills" :value="__('Качества')" style="margin-top:20px" />
-						<select class="input" name="soft_skills[]" id="soft_skills" multiple multiselect-search="true" multiselect-select-all="true" multiselect-max-items="3">
+						<select class="input" name="skills[]" id="soft_skills" multiple multiselect-search="true" multiselect-select-all="true" multiselect-max-items="3">
 							@foreach($skill as $val)
 							@if($val->skill_type == 0)
 							<option value="{{ $val->id}}">{{ $val->skill_name}}</option>
@@ -404,16 +404,24 @@
 	function open_rate_area() {
 		$('#rate-area').empty();
 		const hard_skills = $('#hard_skills').val();
-		if (hard_skills && $('#select-1').val() && $('#select-2').val() && $('#select-3').val()) {
-			let all_hard_skills = <?php echo json_encode($skill); ?>;
-			all_hard_skills = all_hard_skills.filter(val => {
-				return hard_skills.includes(String(val.id))
+		const soft_skills = $('#soft_skills').val();
+		let skills = [];
+		if (hard_skills && hard_skills.length) {
+			skills.push(...hard_skills)
+		}
+		if (soft_skills && soft_skills.length) {
+			skills.push(...soft_skills)
+		}
+		if (skills.length && $('#select-1').val() && $('#select-2').val() && $('#select-3').val()) {
+			let all_skills = <?php echo json_encode($skill); ?>;
+			all_skills = all_skills.filter(val => {
+				return skills.includes(String(val.id))
 			})
-			for (let i = 0; i < hard_skills.length; i++) {
-				const id = `rating-${hard_skills[i]}`;
+			for (let i = 0; i < skills.length; i++) {
+				const id = `rating-${skills[i]}`;
 				$('#rate-area').append(`
 						<div class="rate-div">
-						<x-label for="${id}">${all_hard_skills[i].skill_name}</x-label>
+						<x-label for="${id}">${all_skills[i].skill_name}</x-label>
 						<select id="${id}" name="skill_rate[]">
 							<option value="1">1</option>
 							<option value="2">2</option>
@@ -446,9 +454,10 @@
 		} else if (!$('#select-3').val()) { //если не указана профессия
 			$('html,body').scrollTop(0);
 			create_notify('error', 'Ошибка добавления резюме', 'Добавьте профессию');
-		} else if (!hard_skills) { //если не указаны навыки
+		} else if (!skills.length) {
 			$('html,body').scrollTop(0);
 			create_notify('error', 'Ошибка добавления резюме', 'Добавьте навыки');
+
 		}
 	}
 	$('#next-page').on('click', open_rate_area);

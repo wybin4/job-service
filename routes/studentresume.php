@@ -28,23 +28,6 @@ Route::group(['middleware' => ['auth:student'], 'prefix' => 'student', 'as' => '
 			->with('work_type', $work_type)
 			->with('skill', $skill);
 	})->name('create-resume');
-	Route::get('/alter-resume', function () {
-		if (Auth::guard('student')->user()->resume) {
-			$sphere = SphereOfActivity::all();
-			$category = SubsphereOfActivity::all();
-			$profession = Profession::all();
-			$type_of_employment = TypeOfEmployment::all();
-			$work_type = WorkType::all();
-			$resume = Auth::User()->resume;
-			return view('student.resume.alter-resume')
-			->with('sphere', $sphere)
-				->with('category', $category)
-				->with('profession', $profession)
-				->with('type_of_employment', $type_of_employment)
-				->with('work_type', $work_type)
-				->with('resume', $resume);
-		}
-	})->name('alter-resume');
 	Route::post('/create-resume', [ResumeController::class, 'createResume'])->name('create-resume');
 	Route::get('/resume/{id}', [ResumeController::class, 'resumeDetails'])->name('resume');
 

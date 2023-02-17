@@ -68,23 +68,13 @@ class ResumeController extends Controller
                 'work_type' => 'required|integer',
             ]
         );
-        if ($request->hard_skills || $request->soft_skills) {
+        if ($request->skills) {
             $i = 0;
-            if ($request->soft_skills) {
-                foreach ($request->soft_skills as $index) {
+            if ($request->skills) {
+                foreach ($request->skills as $index) {
                     StudentSkill::create([
                         'resume_id' => $request->resume_id,
-                        'skill_id' => $request->soft_skills[$i]
-                    ]);
-                    $i++;
-                }
-            }
-            $i = 0;
-            if ($request->hard_skills) {
-                foreach ($request->hard_skills as $index) {
-                    StudentSkill::create([
-                        'resume_id' => $request->resume_id,
-                        'skill_id' => $request->hard_skills[$i],
+                        'skill_id' => $request->skills[$i],
                         'skill_rate' => $request->skill_rate[$i] ?? 0
                     ]);
                     $i++;
@@ -273,23 +263,13 @@ class ResumeController extends Controller
             'work_type_id' => $request->work_type,
             'about_me' => $request->about_me,
         ]);
-        if ($request->hard_skills || $request->soft_skills) {
+        if ($request->skills) {
             $i = 0;
-            if ($request->soft_skills) {
-                foreach ($request->soft_skills as $index) {
+            if ($request->skills) {
+                foreach ($request->skills as $index) {
                     StudentSkill::create([
                         'resume_id' => Auth::User()->resume->id,
-                        'skill_id' => $request->soft_skills[$i]
-                    ]);
-                    $i++;
-                }
-            }
-            $i = 0;
-            if ($request->hard_skills) {
-                foreach ($request->hard_skills as $index) {
-                    StudentSkill::create([
-                        'resume_id' => Auth::User()->resume->id,
-                        'skill_id' => $request->hard_skills[$i],
+                        'skill_id' => $request->skills[$i],
                         'skill_rate' => $request->skill_rate[$i] ?? 0
                     ]);
                     $i++;
