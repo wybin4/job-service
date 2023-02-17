@@ -479,11 +479,15 @@
 			work_exps = work_exps.filter(x => {
 				return x[0] == response.resumes.data[i].resume_id
 			})[0];
-
+			console.log(work_exps)
 			if (work_exps) {
 				if (work_exps[1] >= 1) {
 					experience = `${work_exps[1]} ` + plural(work_exps[1], declension);
-				} else experience = `${work_exps[2]} ` + plural(work_exps[2], declension_month);
+				} else if (work_exps[2] >= 1) {
+					experience = `${work_exps[2]} ` + plural(work_exps[2], declension_month);
+				} else {
+					experience = "Без опыта";
+				}
 			} else {
 				experience = "Без опыта";
 			}

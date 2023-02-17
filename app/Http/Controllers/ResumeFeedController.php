@@ -226,7 +226,6 @@ class ResumeFeedController extends Controller
                             return $val[0];
                         }, $work_exps);
                         $work_exps = array_values($work_exps);
-
                         $resumes = $resumes->whereIn('resumes.id', $work_exp_resume_id);
                     } else {
                         // опыт работы между 1-2 годами
@@ -333,7 +332,6 @@ class ResumeFeedController extends Controller
                 if ($a[1] == $b[1]) return 0;
                 return ($a[1] < $b[1]) ? 1 : -1;
             });
-
 
             $rate_order = array_map(function ($el) {
                 return $el[0];

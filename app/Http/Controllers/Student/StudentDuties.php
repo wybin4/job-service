@@ -20,10 +20,38 @@ class StudentDuties extends Controller
             ->orWhere('interactions.status', '=', 9)
             ->orWhere('interactions.status', '=', 3)
             ->join('vacancies', 'vacancies.id', '=', 'interactions.vacancy_id')
+            ->join('employers', 'employers.id', '=', 'vacancies.employer_id');
+        /*$existed_we_company_names = Auth::user()->resume->work_experience->pluck('company_name')->toArray();
+        $existed_we_work_titles = Auth::user()->resume->work_experience->pluck('work_title')->toArray();
+        $work_exps = Interaction::where('student_id', Auth::user()->id)
+            ->where('interactions.status', '=', 8)
+            ->orWhere('interactions.status', '=', 9)
+            ->orWhere('interactions.status', '=', 3)
+            ->join('vacancies', 'vacancies.id', '=', 'interactions.vacancy_id')
+            ->join('professions', 'professions.id', '=', 'vacancies.profession_id')
             ->join('employers', 'employers.id', '=', 'vacancies.employer_id')
-            ->select('*', 'vacancies.profession_id as vacancy_profession_id', 
-            'interactions.status as work_status', 'interactions.id as interaction_id', 
-            'interactions.updated_at as date_end', 'vacancies.location as company_location')
+            ->select(
+                '*',
+                'vacancies.profession_id as vacancy_profession_id',
+                'interactions.status as work_status',
+                'interactions.id as interaction_id',
+                'interactions.updated_at as date_end',
+                'vacancies.location as company_location'
+            )
+            ->whereNotIn('employers.name', $existed_we_company_names)
+            ->whereNotIn('professions.profession_name', $existed_we_work_titles)
+            ->get();
+        dd($work_exps);*/
+
+
+        $places_of_work = $places_of_work->select(
+            '*',
+            'vacancies.profession_id as vacancy_profession_id',
+            'interactions.status as work_status',
+            'interactions.id as interaction_id',
+            'interactions.updated_at as date_end',
+            'vacancies.location as company_location'
+        )
             ->orderBy('interactions.created_at', 'desc')
             ->get();
         return view("student.places-of-work", compact('places_of_work'));
