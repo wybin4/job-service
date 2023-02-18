@@ -23,7 +23,6 @@
                     <h2 class="text-xl text-center">Выбрать город</h2>
                 </div>
                 <div class="modal-body" style="max-height:150px">
-                    <p id="edit-errors"></p>
                     <div class="select-div">
                         <input id="select" class="chosen-value" type="text" value="" autocomplete="off">
                         <ul class="value-list" id="value-list-1">
@@ -319,7 +318,7 @@
                             }
                         });
                     } else {
-                        $('#edit-errors').append('<div class="alert alert-danger">Выберите город из списка</div>');
+                        create_notify('error', 'Выбор города', 'Выберите город из списка', 30);
                     }
                 }
             })

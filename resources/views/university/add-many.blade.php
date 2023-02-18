@@ -4,17 +4,26 @@
 <head>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.css" />
+	<script src="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.js"></script>
+	<script src="{{asset('/js/toast.js')}}"></script>
 </head>
 <x-university-layout>
 	<div class="min-h-screen flex flex-col items-center pt-6 sm:pt-0 bg-gray-100">
 		<div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
 			<h2 class="header-text text-center">Зарегестрировать студентов</h2>
 			<p class="text-muted text-center mt-2" style="margin-bottom:30px;">Файл должен быть в формате xls или xlsx и иметь следующую структуру</p>
-			<x-errors class="mb-4" :errors="$errors" />
+			@if(session()->has('errors'))
+			@foreach ($errors->all() as $error)
+			<script>
+				create_notify('error', 'Регистрация студентов', '{{$error}}');
+			</script>
+			@endforeach
+			@endif
 			@if(session('message'))
-			<div class="alert alert-success mb-3" role="alert">
-				{{ session('message') ?? "Успех!"}}
-			</div>
+			<script>
+				create_notify('success', 'Регистрация студентов', '{{ session("message") ?? "Успешно зарегестрировали студентов"}}');
+			</script>
 			@endif
 			<img src="{{ asset('/storage/app_images/how_it_looks_like.png') }}" />
 			<form method="POST" action="{{ url('university/add-many') }}" enctype="multipart/form-data">

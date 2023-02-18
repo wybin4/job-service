@@ -1,5 +1,8 @@
 <head>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.js"></script>
+    <script src="{{asset('/js/toast.js')}}"></script>
 </head>
 <x-admin-guest-layout>
     <x-auth-card>
@@ -14,8 +17,13 @@
 
         <!-- Validation Errors -->
         <h2 class="mb-4 header-text text-center">Войти как администратор</h2>
-        <x-errors class="mb-4" :errors="$errors" />
-
+        @if(session()->has('errors'))
+        @foreach ($errors->all() as $error)
+        <script>
+            create_notify('error', 'Вход', '{{$error}}', 20);
+        </script>
+        @endforeach
+        @endif
         <form method="POST" action="{{ route('admin.login') }}">
             @csrf
 
