@@ -241,29 +241,26 @@ class ResumeFeedController extends Controller
                     }
                 }
             }
-            $employer_rates = ResumeSkillRate::whereIn(
-                'student_skill_id',
-                StudentSkill::whereIn('resume_id', $resumes->pluck('resume_id')->toArray())
-                    ->pluck('id')
-                    ->toArray()
-            )
-                ->join('student_skills', 'student_skills.id', '=', 'resume_skill_rates.student_skill_id')
-                ->select('skill_id', 'resume_skill_rates.skill_rate', 'resume_skill_rates.updated_at', 'student_skills.resume_id')
+            $active_resumes = Resume::where('status', 0)->pluck('id')->toArray();
+            $employer_rates = ResumeSkillRate::join('skills', 'skills.id', '=', 'resume_skill_rates.skill_id')
+                ->whereIn('resume_id', $active_resumes)
+                ->orderBy('resume_skill_rates.updated_at', 'asc')
+                ->select('*', 'resume_skill_rates.updated_at as updated_at')
                 ->get();
-            $self_rates = StudentSkill::whereIn('resume_id', $resumes->pluck('resume_id')->toArray())
+            $self_rates = StudentSkill::whereIn('resume_id', $active_resumes)
                 ->join('skills', 'student_skills.skill_id', '=', 'skills.id')
-                ->where('skill_type', 1)
                 ->select('skill_id', 'skill_rate', 'resume_id')
                 ->get()->toArray();
             $rating = array();
             //сгруппированные по resume_id оценки работодателей
             $grouped_employer_rates = $this->_group_by($employer_rates, 'resume_id');
             foreach ($grouped_employer_rates as $ger) {
+                $resume_id = $ger[0]->resume_id;
                 $unique_skill_ids = array_unique(array_map(function ($el) {
                     return $el->skill_id;
                 }, $ger)); //выделяем уникальные skill_id из оценок по одному резюме
                 $employer_rates = array();
-
+                $unique_skill_ids = array_values($unique_skill_ids);
                 //проходим по оценкам работодателей за каждый навык
                 for ($i = 0; $i < count($unique_skill_ids); $i++) {
                     $usi = $unique_skill_ids[$i];
@@ -292,12 +289,26 @@ class ResumeFeedController extends Controller
                     array_push($employer_ema, array($rate[0], $this->get_ema($rate[1][1])));
                 }
                 $selfs = array();
+                //выделяем из всех оценок студентов оценки текущего резюме
+                $current_selfs = array_filter($self_rates, function ($sr) use ($resume_id){
+                    return $sr["resume_id"] == $resume_id;
+                });
+                $current_selfs = array_values($current_selfs);
+                //выделяем те ema_ids, что есть в student_skills - которые мы можем сравнить
+                $need_ema_ids = array_map(function($self){
+                    return $self["skill_id"];
+                }, $current_selfs);
+
+                $need_ema = array_values(array_filter($employer_ema, function ($ema) use ($need_ema_ids) {
+                    return in_array($ema[0], $need_ema_ids);
+                }));
+
                 $weighted_self = null;
-                for ($i = 0; $i < count($employer_ema); $i++) {
+                for ($i = 0; $i < count($need_ema); $i++) {
                     //вычисляем разность между ema по каждой оценке и самооценкой студента для получения весов
-                    $weighted_self = $this->get_diff($employer_ema[$i][1], $self_rates[$i]['skill_rate']);
+                    $weighted_self = $this->get_diff($need_ema[$i][1], $current_selfs[$i]['skill_rate']);
                     //получаем взвешенное значение самооценки
-                    $weighted_self = array($employer_ema[$i][0], $weighted_self * $self_rates[$i]['skill_rate']);
+                    $weighted_self = array($need_ema[$i][0], $weighted_self * $current_selfs[$i]['skill_rate']);
                     array_push($selfs, $weighted_self);
                 }
                 $employer_average = $this->get_average($employer_ema); //среднее по оценкам работодателей
