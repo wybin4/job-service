@@ -107,15 +107,15 @@
 						<h3 class="little-header-text mb-4 mt-3">Мои навыки</h3>
 						<div class="row rate-body">
 							<div class="col-md-auto">
-								<div id="review-rate-hard" class="review-rate"></div>
-								<div class="review-count"></div>
+								<div id="review-rate-hard"></div>
+								<div class="self-review-count"></div>
 							</div>
 							<div class="col-md-auto">
 								@foreach($student_skills as $ss)
 								@if ($ss->skill_type == 1)
 								<div class="bar-rate">
 									<div class="skill-rate">{{$ss->skill_rate}}.0</div>
-									<div class="progress" id="skill-bar-{{$ss->skill_id}}">
+									<div class="self-progress" id="skill-bar-{{$ss->skill_id}}">
 										<div class="bar"></div>
 									</div>
 									<div class="skill-name">{{$ss->skill_name}}</div>
@@ -129,15 +129,15 @@
 						<h3 class="little-header-text mb-4 mt-3">Мои качества</h3>
 						<div class="row rate-body">
 							<div class="col-md-auto">
-								<div id="review-rate-soft" class="review-rate"></div>
-								<div class="review-count"></div>
+								<div id="review-rate-soft"></div>
+								<div class="self-review-count"></div>
 							</div>
 							<div class="col-md-auto">
 								@foreach($student_skills as $ss)
 								@if ($ss->skill_type == 0)
 								<div class="bar-rate">
 									<div class="skill-rate">{{$ss->skill_rate}}.0</div>
-									<div class="progress" id="skill-bar-{{$ss->skill_id}}">
+									<div class="self-progress" id="skill-bar-{{$ss->skill_id}}">
 										<div class="bar"></div>
 									</div>
 									<div class="skill-name">{{$ss->skill_name}}</div>
@@ -217,18 +217,9 @@
 						<div class="row rate-body">
 							<div class="col-md-auto">
 								<div class="review-rate"></div>
-								<div class="review-count"></div>
+								<div class="emp-review-count"></div>
 							</div>
-							<div class="col-md-auto">
-								@foreach($student_skills as $ss)
-								<div class="bar-rate">
-									<div class="skill-rate">{{$ss->skill_rate}}.0</div>
-									<div class="progress" id="skill-bar-{{$ss->skill_id}}">
-										<div class="bar"></div>
-									</div>
-									<div class="skill-name">{{$ss->skill_name}}</div>
-								</div>
-								@endforeach
+							<div class="col-md-auto employer-rates">
 							</div>
 						</div>
 						<div class="review-body">
@@ -620,24 +611,31 @@
 		margin-top: 20px;
 	}
 
-	.review-rate {
+	.review-rate,
+	#review-rate-soft,
+	#review-rate-hard {
 		color: var(--link-hover-color);
 		font-size: 36px;
 		font-weight: bold;
 		text-align: center;
 	}
 
-	.review-count {
+	.emp-review-count,
+	.self-review-count {
 		color: grey;
 	}
 
-	.progress {
+	.self-progress,
+	.emp-progress {
+		border-radius: 8px;
 		width: 250px;
 		height: 8px;
 		background-color: var(--dot-color);
 	}
 
 	.bar {
+		border-radius: 8px;
+
 		height: 8px;
 		background-color: var(--link-hover-color);
 	}
@@ -693,9 +691,9 @@
 </style>
 <script>
 	let sr = <?php echo json_encode($student_skills); ?>;
-	sr = sr.filter((r) => {
+	/*sr = sr.filter((r) => {
 		return r.skill_type == 1;
-	})
+	})*/
 	let student_rates = [];
 	let employer_rates = [];
 	// получаем student_rates с отдельными skill_id и массивом оценок к нему
@@ -716,11 +714,11 @@
 			});
 			if (arr.length > 1) {
 				employer_rates.push([rates[i],
-					get_trend([arr.map(a => Math.trunc(new Date(a.updated_at).getTime() / (1000 * 3600 * 24))), arr.map(a => a.skill_rate)])
+					get_trend([arr.map(a => Math.trunc(new Date(a.rsr_updated_at).getTime() / (1000 * 3600 * 24))), arr.map(a => a.skill_rate)])
 				]);
 			} else {
 				employer_rates.push([rates[i],
-					[arr.map(a => Math.trunc(new Date(a.updated_at).getTime() / (1000 * 3600 * 24))), arr.map(a => a.skill_rate)]
+					[arr.map(a => Math.trunc(new Date(a.rsr_updated_at).getTime() / (1000 * 3600 * 24))), arr.map(a => a.skill_rate)]
 				])
 			}
 		}
@@ -729,20 +727,28 @@
 		employer_rates.forEach(function(rate) {
 			employer_ema.push([rate[0], get_ema(rate[1][1])])
 		})
+		for (let i = 0; i < employer_ema.length; i++) {
+			let skill = er.filter((e) => {
+				return e.skill_id == employer_ema[i][0];
+			})[0];
+			let text = `
+					<div class="bar-rate">
+			<div class="skill-rate">${employer_ema[i][1].toFixed(2)}</div>
+			<div class="emp-progress" id="emp-progress-${skill.skill_id}">
+				<div class="bar"></div>
+			</div>
+			<div class="skill-name">${skill.skill_name}</div>
+		</div>
+			`;
+			$(".employer-rates").append(text);
+			$(`#emp-progress-${skill.skill_id}`).find('.bar').css('width', employer_ema[i][1] / 5 * 100 + '%');
 
-		$(".progress").each(function() {
-			let skill_id = $(this).attr('id');
-			skill_id = skill_id.split('-').pop();
-			let skill = employer_ema.filter((ee) => {
-				return ee[0] == skill_id;
-			})
-			$(this).find('.bar').css('width', skill[0][1] / 5 * 100 + '%');
-		})
+		}
 		const sum = employer_ema.reduce((acc, number) => acc + number[1], 0);
 		const length = employer_ema.length;
+		const employer_count = <?php echo json_encode($employers_count); ?>;
 		$(".review-rate").text((sum / length).toFixed(2));
-		const count_employers = er.length / employer_ema.length;
-		$(".review-count").text(count_employers + ' ' + getNoun(count_employers, 'работодатель', 'работодателя', 'работодателей'));
+		$(".emp-review-count").text(employer_count + ' ' + getNoun(employer_count, 'работодатель', 'работодателя', 'работодателей'));
 	}
 	$(".review-employer-time").each(function() {
 		let date = moment.duration(moment().diff($(this).text())).humanize();
@@ -875,7 +881,7 @@
 
 	})
 	let skill_rates = <?php echo json_encode($student_skills); ?>;
-	$(".progress").each(function() {
+	$(".self-progress").each(function() {
 		let skill_id = $(this).attr('id');
 		skill_id = skill_id.split('-').pop();
 		let skill = skill_rates.filter((ee) => {
@@ -898,7 +904,7 @@
 	}, 0);
 	$("#review-rate-soft").text((sum_soft / soft.length).toFixed(2));
 	$("#review-rate-hard").text((sum_hard / hard.length).toFixed(2));
-	$(".review-count").text('В среднем');
+	$(".self-review-count").text('В среднем');
 </script>
 
 </html>

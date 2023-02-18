@@ -45,7 +45,6 @@
 				<thead>
 					<tr class='t-head'>
 						<td>Должность</td>
-						<td>Компания</td>
 						<td>Дата начала</td>
 						<td>Статус</td>
 						<td></td>
@@ -55,7 +54,6 @@
 					@foreach($my_workers as $my_worker)
 					<tr id="row-{{$my_worker->interaction_id}}">
 						<td class="work_title">{{$my_worker->profession_name}}</td>
-						<td class="company_name">{{$my_worker->name}}</td>
 						<td class="date_start">{{date_format(date_create($my_worker->hired_at), 'd.m.Y')}}</td>
 						<input type="hidden" class="date_end" value="{{date_format(date_create($my_worker->date_end), 'd.m.Y')}}" />
 						<input type="hidden" class="company_location" value="{{$my_worker->company_location}}" />

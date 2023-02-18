@@ -246,7 +246,7 @@ class ResumeFeedController extends Controller
                 StudentSkill::whereIn('resume_id', $resumes->pluck('resume_id')->toArray())
                     ->pluck('id')
                     ->toArray()
-                )
+            )
                 ->join('student_skills', 'student_skills.id', '=', 'resume_skill_rates.student_skill_id')
                 ->select('skill_id', 'resume_skill_rates.skill_rate', 'resume_skill_rates.updated_at', 'student_skills.resume_id')
                 ->get();
@@ -267,7 +267,7 @@ class ResumeFeedController extends Controller
                 //проходим по оценкам работодателей за каждый навык
                 for ($i = 0; $i < count($unique_skill_ids); $i++) {
                     $usi = $unique_skill_ids[$i];
-				    //выбираем оценки одного и того же навыка разными работодателями в одном и том же резюме
+                    //выбираем оценки одного и того же навыка разными работодателями в одном и том же резюме
                     $current_skills = array_filter($ger, function ($el) use ($usi) {
                         return $el->skill_id == $usi;
                     });
@@ -361,12 +361,14 @@ class ResumeFeedController extends Controller
     }
     public function displayResumeDetails($id)
     {
-        $employer_rates = StudentSkill::where('resume_id', $id)
-            ->join('resume_skill_rates', 'student_skills.id', '=', 'resume_skill_rates.student_skill_id')
-            ->where('student_skills.skill_rate', '>', 0)
-            ->select('skill_id', 'resume_skill_rates.skill_rate', 'resume_skill_rates.updated_at')
+        $employer_rates = ResumeSkillRate::where('resume_id', $id)
+            ->join('skills', 'skills.id', '=', 'resume_skill_rates.skill_id')
+            ->select('*', 'resume_skill_rates.updated_at as rsr_updated_at')
             ->orderBy('resume_skill_rates.updated_at', 'asc')
             ->get();
+        $employers_count = ResumeSkillRate::where('resume_id', $id)
+            ->distinct()
+            ->count('employer_id');
         $reviews = Review::where('entity_id', $id)
             ->join('employers', 'employers.id', '=', 'reviews.reviewer_id')
             ->select('*', 'reviews.updated_at as review_updated_at')
@@ -405,6 +407,6 @@ class ResumeFeedController extends Controller
         $type_of_employment = TypeOfEmployment::find($resume->type_of_employment_id);
         $work_type = WorkType::find($resume->work_type_id);
         $student_skills = DB::table('student_skills')->join('skills', 'skills.id', '=', 'student_skills.skill_id')->where('resume_id', '=', $id)->get();
-        return view('employer.resume.resume-details', compact('resume', 'profession', 'student', 'type_of_employment', 'work_type', 'student_skills', 'about_me', 'employer_vacancies', 'binded_vacancies', 'enabeled_vacancies', 'employer_rates', 'reviews'));
+        return view('employer.resume.resume-details', compact('resume', 'profession', 'student', 'type_of_employment', 'work_type', 'student_skills', 'about_me', 'employer_vacancies', 'binded_vacancies', 'enabeled_vacancies', 'employer_rates', 'reviews', 'employers_count'));
     }
 }

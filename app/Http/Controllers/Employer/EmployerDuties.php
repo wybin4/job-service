@@ -15,14 +15,17 @@ class EmployerDuties extends Controller
 {
     public function myWorkersPage()
     {
-        $my_workers = Employer::where('employers.id', Auth::user()->id)
-            ->join('vacancies', 'vacancies.employer_id', '=', 'employers.id')
-            ->join('interactions', 'interactions.vacancy_id', '=', 'vacancies.id')
-            ->join('students', 'students.id', '=', 'interactions.student_id')
-            ->join('professions', 'professions.id', '=', 'vacancies.profession_id')
-            ->where('interactions.status', '=', 8)
+        $my_vacancies_id = Auth::user()->all_vacancy->pluck('id')->toArray();
+        $interaction_ids = Interaction::where('interactions.status', '=', 8)
             ->orWhere('interactions.status', '=', 9)
             ->orWhere('interactions.status', '=', 3)
+            ->pluck('id')
+            ->toArray();
+        $my_workers = Interaction::whereIn('vacancy_id', $my_vacancies_id)
+            ->join('vacancies', 'vacancies.id', '=', 'interactions.vacancy_id')
+            ->join('students', 'students.id', '=', 'interactions.student_id')
+            ->join('professions', 'professions.id', '=', 'vacancies.profession_id')
+            ->whereIn('interactions.id', $interaction_ids)
             ->select(
                 '*',
                 'students.id as student_id',
@@ -35,7 +38,6 @@ class EmployerDuties extends Controller
             )
             ->orderBy('interactions.created_at', 'desc')
             ->get();
-
         return view("employer.my-workers", compact('my_workers'));
     }
     public function viewAlterProfilePage()
