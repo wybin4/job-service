@@ -246,7 +246,7 @@ class ResumeFeedController extends Controller
                 StudentSkill::whereIn('resume_id', $resumes->pluck('resume_id')->toArray())
                     ->pluck('id')
                     ->toArray()
-            )
+                )
                 ->join('student_skills', 'student_skills.id', '=', 'resume_skill_rates.student_skill_id')
                 ->select('skill_id', 'resume_skill_rates.skill_rate', 'resume_skill_rates.updated_at', 'student_skills.resume_id')
                 ->get();

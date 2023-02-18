@@ -12,8 +12,10 @@ return new class extends Migration
     {
         Schema::create('resume_skill_rates', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('student_skill_id');
-            $table->foreign('student_skill_id')->references('id')->on('student_skills')->cascadeOnDelete();
+            $table->unsignedBigInteger('resume_id');
+            $table->foreign('resume_id')->references('id')->on('resumes')->cascadeOnDelete();
+            $table->unsignedBigInteger('skill_id');
+            $table->foreign('skill_id')->references('id')->on('skills')->cascadeOnDelete();
             $table->unsignedBigInteger('employer_id');
             $table->foreign('employer_id')->references('id')->on('employers')->cascadeOnDelete();
             $table->integer('skill_rate')->default(1);

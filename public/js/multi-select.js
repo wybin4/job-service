@@ -1,8 +1,8 @@
 
-function MultiselectDropdown(options) {
+function MultiselectDropdown(options, width = '680px') {
 	let config = {
 		search: true,
-		width: '680px',
+		width: width,
 		height: '15rem',
 		placeholder: '',
 		txtSelected: 'выбрано',
@@ -33,7 +33,7 @@ function MultiselectDropdown(options) {
 		el.style.display = 'none';
 		el.parentNode.insertBefore(div, el.nextSibling);
 		let listWrap = newEl('div', { class: 'multiselect-dropdown-list-wrapper' });
-		let list = newEl('div', { class: 'multiselect-dropdown-list', style: { height: config.height} });
+		let list = newEl('div', { class: 'multiselect-dropdown-list', style: { height: config.height } });
 		let search = newEl('input', { class: ['multiselect-dropdown-search'].concat([config.searchInput?.class ?? 'form-control']), style: { width: '100%', display: el.attributes['multiselect-search']?.value === 'true' ? 'block' : 'none' }, placeholder: config.txtSearch });
 		listWrap.appendChild(search);
 		div.appendChild(listWrap);

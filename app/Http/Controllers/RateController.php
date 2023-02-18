@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Interaction;
 use App\Models\ResumeSkillRate;
 use App\Models\Review;
+use App\Models\Skill;
 use App\Models\Student;
+use App\Models\StudentSkill;
 use App\Notifications\StudentNotification;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Http\Request;
@@ -29,18 +31,14 @@ class RateController extends Controller
                 $interaction->save();
             }
             $student = Student::find($request->student_id);
-            $student_skills = $student->resume()
-                ->join('student_skills', 'student_skills.resume_id', '=', 'resumes.id')
-                ->join('skills', 'skills.id', '=', 'student_skills.skill_id')
-                ->where('skill_type', 1)
-                ->select('skill_id', 'skill_name', 'student_skills.id as student_skill_id')
-                ->get();
+            $resume_id = $student->resume->id;
             if ($request->skill_rate) {
                 $i = 0;
                 foreach ($request->skill_rate as $index) {
                     ResumeSkillRate::create([
                         'employer_id' => Auth::User()->id,
-                        'student_skill_id' => $student_skills[$i]->student_skill_id,
+                        'resume_id' => $resume_id,
+                        'skill_id' => $request->skill_id[$i],
                         'skill_rate' => $request->skill_rate[$i] ?? 0,
                     ]);
                     $i++;
@@ -64,60 +62,92 @@ class RateController extends Controller
         $student_skills = $student->resume()
             ->join('student_skills', 'student_skills.resume_id', '=', 'resumes.id')
             ->join('skills', 'skills.id', '=', 'student_skills.skill_id')
-            ->where('skill_type', 1)
-            ->select('skill_id', 'skill_name')
+            ->select('skill_id', 'skill_name', 'skill_type')
             ->get();
         if ($request->input('dismiss_student')) {
             $dismiss_student = $request->input('dismiss_student');
         } else $dismiss_student = false;
-        return view("employer.resume.student-rate", compact('student', 'student_skills', 'vacancy_id', 'dismiss_student'));
+        $ss = $student
+            ->resume()
+            ->join('student_skills', 'student_skills.resume_id', '=', 'resumes.id')
+            ->get()
+            ->pluck('skill_id')
+            ->toArray();
+        $skill = Skill::whereNotIn('id', $ss)->get();
+        return view("employer.resume.student-rate", compact('student', 'student_skills', 'vacancy_id', 'dismiss_student', 'skill'));
     }
     public function studentRatePageEdit(Request $request)
     {
         $student = Student::find($request->input('student_id'));
         $vacancy_id = $request->input('vacancy_id');
-        $student_skills = $student->resume()
-            ->join('student_skills', 'student_skills.resume_id', '=', 'resumes.id')
-            ->join('skills', 'skills.id', '=', 'student_skills.skill_id')
-            ->where('skill_type', 1)
-            ->select('skill_id', 'skill_name')
-            ->get();
-        $rated_skills = $student->resume()
-            ->join('student_skills', 'student_skills.resume_id', '=', 'resumes.id')
-            ->join('skills', 'skills.id', '=', 'student_skills.skill_id')
-            ->where('skill_type', 1)
-            ->select('student_skills.id')
-            ->pluck('id')
-            ->all();
-        $need_skills = ResumeSkillRate::whereIn('student_skill_id', $rated_skills)
-            ->join('student_skills', 'student_skills.id', '=', 'resume_skill_rates.student_skill_id')
-            ->join('skills', 'skills.id', '=', 'student_skills.skill_id')
+        $need_skills = ResumeSkillRate::where('resume_id', $student->resume->id)
+            ->join('skills', 'skills.id', '=', 'resume_skill_rates.skill_id')
             ->where('employer_id', Auth::user()->id)
-            ->select('resume_skill_rates.skill_rate')
+            ->select('resume_skill_rates.skill_rate as skill_rate', 'skills.id as skill_id', 'skills.skill_type as skill_type', 'skills.skill_name as skill_name')
             ->get();
+        $ss = $student
+            ->resume()
+            ->join('resume_skill_rates', 'resume_skill_rates.resume_id', '=', 'resumes.id')
+            ->get()
+            ->pluck('skill_id')
+            ->toArray();
+        $skill = Skill::whereNotIn('id', $ss)->get();
         $description = Review::where('entity_id', $student->resume()->first()->id)
             ->where('reviewer_id', Auth::user()->id)
             ->where('type', 0)
             ->select('text')
             ->first();
-        return view("employer.resume.edit-student-rate", compact('student', 'student_skills', 'vacancy_id', 'need_skills', 'description'));
+        return view("employer.resume.edit-student-rate", compact('student', 'vacancy_id', 'need_skills', 'description', 'skill'));
     }
     public function editStudentRate(Request $request)
     {
         $student = Student::find($request->student_id);
-        $student_skills = $student->resume()
-            ->join('student_skills', 'student_skills.resume_id', '=', 'resumes.id')
-            ->join('skills', 'skills.id', '=', 'student_skills.skill_id')
-            ->where('skill_type', 1)
-            ->select('student_skills.id as id')
-            ->pluck('id')->all();
-        $rates = ResumeSkillRate::whereIn('student_skill_id', $student_skills)
+        $updated_rates = ResumeSkillRate::where('resume_id', $student->resume->id)
             ->where('employer_id', Auth::user()->id)
+            ->whereIn('skill_id', $request->skill_id)
+            ->pluck('skill_id')->toArray();
+        $new_rates = Skill::whereIn('id', $request->skill_id)
+            ->whereNotIn('id', $updated_rates)
+            ->pluck('id')->toArray();
+        $rates_and_ids = [];
+        array_push($rates_and_ids, $request->skill_id);
+        array_push($rates_and_ids, $request->skill_rate);
+        $ur = [];
+        for ($i = 0; $i < count($rates_and_ids[0]); $i++) {
+            if (in_array($rates_and_ids[0][$i], $updated_rates)) {
+                array_push($ur, [$rates_and_ids[0][$i], $rates_and_ids[1][$i]]);
+            }
+        }
+        $ur_skill_ids = [];
+        for ($i = 0; $i < count($rates_and_ids[0]); $i++) {
+            if (in_array($rates_and_ids[0][$i], $updated_rates)) {
+                array_push($ur_skill_ids, $rates_and_ids[0][$i]);
+            }
+        }
+        $nr = [];
+        for ($i = 0; $i < count($rates_and_ids[0]); $i++) {
+            if (in_array($rates_and_ids[0][$i], $new_rates)) {
+                array_push($nr, [$rates_and_ids[0][$i], $rates_and_ids[1][$i]]);
+            }
+        }
+        $updated_rates = ResumeSkillRate::where('resume_id', $student->resume->id)
+            ->where('employer_id', Auth::user()->id)
+            ->whereIn('skill_id', $ur_skill_ids)
             ->get();
         $i = 0;
-        foreach ($rates as $rate) {
-            $rate->skill_rate = $request->skill_rate[$i];
+        foreach ($updated_rates as $rate) {
+            $rate->skill_rate = $ur[$i][1];
             $rate->save();
+            $i++;
+        }
+        $i = 0;
+        foreach ($nr as $index) {
+            ResumeSkillRate::create([
+                'employer_id' => Auth::User()->id,
+                'resume_id' => $student->resume->id,
+                'skill_id' => $nr[$i][0],
+                'skill_rate' => $nr[$i][1] ?? 0,
+            ]);
             $i++;
         }
         $review = Review::where('entity_id', $student->resume()->first()->id)

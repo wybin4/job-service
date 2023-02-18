@@ -12,18 +12,19 @@ class ResumeSkillRate extends Model
     protected $guarded = [];
 
     protected $fillable = [
-        'student_skill_id',
+        'resume_id',
+        'skill_id',
         'employer_id',
         'skill_rate'
     ];
 
-    public function student_skill()
+    public function skill()
     {
-        return $this->belongsTo(StudentSkill::class);
+        return $this->belongsTo(Skill::class);
     }
     public function resume()
     {
-        return $this->student_skill()->resume();
+        return $this->belongsTo(Resume::class);
     }
     public function employer()
     {
