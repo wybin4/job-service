@@ -125,7 +125,11 @@
 								@endif
 							</div>
 							<div class="col-md-auto">
-								<p class="card-title">{{$wexp->work_title}} / {{date_format(new DateTime($wexp->date_start), 'Y')}} - {{date_format(new DateTime($wexp->date_end), 'Y')}}</p>
+								@if ($wexp->date_start != '0-00-00')
+								<p class="card-title">{{$wexp->work_title}} / {{date_format(new DateTime($wexp->date_start), 'm.Y')}} - {{date_format(new DateTime($wexp->date_end), 'm.Y')}}</p>
+								@else
+								<p class="card-title">{{$wexp->work_title}}</p>
+								@endif
 								@if ($wexp->work_title)
 								<p class="card-name">{{$wexp->company_name}}, {{$wexp->location}}</p>
 								@endif
@@ -148,7 +152,11 @@
 								@endif
 							</div>
 							<div class="col-md-auto">
-								<p class="card-title">{{$wedu->speciality_name}} / {{date_format(new DateTime($wedu->date_start), 'Y')}} - {{date_format(new DateTime($wedu->date_end), 'Y')}}</p>
+								@if ($wedu->date_start != '0-00-00')
+								<p class="card-title">{{$wedu->speciality_name}} / {{date_format(new DateTime($wedu->date_start), 'm.Y')}} - {{date_format(new DateTime($wedu->date_end), 'm.Y')}}</p>
+								@else
+								<p class="card-title">{{$wedu->speciality_name}}</p>
+								@endif 
 								<p class="card-name">{{$wedu->university_name}}, {{$wedu->location}}</p>
 								<p class="card-desc">{{$wedu->description}}</p>
 							</div>
