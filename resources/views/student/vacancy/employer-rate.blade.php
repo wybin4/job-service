@@ -4,14 +4,31 @@
 <head>
 	<meta name="_token" content="{{ csrf_token() }}">
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-	<script src="{{asset('/js/petrovich.js')}}"></script>
 	<!---->
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-bar-rating/1.2.2/jquery.barrating.min.js"></script>
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/jquery-bar-rating/1.2.2/themes/fontawesome-stars.min.css" rel="stylesheet" />
 
 </head>
+<div id="choose-qualities-popup">
+	<div class="modal" id="choose-qualities-modal" tabindex="-1">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h2 class="text-xl text-center">Выбрать критерии</h2>
+				</div>
+				<div class="modal-body quality-body" style="max-height:150px">
+				</div>
+				<div class="modal-footer">
+					<span type="button" class="span-like-button" id="btn-select-quality" data-bs-dismiss="modal">Добавить</span>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
 <div id="choose-hard-skills-popup">
 	<div class="modal" id="choose-hard-skills-modal" tabindex="-1">
 		<div class="modal-dialog">
@@ -45,12 +62,12 @@
 	</div>
 </div>
 <div id="blurable-content">
-	<x-employer-layout>
-		<form method="POST" action="/employer/edit-student-rate">
+	<x-student-layout>
+		<form method="POST" action="/student/rate-an-employer">
 			@csrf
-			<input type="hidden" value="{{$student->id}}" name="student_id" />
+			<input type="hidden" value="{{$employer->id}}" name="employer_id" />
 			<input type="hidden" value="{{$vacancy_id}}" name="vacancy_id" />
-			<div class="text-center header-text mt-4">Оцените качества студента</div>
+			<div class="text-center header-text mt-4">Оцените вакансию и работодателя</div>
 			<div>
 				<x-big-card>
 					<div class="hard-skill-rate-card-hidden" style="display:none;width:490px;">
@@ -59,7 +76,7 @@
 								<div class="number-circle">1</div>
 							</div>
 							<div class="col-md-auto">
-								<div class="rate-head">Навыки студента</div>
+								<div class="rate-head">Навыки в вакансии</div>
 							</div>
 						</div>
 					</div>
@@ -69,8 +86,8 @@
 								<div class="number-circle">1</div>
 							</div>
 							<div class="col-md-auto">
-								<div class="rate-head">Навыки студента</div>
-								<div class="text-muted" style="margin-left:-10px;">Как вы оцениваете навыки <span class="student-name genitive">{{$student->student_fio}}</span>?</div>
+								<div class="rate-head">Навыки в вакансии</div>
+								<div class="text-muted" style="margin-left:-10px;width:450px">Насколько информация о навыках, требуемых для этой вакансии, соответствует действительности?</div>
 							</div>
 						</div>
 						<div class="mt-2">
@@ -89,7 +106,7 @@
 								<div class="number-circle">2</div>
 							</div>
 							<div class="col-md-auto">
-								<div class="rate-head">Качества студента</div>
+								<div class="rate-head">Качества в вакансии</div>
 							</div>
 						</div>
 					</div>
@@ -99,14 +116,44 @@
 								<div class="number-circle">2</div>
 							</div>
 							<div class="col-md-auto">
-								<div class="rate-head">Качества студента</div>
-								<div class="text-muted" style="margin-left:-10px;">Как вы оцениваете качества <span class="student-name genitive">{{$student->student_fio}}</span>?</div>
+								<div class="rate-head">Качества в вакансии</div>
+								<div class="text-muted" style="margin-left:-10px;width:440px">Насколько информация о качествах, требуемых для этой вакансии, соответствует действительности</div>
 							</div>
 						</div>
 						<div class="mt-2">
 							<div id="rate-area-soft"></div>
 							<div class="d-flex justify-content-end">
 								<div class="button create-soft-skills">Не хватает качеств</div>
+								<div class="button btn-next-qualities ml-4">Далее</div>
+							</div>
+						</div>
+					</div>
+				</x-big-card>
+				<x-big-card>
+					<div class="qualities-rate-card-hidden" style="width:490px;">
+						<div class="row">
+							<div class="col-md-auto">
+								<div class="number-circle">3</div>
+							</div>
+							<div class="col-md-auto">
+								<div class="rate-head">Критерии оценки компании</div>
+							</div>
+						</div>
+					</div>
+					<div class="qualities-rate-card" style="display:none;width:490px;">
+						<div class="row">
+							<div class="col-md-auto">
+								<div class="number-circle">3</div>
+							</div>
+							<div class="col-md-auto">
+								<div class="rate-head">Критерии оценки компании</div>
+								<div class="text-muted" style="margin-left:-10px;">Что вы думаете о компании?</div>
+							</div>
+						</div>
+						<div class="mt-2">
+							<div id="rate-area-quality"></div>
+							<div class="d-flex justify-content-end">
+								<div class="button create-qualities">Выбрать критерии</div>
 								<div class="button btn-next-review ml-4">Далее</div>
 							</div>
 						</div>
@@ -116,32 +163,33 @@
 					<div class="review-card-hidden" style="width:490px;">
 						<div class="row">
 							<div class="col-md-auto">
-								<div class="number-circle">2</div>
+								<div class="number-circle">3</div>
 							</div>
 							<div class="col-md-auto">
-								<div class="rate-head">Мнение о студенте</div>
+								<div class="rate-head">Мнение о вакансии и работодателе</div>
 							</div>
 						</div>
 					</div>
-					<div class="review-card" style="display:none;">
+					<div class="review-card" style="display:none">
 						<div class="row">
 							<div class="col-md-auto">
-								<div class="number-circle">2</div>
+								<div class="number-circle">3</div>
 							</div>
 							<div class="col-md-auto">
-								<div class="rate-head">Мнение о студенте</div>
-								<div class="text-muted" style="margin-left:-10px;">Что вы думаете о <span class="student-name prepositional">{{$student->student_fio}}</span>?</div>
+								<div class="rate-head">Мнение о вакансии и работодателе</div>
+								<div class="text-muted" style="margin-left:-10px;">Что вы думаете о данной вакансии и работодателе?</div>
 							</div>
 						</div>
-						<textarea name="description">{{$description->text}}</textarea>
+						<textarea name="description"></textarea>
 						<div class="mt-2">
 							<button class="button btn-rate" type="submit">Оценить</button>
 						</div>
 					</div>
 				</x-big-card>
+				<div class="pb-4"></div>
 			</div>
 		</form>
-	</x-employer-layout>
+	</x-student-layout>
 </div>
 
 </html>
@@ -157,9 +205,6 @@
 		margin: 20px 0;
 	}
 
-	.btn-next {
-		margin-left: 400px;
-	}
 
 	.btn-rate {
 		margin-left: 382px;
@@ -199,7 +244,8 @@
 	}
 
 	#rate-area-hard,
-	#rate-area-soft {
+	#rate-area-soft,
+	#rate-area-quality {
 		display: flex;
 		flex-wrap: wrap;
 		flex-direction: row;
@@ -220,22 +266,9 @@
 	}
 </style>
 <script>
-	let name = $(".student-name").text().split(' ');
-	let gender = new SexByRussianName(name[0], name[1], name[2]);
-	if (gender.get_gender()) {
-		gender = 'male';
-	} else gender = 'female';
-	var person = {
-		gender: gender,
-		first: name[1],
-		last: name[0]
-	};
-	$(".genitive").text(petrovich(person, 'genitive').last + " " + petrovich(person, 'genitive').first)
-	$(".prepositional").text(petrovich(person, 'prepositional').last + " " + petrovich(person, 'prepositional').first)
-
 	////
 	///
-	let skills = <?php echo json_encode($need_skills); ?>;
+	let skills = <?php echo json_encode($vacancy_skills); ?>;
 	hard_skills = skills.filter((hs) => {
 		return hs.skill_type == 1;
 	})
@@ -261,7 +294,6 @@
 			$('#' + id).barrating({
 				theme: 'fontawesome-stars'
 			});
-			$('#' + id).barrating('set', hard_skills[i].skill_rate);
 		});
 	}
 
@@ -284,21 +316,86 @@
 			$('#' + id).barrating({
 				theme: 'fontawesome-stars'
 			});
-			$('#' + id).barrating('set', soft_skills[i].skill_rate);
 		});
 	}
 
 	$(".btn-next-review").on('click', function() {
-		$(".soft-skill-rate-card-hidden").show();
-		$(".soft-skill-rate-card").hide();
+		$(".qualities-rate-card-hidden").show();
+		$(".qualities-rate-card").hide();
 		$(".review-card-hidden").hide();
 		$(".review-card").show();
+	})
+	$(".btn-next-qualities").on('click', function() {
+		$(".qualities-rate-card-hidden").hide();
+		$(".qualities-rate-card").show();
+		$(".soft-skill-rate-card-hidden").show();
+		$(".soft-skill-rate-card").hide();
 	})
 	$(".btn-next-soft").on('click', function() {
 		$(".hard-skill-rate-card-hidden").show();
 		$(".hard-skill-rate-card").hide();
 		$(".soft-skill-rate-card-hidden").hide();
 		$(".soft-skill-rate-card").show();
+	})
+	$(".create-qualities").on('click', function() {
+		$('#choose-qualities-modal').show(); //запрещаем скролл
+		$('html, body').css({
+			overflow: 'hidden',
+			height: '100%'
+		});
+		//добавляем блюр
+		$('#blurable-content').addClass("blur");
+		$(".quality-body").empty();
+		let multi = `<select class="quality-multi" multiple multiselect-search="true" multiselect-select-all="true" multiselect-max-items="3">
+						@foreach($qualities as $val)
+						<option value="{{ $val->id}}">{{ $val->quality_name}}</option>
+						@endforeach
+					</select>`;
+		$(".quality-body").append(multi);
+		MultiselectDropdown(window.MultiselectDropdownOptions, '450px');
+
+		$("#btn-select-quality").on('click', function() {
+			$('#choose-qualities-modal').hide();
+			// восстанавливаем скролл
+			$('html, body').css({
+				overflow: 'auto',
+				height: 'auto'
+			});
+			//убираем блюр
+			$('#blurable-content').removeClass("blur");
+			let new_qualities = $(".quality-multi").val();
+			new_qualities = new_qualities.map((r) => {
+				return parseInt(r);
+			})
+
+			let all_qualities = <?php echo json_encode($qualities); ?>;
+			const max_id = Math.max(...all_qualities.map(as => {
+				return as.id
+			}));
+			new_qualities = all_qualities.filter((as) => {
+				return new_qualities.includes(as.id);
+			})
+			for (let i = 0; i < new_qualities.length; i++) {
+				const id = `rating-${i + max_id}`;
+				let text = `<div class="rate-block">
+						<input type="hidden" value="${new_qualities[i].id}" name="quality_id[]"/>
+						<x-label for="${id}">${new_qualities[i].quality_name}</x-label>
+						<select id="${id}" name="quality_rate[]">
+							<option value="1">1</option>
+							<option value="2">2</option>
+							<option value="3">3</option>
+							<option value="4">4</option>
+							<option value="5">5</option>
+						</select>
+					</div>`;
+				$('#rate-area-quality').append(text);
+				$(function() {
+					$('#' + id).barrating({
+						theme: 'fontawesome-stars'
+					});
+				});
+			}
+		})
 	})
 	$(".create-hard-skills").on('click', function() {
 		$('#choose-hard-skills-modal').show(); //запрещаем скролл

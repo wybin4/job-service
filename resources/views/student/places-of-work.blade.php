@@ -58,7 +58,16 @@
 									</button>
 								</x-slot>
 								<x-slot name="content">
-									@if($place_of_work->work_status == 9)
+									@if(!in_array($place_of_work->vacancy_id, $vacancies_with_rate))
+									<x-dropdown-link class="rate-btn" href="employer-rate-page?employer_id={{$place_of_work->student_id}}&vacancy_id={{$place_of_work->vacancy_id}}">
+										Оценить
+									</x-dropdown-link>
+									@else
+									<x-dropdown-link class="rate-btn" href="employer-rate-page-edit?employer_id={{$place_of_work->student_id}}&vacancy_id={{$place_of_work->vacancy_id}}">
+										Изменить оценки
+									</x-dropdown-link>
+									@endif
+									@if($place_of_work->work_status == 9 && in_array($place_of_work->vacancy_id, $work_experiences))
 									<x-dropdown-link class="add-exp" id="exp-{{$place_of_work->interaction_id}}">
 										Добавить как опыт в резюме
 									</x-dropdown-link>

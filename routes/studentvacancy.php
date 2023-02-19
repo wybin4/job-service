@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\RateController;
 use App\Http\Controllers\Student\StudentOffersController;
 use App\Http\Controllers\Student\StudentResponsesController;
 use App\Http\Controllers\VacancyFeedController;
@@ -16,4 +17,11 @@ Route::group(['middleware' => ['auth:student'], 'prefix' => 'student', 'as' => '
 
 	Route::get('/all-offers', [StudentOffersController::class, 'allOffers'])->name('all-offers');
 	Route::post('/change-status', [StudentOffersController::class, 'changeStatus'])->name('change-status');
+
+	Route::post('/rate-an-employer', [RateController::class, 'postEmployerRate'])->name('rate-an-employer');
+	Route::get('/employer-rate-page', [RateController::class, 'employerRatePage'])->name('employer-rate-page');
+
+	Route::post('/edit-employer-rate', [RateController::class, 'editEmployerRate'])->name('edit-employer-rate');
+	Route::get('/employer-rate-page-edit', [RateController::class, 'employerRatePageEdit'])->name('employer-rate-page-edit');
+
 });

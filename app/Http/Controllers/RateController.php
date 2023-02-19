@@ -2,12 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Employer;
+use App\Models\EmployerQuality;
+use App\Models\EmployerRate;
 use App\Models\Interaction;
 use App\Models\ResumeSkillRate;
 use App\Models\Review;
 use App\Models\Skill;
 use App\Models\Student;
 use App\Models\StudentSkill;
+use App\Models\Vacancy;
+use App\Models\VacancySkill;
+use App\Models\VacancySkillRate;
 use App\Notifications\StudentNotification;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Http\Request;
@@ -15,6 +21,155 @@ use Illuminate\Support\Facades\Auth;
 
 class RateController extends Controller
 {
+    public function postEmployerRate(Request $request)
+    {
+        $interaction = Interaction::where('student_id', Auth::user()->id)
+            ->where('vacancy_id', $request->vacancy_id)
+            ->where('status', 3)->orWhere('status', 8)->orWhere('status', 9)->get();
+        if (count($interaction)) {
+            $interaction = $interaction[0];
+            if ($request->quality_rate) {
+                $i = 0;
+                foreach ($request->quality_rate as $index) {
+                    EmployerRate::create([
+                        'employer_id' => $request->employer_id,
+                        'student_id' => Auth::User()->id,
+                        'quality_id' => $request->quality_id[$i],
+                        'quality_rate' => $request->quality_rate[$i] ?? 0,
+                    ]);
+                    $i++;
+                }
+            }
+            if ($request->skill_rate) {
+                $i = 0;
+                foreach ($request->skill_rate as $index) {
+                    VacancySkillRate::create([
+                        'student_id' => Auth::User()->id,
+                        'vacancy_id' => $request->vacancy_id,
+                        'skill_id' => $request->skill_id[$i],
+                        'skill_rate' => $request->skill_rate[$i] ?? 0,
+                    ]);
+                    $i++;
+                }
+            }
+            if ($request->description) {
+                Review::create([
+                    'entity_id' => $request->vacancy_id,
+                    'reviewer_id' => Auth::User()->id,
+                    'type' => 1,
+                    'text' => $request->description
+                ]);
+            }
+        }
+        return redirect(RouteServiceProvider::STUDENT_HOME)->with('title', 'Оценка работодателя')->with('text', 'Успешно оценили работодателя');
+    }
+    public function employerRatePage(Request $request)
+    {
+        $employer = Employer::find($request->input('employer_id'));
+        $vacancy_id = $request->input('vacancy_id');
+        $vacancy_skills = VacancySkill::where('vacancy_id', $vacancy_id)
+            ->join('skills', 'skills.id', '=', 'vacancy_skills.skill_id')
+            ->select('skill_id', 'skill_name', 'skill_type')
+            ->get();
+        $ss = VacancySkill::where('vacancy_id', $vacancy_id)
+            ->get()
+            ->pluck('skill_id')
+            ->toArray();
+        $skill = Skill::whereNotIn('id', $ss)->get();
+        $qualities = EmployerQuality::all();
+        return view("student.vacancy.employer-rate", compact('employer', 'vacancy_skills', 'vacancy_id', 'qualities', 'skill'));
+    }
+    public function employerRatePageEdit(Request $request)
+    {
+        $employer = Employer::find($request->input('employer_id'));
+        $vacancy_id = $request->input('vacancy_id');
+        $vacancy_skills = VacancySkillRate::where('vacancy_id', $vacancy_id)
+            ->where('student_id', Auth::user()->id)
+            ->join('skills', 'skills.id', '=', 'vacancy_skill_rates.skill_id')
+            ->select('skill_id', 'skill_name', 'skill_type', 'skill_rate')
+            ->get();
+        $ss = VacancySkillRate::where('vacancy_id', $vacancy_id)
+            ->where('student_id', Auth::user()->id)
+            ->get()
+            ->pluck('skill_id')
+            ->toArray();
+        $skill = Skill::whereNotIn('id', $ss)->get();
+        $qualities = EmployerQuality::all();
+        $old_qualities = EmployerRate::where('student_id', Auth::user()->id)
+            ->where('employer_id', $request->input('employer_id'))
+            ->join('employer_qualities', 'employer_qualities.id', '=', 'employer_rates.quality_id')
+            ->select('quality_id', 'quality_name', 'quality_rate')
+            ->get();
+        $description = Review::where('entity_id', $vacancy_id)
+            ->where('reviewer_id', Auth::user()->id)
+            ->where('type', 1)
+            ->select('text')
+            ->first();
+        return view("student.vacancy.edit-employer-rate", compact('employer', 'vacancy_skills', 'vacancy_id', 'qualities', 'skill', 'old_qualities', 'description'));
+    }
+    public function editEmployerRate(Request $request)
+    {
+        $updated_rates = VacancySkillRate::where('vacancy_id', $request->vacancy_id)
+            ->where('student_id', Auth::user()->id)
+            ->whereIn('skill_id', $request->skill_id) // у этой vacancy'a и student'a в базе нет vacancy_skill_rates
+            ->pluck('skill_id')->toArray(); // по новым skill_id, поэтому можно сделать так
+        $new_rates = Skill::whereIn('id', $request->skill_id)
+            ->whereNotIn('id', $updated_rates)
+            ->pluck('id')->toArray();
+        $rates_and_ids = [];
+        array_push($rates_and_ids, $request->skill_id);
+        array_push($rates_and_ids, $request->skill_rate);
+        $ur = [];
+        for ($i = 0; $i < count($rates_and_ids[0]); $i++) {
+            if (in_array($rates_and_ids[0][$i], $updated_rates)) {
+                array_push($ur, [$rates_and_ids[0][$i], $rates_and_ids[1][$i]]);
+            }
+        }
+        $ur_skill_ids = [];
+        for ($i = 0; $i < count($rates_and_ids[0]); $i++) {
+            if (in_array($rates_and_ids[0][$i], $updated_rates)) {
+                array_push($ur_skill_ids, $rates_and_ids[0][$i]);
+            }
+        }
+        $nr = [];
+        for ($i = 0; $i < count($rates_and_ids[0]); $i++) {
+            if (in_array($rates_and_ids[0][$i], $new_rates)) {
+                array_push($nr, [$rates_and_ids[0][$i], $rates_and_ids[1][$i]]);
+            }
+        }
+        $updated_rates = VacancySkillRate::where('vacancy_id', $request->vacancy_id)
+            ->where('student_id', Auth::user()->id)
+            ->whereIn('skill_id', $ur_skill_ids)
+            ->get();
+        $i = 0;
+        foreach ($updated_rates as $rate) {
+            $rate->skill_rate = $ur[$i][1];
+            $rate->save();
+            $i++;
+        }
+        $i = 0;
+        foreach ($nr as $index) {
+            VacancySkillRate::create([
+                'student_id' => Auth::User()->id,
+                'vacancy_id' => $request->vacancy_id,
+                'skill_id' => $nr[$i][0],
+                'skill_rate' => $nr[$i][1] ?? 0,
+            ]);
+            $i++;
+        }
+        $review = Review::where('entity_id', $request->vacancy_id)
+            ->where('reviewer_id', Auth::user()->id)->where('type', 1)->first();
+        $review->text = $request->description;
+        $review->save();
+        return redirect(RouteServiceProvider::STUDENT_HOME)->with('title', 'Оценка работодателя')->with('text', 'Успешно отредактировали оценки работодателя');
+    }
+
+
+    ////
+    ////
+
+    /////
+    ///
     public function postStudentRate(Request $request)
     {
         $interaction = Interaction::where('student_id', $request->student_id)
@@ -150,10 +305,10 @@ class RateController extends Controller
             ]);
             $i++;
         }
-        $review = Review::where('entity_id', $student->resume()->first()->id)
-            ->where('reviewer_id', Auth::user()->id)->first();
+        $review = Review::where('entity_id',$student->resume()->first()->id)
+            ->where('reviewer_id', Auth::user()->id)->where('type', 0)->first();
         $review->text = $request->description;
         $review->save();
-        return redirect(RouteServiceProvider::EMPLOYER_HOME);
+        return redirect(RouteServiceProvider::EMPLOYER_HOME)->with('title', 'Оценка работника')->with('text', 'Успешно отредактировали оценки работника');
     }
 }

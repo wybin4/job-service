@@ -42,6 +42,10 @@ class Student extends Authenticatable
     {
         return $this->hasMany(StudentResponse::class)->where('type', 0);
     }
+    public function interaction()
+    {
+        return $this->hasMany(Interaction::class);
+    }
     public function sendLoginLink()
     {
         $plaintext = Str::random(32);

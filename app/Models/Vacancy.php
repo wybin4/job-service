@@ -53,4 +53,8 @@ class Vacancy extends Model
     {
         return $this->hasMany(Interaction::class)->where('type', 1);
     }
+    public function vacancy_rate()
+    {
+        return $this->hasMany(VacancySkillRate::class);
+    }
 }

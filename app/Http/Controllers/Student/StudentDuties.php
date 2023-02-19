@@ -7,6 +7,8 @@ use App\Models\Interaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Student;
+use App\Models\Vacancy;
+use App\Models\VacancySkillRate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\Support\Facades\Redirect;
@@ -21,29 +23,26 @@ class StudentDuties extends Controller
             ->orWhere('interactions.status', '=', 3)
             ->join('vacancies', 'vacancies.id', '=', 'interactions.vacancy_id')
             ->join('employers', 'employers.id', '=', 'vacancies.employer_id');
-        /*$existed_we_company_names = Auth::user()->resume->work_experience->pluck('company_name')->toArray();
-        $existed_we_work_titles = Auth::user()->resume->work_experience->pluck('work_title')->toArray();
-        $work_exps = Interaction::where('student_id', Auth::user()->id)
-            ->where('interactions.status', '=', 8)
-            ->orWhere('interactions.status', '=', 9)
-            ->orWhere('interactions.status', '=', 3)
-            ->join('vacancies', 'vacancies.id', '=', 'interactions.vacancy_id')
-            ->join('professions', 'professions.id', '=', 'vacancies.profession_id')
+        $vacancy_ids = Student::find(Auth::user()->id)->interaction->pluck('vacancy_id')->toArray();
+        $vacancies_with_rate = VacancySkillRate::whereIn('vacancy_id', $vacancy_ids)
+            ->get()
+            ->unique('vacancy_id')
+            ->pluck('vacancy_id')
+            ->toArray();
+        $vacancies = Vacancy::whereIn('vacancies.id', Student::find(Auth::user()->id)->interaction->pluck('vacancy_id')->toArray())
             ->join('employers', 'employers.id', '=', 'vacancies.employer_id')
-            ->select(
-                '*',
-                'vacancies.profession_id as vacancy_profession_id',
-                'interactions.status as work_status',
-                'interactions.id as interaction_id',
-                'interactions.updated_at as date_end',
-                'vacancies.location as company_location'
-            )
-            ->whereNotIn('employers.name', $existed_we_company_names)
-            ->whereNotIn('professions.profession_name', $existed_we_work_titles)
-            ->get();
-        dd($work_exps);*/
-
-
+            ->join('professions', 'professions.id', '=', 'vacancies.profession_id')
+            ->get(['vacancies.id', 'professions.profession_name as work_title', 'employers.name as company_name'])
+            ->toArray();
+        $existed_we_company_names = Auth::user()->resume->work_experience->pluck('company_name')->toArray();
+        $existed_we_work_titles = Auth::user()->resume->work_experience->pluck('work_title')->toArray();
+        $work_experiences = array_filter($vacancies, function ($vacancy) use ($existed_we_company_names, $existed_we_work_titles) {
+            return !in_array($vacancy["work_title"], $existed_we_work_titles) && !in_array($vacancy["company_name"], $existed_we_company_names);
+        });
+        $work_experiences = array_values($work_experiences);
+        $work_experiences = array_map(function($we){
+            return $we["id"];
+        }, $work_experiences);
         $places_of_work = $places_of_work->select(
             '*',
             'vacancies.profession_id as vacancy_profession_id',
@@ -54,7 +53,7 @@ class StudentDuties extends Controller
         )
             ->orderBy('interactions.created_at', 'desc')
             ->get();
-        return view("student.places-of-work", compact('places_of_work'));
+        return view("student.places-of-work", compact('places_of_work', 'vacancies_with_rate', 'work_experiences'));
     }
     public function viewAlterProfilePage()
     {
