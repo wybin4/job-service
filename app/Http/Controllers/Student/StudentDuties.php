@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Models\Employer;
+use App\Models\EmployerRate;
 use App\Models\Interaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,10 +26,16 @@ class StudentDuties extends Controller
             ->join('vacancies', 'vacancies.id', '=', 'interactions.vacancy_id')
             ->join('employers', 'employers.id', '=', 'vacancies.employer_id');
         $vacancy_ids = Student::find(Auth::user()->id)->interaction->pluck('vacancy_id')->toArray();
-        $vacancies_with_rate = VacancySkillRate::whereIn('vacancy_id', $vacancy_ids)
+        $employer_ids = Vacancy::find($vacancy_ids)->unique('employer_id')->pluck('employer_id')->toArray();
+        $vacancies_with_rate = EmployerRate::whereIn('employer_id', $employer_ids)
+            ->where('student_id', Auth::user()->id)
             ->get()
-            ->unique('vacancy_id')
-            ->pluck('vacancy_id')
+            ->unique('employer_id')
+            ->pluck('employer_id')
+            ->toArray();
+        $vacancies_with_rate = Vacancy::whereIn('employer_id', $vacancies_with_rate)
+            ->whereIn('vacancies.id', $vacancy_ids)
+            ->pluck('vacancies.id')
             ->toArray();
         $vacancies = Vacancy::whereIn('vacancies.id', Student::find(Auth::user()->id)->interaction->pluck('vacancy_id')->toArray())
             ->join('employers', 'employers.id', '=', 'vacancies.employer_id')
@@ -40,12 +48,13 @@ class StudentDuties extends Controller
             return !in_array($vacancy["work_title"], $existed_we_work_titles) && !in_array($vacancy["company_name"], $existed_we_company_names);
         });
         $work_experiences = array_values($work_experiences);
-        $work_experiences = array_map(function($we){
+        $work_experiences = array_map(function ($we) {
             return $we["id"];
         }, $work_experiences);
         $places_of_work = $places_of_work->select(
             '*',
             'vacancies.profession_id as vacancy_profession_id',
+            'employers.id as employer_id',
             'interactions.status as work_status',
             'interactions.id as interaction_id',
             'interactions.updated_at as date_end',

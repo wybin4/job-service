@@ -59,11 +59,11 @@
 								</x-slot>
 								<x-slot name="content">
 									@if(!in_array($place_of_work->vacancy_id, $vacancies_with_rate))
-									<x-dropdown-link class="rate-btn" href="employer-rate-page?employer_id={{$place_of_work->student_id}}&vacancy_id={{$place_of_work->vacancy_id}}">
+									<x-dropdown-link class="rate-btn" href="employer-rate-page?employer_id={{$place_of_work->employer_id}}&vacancy_id={{$place_of_work->vacancy_id}}">
 										Оценить
 									</x-dropdown-link>
 									@else
-									<x-dropdown-link class="rate-btn" href="employer-rate-page-edit?employer_id={{$place_of_work->student_id}}&vacancy_id={{$place_of_work->vacancy_id}}">
+									<x-dropdown-link class="rate-btn" href="employer-rate-page-edit?employer_id={{$place_of_work->employer_id}}&vacancy_id={{$place_of_work->vacancy_id}}">
 										Изменить оценки
 									</x-dropdown-link>
 									@endif

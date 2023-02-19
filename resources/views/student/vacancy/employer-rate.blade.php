@@ -29,38 +29,6 @@
 		</div>
 	</div>
 </div>
-<div id="choose-hard-skills-popup">
-	<div class="modal" id="choose-hard-skills-modal" tabindex="-1">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h2 class="text-xl text-center">Выбрать навыки</h2>
-				</div>
-				<div class="modal-body hard-body" style="max-height:150px">
-				</div>
-				<div class="modal-footer">
-					<span type="button" class="span-like-button" id="btn-select-hard" data-bs-dismiss="modal">Добавить</span>
-				</div>
-			</div>
-		</div>
-	</div>
-</div>
-<div id="choose-soft-skills-popup">
-	<div class="modal" id="choose-soft-skills-modal" tabindex="-1">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h2 class="text-xl text-center">Выбрать качества</h2>
-				</div>
-				<div class="modal-body soft-body" style="max-height:150px">
-				</div>
-				<div class="modal-footer">
-					<span type="button" class="span-like-button" id="btn-select-soft" data-bs-dismiss="modal">Добавить</span>
-				</div>
-			</div>
-		</div>
-	</div>
-</div>
 <div id="blurable-content">
 	<x-student-layout>
 		<form method="POST" action="/student/rate-an-employer">
@@ -70,80 +38,20 @@
 			<div class="text-center header-text mt-4">Оцените вакансию и работодателя</div>
 			<div>
 				<x-big-card>
-					<div class="hard-skill-rate-card-hidden" style="display:none;width:490px;">
+					<div class="qualities-rate-card-hidden" style="display:none;width:490px;">
 						<div class="row">
 							<div class="col-md-auto">
 								<div class="number-circle">1</div>
-							</div>
-							<div class="col-md-auto">
-								<div class="rate-head">Навыки в вакансии</div>
-							</div>
-						</div>
-					</div>
-					<div class="hard-skill-rate-card">
-						<div class="row">
-							<div class="col-md-auto">
-								<div class="number-circle">1</div>
-							</div>
-							<div class="col-md-auto">
-								<div class="rate-head">Навыки в вакансии</div>
-								<div class="text-muted" style="margin-left:-10px;width:450px">Насколько информация о навыках, требуемых для этой вакансии, соответствует действительности?</div>
-							</div>
-						</div>
-						<div class="mt-2">
-							<div id="rate-area-hard"></div>
-							<div class="d-flex justify-content-end">
-								<div class="button create-hard-skills">Не хватает навыков</div>
-								<div class="button btn-next-soft ml-4">Далее</div>
-							</div>
-						</div>
-					</div>
-				</x-big-card>
-				<x-big-card>
-					<div class="soft-skill-rate-card-hidden" style="width:490px;">
-						<div class="row">
-							<div class="col-md-auto">
-								<div class="number-circle">2</div>
-							</div>
-							<div class="col-md-auto">
-								<div class="rate-head">Качества в вакансии</div>
-							</div>
-						</div>
-					</div>
-					<div class="soft-skill-rate-card" style="display:none;width:490px;">
-						<div class="row">
-							<div class="col-md-auto">
-								<div class="number-circle">2</div>
-							</div>
-							<div class="col-md-auto">
-								<div class="rate-head">Качества в вакансии</div>
-								<div class="text-muted" style="margin-left:-10px;width:440px">Насколько информация о качествах, требуемых для этой вакансии, соответствует действительности</div>
-							</div>
-						</div>
-						<div class="mt-2">
-							<div id="rate-area-soft"></div>
-							<div class="d-flex justify-content-end">
-								<div class="button create-soft-skills">Не хватает качеств</div>
-								<div class="button btn-next-qualities ml-4">Далее</div>
-							</div>
-						</div>
-					</div>
-				</x-big-card>
-				<x-big-card>
-					<div class="qualities-rate-card-hidden" style="width:490px;">
-						<div class="row">
-							<div class="col-md-auto">
-								<div class="number-circle">3</div>
 							</div>
 							<div class="col-md-auto">
 								<div class="rate-head">Критерии оценки компании</div>
 							</div>
 						</div>
 					</div>
-					<div class="qualities-rate-card" style="display:none;width:490px;">
+					<div class="qualities-rate-card" style="width:490px;">
 						<div class="row">
 							<div class="col-md-auto">
-								<div class="number-circle">3</div>
+								<div class="number-circle">1</div>
 							</div>
 							<div class="col-md-auto">
 								<div class="rate-head">Критерии оценки компании</div>
@@ -163,7 +71,7 @@
 					<div class="review-card-hidden" style="width:490px;">
 						<div class="row">
 							<div class="col-md-auto">
-								<div class="number-circle">3</div>
+								<div class="number-circle">2</div>
 							</div>
 							<div class="col-md-auto">
 								<div class="rate-head">Мнение о вакансии и работодателе</div>
@@ -173,7 +81,7 @@
 					<div class="review-card" style="display:none">
 						<div class="row">
 							<div class="col-md-auto">
-								<div class="number-circle">3</div>
+								<div class="number-circle">2</div>
 							</div>
 							<div class="col-md-auto">
 								<div class="rate-head">Мнение о вакансии и работодателе</div>
@@ -243,8 +151,6 @@
 		color: var(--link-hover-color) !important;
 	}
 
-	#rate-area-hard,
-	#rate-area-soft,
 	#rate-area-quality {
 		display: flex;
 		flex-wrap: wrap;
@@ -268,74 +174,11 @@
 <script>
 	////
 	///
-	let skills = <?php echo json_encode($vacancy_skills); ?>;
-	hard_skills = skills.filter((hs) => {
-		return hs.skill_type == 1;
-	})
-	soft_skills = skills.filter((ss) => {
-		return ss.skill_type == 0;
-	})
-	for (let i = 0; i < hard_skills.length; i++) {
-		const id = `rating-${hard_skills[i].skill_id}`;
-		let text = `<div class="rate-block">
-						<input type="hidden" value="${hard_skills[i].skill_id}" name="skill_id[]"/>
-						<x-label for="${id}">${hard_skills[i].skill_name}</x-label>
-						<select id="${id}" name="skill_rate[]">
-							<option value="1">1</option>
-							<option value="2">2</option>
-							<option value="3">3</option>
-							<option value="4">4</option>
-							<option value="5">5</option>
-						</select>
-					</div>`;
-		$('#rate-area-hard').append(text);
-
-		$(function() {
-			$('#' + id).barrating({
-				theme: 'fontawesome-stars'
-			});
-		});
-	}
-
-	for (let i = 0; i < soft_skills.length; i++) {
-		const id = `rating-${soft_skills[i].skill_id}`;
-		let text = `<div class="rate-block">
-						<input type="hidden" value="${soft_skills[i].skill_id}" name="skill_id[]"/>
-						<x-label for="${id}">${soft_skills[i].skill_name}</x-label>
-						<select id="${id}" name="skill_rate[]">
-							<option value="1">1</option>
-							<option value="2">2</option>
-							<option value="3">3</option>
-							<option value="4">4</option>
-							<option value="5">5</option>
-						</select>
-					</div>`;
-		$('#rate-area-soft').append(text);
-
-		$(function() {
-			$('#' + id).barrating({
-				theme: 'fontawesome-stars'
-			});
-		});
-	}
-
 	$(".btn-next-review").on('click', function() {
 		$(".qualities-rate-card-hidden").show();
 		$(".qualities-rate-card").hide();
 		$(".review-card-hidden").hide();
 		$(".review-card").show();
-	})
-	$(".btn-next-qualities").on('click', function() {
-		$(".qualities-rate-card-hidden").hide();
-		$(".qualities-rate-card").show();
-		$(".soft-skill-rate-card-hidden").show();
-		$(".soft-skill-rate-card").hide();
-	})
-	$(".btn-next-soft").on('click', function() {
-		$(".hard-skill-rate-card-hidden").show();
-		$(".hard-skill-rate-card").hide();
-		$(".soft-skill-rate-card-hidden").hide();
-		$(".soft-skill-rate-card").show();
 	})
 	$(".create-qualities").on('click', function() {
 		$('#choose-qualities-modal').show(); //запрещаем скролл
@@ -389,131 +232,6 @@
 						</select>
 					</div>`;
 				$('#rate-area-quality').append(text);
-				$(function() {
-					$('#' + id).barrating({
-						theme: 'fontawesome-stars'
-					});
-				});
-			}
-		})
-	})
-	$(".create-hard-skills").on('click', function() {
-		$('#choose-hard-skills-modal').show(); //запрещаем скролл
-		$('html, body').css({
-			overflow: 'hidden',
-			height: '100%'
-		});
-		//добавляем блюр
-		$('#blurable-content').addClass("blur");
-		$(".hard-body").empty();
-		let multi = `<select class="hard-multi" multiple multiselect-search="true" multiselect-select-all="true" multiselect-max-items="3">
-						@foreach($skill as $val)
-						@if($val->skill_type == 1)
-						<option value="{{ $val->id}}">{{ $val->skill_name}}</option>
-						@endif
-						@endforeach
-					</select>`;
-		$(".hard-body").append(multi);
-		MultiselectDropdown(window.MultiselectDropdownOptions, '450px');
-
-		$("#btn-select-hard").on('click', function() {
-			$('#choose-hard-skills-modal').hide();
-			// восстанавливаем скролл
-			$('html, body').css({
-				overflow: 'auto',
-				height: 'auto'
-			});
-			//убираем блюр
-			$('#blurable-content').removeClass("blur");
-			let new_skills = $(".hard-multi").val();
-			new_skills = new_skills.map((r) => {
-				return parseInt(r);
-			})
-
-			let all_skills = <?php echo json_encode($skill); ?>;
-			const max_id = Math.max(...all_skills.map(as => {
-				return as.id
-			}));
-			new_skills = all_skills.filter((as) => {
-				return new_skills.includes(as.id);
-			})
-			for (let i = 0; i < new_skills.length; i++) {
-				const id = `rating-${i + max_id}`;
-				let text = `<div class="rate-block">
-						<input type="hidden" value="${new_skills[i].id}" name="skill_id[]"/>
-						<x-label for="${id}">${new_skills[i].skill_name}</x-label>
-						<select id="${id}" name="skill_rate[]">
-							<option value="1">1</option>
-							<option value="2">2</option>
-							<option value="3">3</option>
-							<option value="4">4</option>
-							<option value="5">5</option>
-						</select>
-					</div>`;
-				$('#rate-area-hard').append(text);
-				$(function() {
-					$('#' + id).barrating({
-						theme: 'fontawesome-stars'
-					});
-				});
-			}
-		})
-	})
-	$(".create-soft-skills").on('click', function() {
-		$('#choose-soft-skills-modal').show(); //запрещаем скролл
-		$('html, body').css({
-			overflow: 'hidden',
-			height: '100%'
-		});
-		//добавляем блюр
-		$('#blurable-content').addClass("blur");
-		$(".soft-body").empty();
-		let multi = `<select class="soft-multi" multiple multiselect-search="true" multiselect-select-all="true" multiselect-max-items="3">
-						@foreach($skill as $val)
-						@if($val->skill_type == 0)
-						<option value="{{ $val->id}}">{{ $val->skill_name}}</option>
-						@endif
-						@endforeach
-					</select>`;
-		$(".soft-body").append(multi);
-		MultiselectDropdown(window.MultiselectDropdownOptions, '450px');
-
-		$("#btn-select-soft").on('click', function() {
-			$('#choose-soft-skills-modal').hide();
-			// восстанавливаем скролл
-			$('html, body').css({
-				overflow: 'auto',
-				height: 'auto'
-			});
-			//убираем блюр
-			$('#blurable-content').removeClass("blur");
-			let new_skills = $(".soft-multi").val();
-			new_skills = new_skills.map((r) => {
-				return parseInt(r);
-			})
-
-			let all_skills = <?php echo json_encode($skill); ?>;
-			let max_id = Math.max(...all_skills.map(as => {
-				return as.id
-			}));
-			max_id += max_id;
-			new_skills = all_skills.filter((as) => {
-				return new_skills.includes(as.id);
-			})
-			for (let i = 0; i < new_skills.length; i++) {
-				const id = `rating-${i + max_id}`;
-				let text = `<div class="rate-block">
-						<input type="hidden" value="${new_skills[i].id}" name="skill_id[]"/>
-						<x-label for="${id}">${new_skills[i].skill_name}</x-label>
-						<select id="${id}" name="skill_rate[]">
-							<option value="1">1</option>
-							<option value="2">2</option>
-							<option value="3">3</option>
-							<option value="4">4</option>
-							<option value="5">5</option>
-						</select>
-					</div>`;
-				$('#rate-area-soft').append(text);
 				$(function() {
 					$('#' + id).barrating({
 						theme: 'fontawesome-stars'

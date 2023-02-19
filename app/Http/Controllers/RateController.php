@@ -40,18 +40,6 @@ class RateController extends Controller
                     $i++;
                 }
             }
-            if ($request->skill_rate) {
-                $i = 0;
-                foreach ($request->skill_rate as $index) {
-                    VacancySkillRate::create([
-                        'student_id' => Auth::User()->id,
-                        'vacancy_id' => $request->vacancy_id,
-                        'skill_id' => $request->skill_id[$i],
-                        'skill_rate' => $request->skill_rate[$i] ?? 0,
-                    ]);
-                    $i++;
-                }
-            }
             if ($request->description) {
                 Review::create([
                     'entity_id' => $request->vacancy_id,
@@ -67,33 +55,13 @@ class RateController extends Controller
     {
         $employer = Employer::find($request->input('employer_id'));
         $vacancy_id = $request->input('vacancy_id');
-        $vacancy_skills = VacancySkill::where('vacancy_id', $vacancy_id)
-            ->join('skills', 'skills.id', '=', 'vacancy_skills.skill_id')
-            ->select('skill_id', 'skill_name', 'skill_type')
-            ->get();
-        $ss = VacancySkill::where('vacancy_id', $vacancy_id)
-            ->get()
-            ->pluck('skill_id')
-            ->toArray();
-        $skill = Skill::whereNotIn('id', $ss)->get();
         $qualities = EmployerQuality::all();
-        return view("student.vacancy.employer-rate", compact('employer', 'vacancy_skills', 'vacancy_id', 'qualities', 'skill'));
+        return view("student.vacancy.employer-rate", compact('employer', 'vacancy_id', 'qualities'));
     }
     public function employerRatePageEdit(Request $request)
     {
         $employer = Employer::find($request->input('employer_id'));
         $vacancy_id = $request->input('vacancy_id');
-        $vacancy_skills = VacancySkillRate::where('vacancy_id', $vacancy_id)
-            ->where('student_id', Auth::user()->id)
-            ->join('skills', 'skills.id', '=', 'vacancy_skill_rates.skill_id')
-            ->select('skill_id', 'skill_name', 'skill_type', 'skill_rate')
-            ->get();
-        $ss = VacancySkillRate::where('vacancy_id', $vacancy_id)
-            ->where('student_id', Auth::user()->id)
-            ->get()
-            ->pluck('skill_id')
-            ->toArray();
-        $skill = Skill::whereNotIn('id', $ss)->get();
         $qualities = EmployerQuality::all();
         $old_qualities = EmployerRate::where('student_id', Auth::user()->id)
             ->where('employer_id', $request->input('employer_id'))
@@ -105,30 +73,30 @@ class RateController extends Controller
             ->where('type', 1)
             ->select('text')
             ->first();
-        return view("student.vacancy.edit-employer-rate", compact('employer', 'vacancy_skills', 'vacancy_id', 'qualities', 'skill', 'old_qualities', 'description'));
+        return view("student.vacancy.edit-employer-rate", compact('employer', 'vacancy_id', 'qualities',  'old_qualities', 'description'));
     }
     public function editEmployerRate(Request $request)
     {
-        $updated_rates = VacancySkillRate::where('vacancy_id', $request->vacancy_id)
+        $updated_rates = EmployerRate::where('employer_id', $request->employer_id)
             ->where('student_id', Auth::user()->id)
-            ->whereIn('skill_id', $request->skill_id) // у этой vacancy'a и student'a в базе нет vacancy_skill_rates
-            ->pluck('skill_id')->toArray(); // по новым skill_id, поэтому можно сделать так
-        $new_rates = Skill::whereIn('id', $request->skill_id)
+            ->whereIn('quality_id', $request->quality_id) // у этого employer'a и student'a в базе нет rates
+            ->pluck('quality_id')->toArray(); // по новым quality_id, поэтому можно сделать так
+        $new_rates = EmployerQuality::whereIn('id', $request->quality_id)
             ->whereNotIn('id', $updated_rates)
             ->pluck('id')->toArray();
         $rates_and_ids = [];
-        array_push($rates_and_ids, $request->skill_id);
-        array_push($rates_and_ids, $request->skill_rate);
+        array_push($rates_and_ids, $request->quality_id);
+        array_push($rates_and_ids, $request->quality_rate);
         $ur = [];
         for ($i = 0; $i < count($rates_and_ids[0]); $i++) {
             if (in_array($rates_and_ids[0][$i], $updated_rates)) {
                 array_push($ur, [$rates_and_ids[0][$i], $rates_and_ids[1][$i]]);
             }
         }
-        $ur_skill_ids = [];
+        $ur_quality_ids = [];
         for ($i = 0; $i < count($rates_and_ids[0]); $i++) {
             if (in_array($rates_and_ids[0][$i], $updated_rates)) {
-                array_push($ur_skill_ids, $rates_and_ids[0][$i]);
+                array_push($ur_quality_ids, $rates_and_ids[0][$i]);
             }
         }
         $nr = [];
@@ -137,23 +105,23 @@ class RateController extends Controller
                 array_push($nr, [$rates_and_ids[0][$i], $rates_and_ids[1][$i]]);
             }
         }
-        $updated_rates = VacancySkillRate::where('vacancy_id', $request->vacancy_id)
+        $updated_rates = EmployerRate::where('employer_id', $request->employer_id)
             ->where('student_id', Auth::user()->id)
-            ->whereIn('skill_id', $ur_skill_ids)
+            ->whereIn('quality_id', $ur_quality_ids)
             ->get();
         $i = 0;
         foreach ($updated_rates as $rate) {
-            $rate->skill_rate = $ur[$i][1];
+            $rate->quality_rate = $ur[$i][1];
             $rate->save();
             $i++;
         }
         $i = 0;
         foreach ($nr as $index) {
-            VacancySkillRate::create([
+            EmployerRate::create([
                 'student_id' => Auth::User()->id,
-                'vacancy_id' => $request->vacancy_id,
-                'skill_id' => $nr[$i][0],
-                'skill_rate' => $nr[$i][1] ?? 0,
+                'employer_id' => $request->employer_id,
+                'quality_id' => $nr[$i][0],
+                'quality_rate' => $nr[$i][1] ?? 0,
             ]);
             $i++;
         }
@@ -305,7 +273,7 @@ class RateController extends Controller
             ]);
             $i++;
         }
-        $review = Review::where('entity_id',$student->resume()->first()->id)
+        $review = Review::where('entity_id', $student->resume()->first()->id)
             ->where('reviewer_id', Auth::user()->id)->where('type', 0)->first();
         $review->text = $request->description;
         $review->save();
