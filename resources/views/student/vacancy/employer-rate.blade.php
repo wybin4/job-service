@@ -156,15 +156,15 @@
 		flex-wrap: wrap;
 		flex-direction: row;
 		justify-content: start;
-		min-height: 140px;
 		width: 490px;
 		margin: auto;
-		margin-top: 30px;
+		margin-bottom: 40px;
 	}
 
 	.rate-block {
 		width: 150px;
 		height: 50px;
+		margin-top: 20px;
 	}
 
 	.button {

@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Employer;
+use App\Models\EmployerRate;
 use App\Models\Interaction;
 use App\Models\Profession;
 use App\Models\SphereOfActivity;
 use App\Models\Interactions;
+use App\Models\Review;
 use App\Models\TypeOfEmployment;
 use App\Models\Vacancy;
 use App\Models\WorkType;
@@ -162,6 +164,19 @@ class VacancyFeedController extends Controller
         if ($employer->description) {
             $parsed_desc = \Illuminate\Support\Str::markdown($employer->description);
         } else $parsed_desc = "";
+        $employer_rates = EmployerRate::where('employer_id', $id)
+            ->join('employer_qualities', 'employer_qualities.id', '=', 'employer_rates.quality_id')
+            ->select('*', 'employer_rates.updated_at as updated_at')
+            ->orderBy('employer_rates.updated_at', 'asc')
+            ->get();
+        $students_count = EmployerRate::where('employer_id', $id)
+            ->distinct()
+            ->count('student_id');
+        $reviews = Review::where('entity_id', $id)
+            ->where('type', 1)
+            ->join('students', 'students.id', '=', 'reviews.reviewer_id')
+            ->select('*', 'reviews.updated_at as review_updated_at')
+            ->get();
         $latest_vacancies = DB::table('vacancies')
             ->join('professions', 'professions.id', '=', 'vacancies.profession_id')
             ->join('work_types', 'work_types.id', '=', 'vacancies.work_type_id')
@@ -170,6 +185,6 @@ class VacancyFeedController extends Controller
         $latest_vacancies = $latest_vacancies->where('employer_id', '=', $id);
         $latest_vacancies = $latest_vacancies->where('status', '=', 0);
         $latest_vacancies = $latest_vacancies->orderBy('vacancy_created_at', 'desc')->paginate(3);
-        return view('student.vacancy.employer-details', compact('employer', 'parsed_desc', 'latest_vacancies'));
+        return view('student.vacancy.employer-details', compact('employer', 'parsed_desc', 'latest_vacancies', 'employer_rates', 'reviews', 'students_count'));
     }
 }

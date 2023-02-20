@@ -19,10 +19,9 @@ class StudentDuties extends Controller
 {
     public function viewPlacesOfWork()
     {
+        $status = [3, 8, 9];
         $places_of_work = Interaction::where('student_id', Auth::user()->id)
-            ->where('interactions.status', '=', 8)
-            ->orWhere('interactions.status', '=', 9)
-            ->orWhere('interactions.status', '=', 3)
+            ->whereIn('interactions.status', $status)
             ->join('vacancies', 'vacancies.id', '=', 'interactions.vacancy_id')
             ->join('employers', 'employers.id', '=', 'vacancies.employer_id');
         $vacancy_ids = Student::find(Auth::user()->id)->interaction->pluck('vacancy_id')->toArray();

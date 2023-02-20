@@ -42,7 +42,7 @@ class RateController extends Controller
             }
             if ($request->description) {
                 Review::create([
-                    'entity_id' => $request->vacancy_id,
+                    'entity_id' => $request->employer_id,
                     'reviewer_id' => Auth::User()->id,
                     'type' => 1,
                     'text' => $request->description
@@ -62,13 +62,15 @@ class RateController extends Controller
     {
         $employer = Employer::find($request->input('employer_id'));
         $vacancy_id = $request->input('vacancy_id');
-        $qualities = EmployerQuality::all();
+        $oq = EmployerRate::where('student_id', Auth::user()->id)
+            ->where('employer_id', $request->input('employer_id'))->pluck('quality_id')->toArray();
+        $qualities = EmployerQuality::whereNotIn('id', $oq)->get();
         $old_qualities = EmployerRate::where('student_id', Auth::user()->id)
             ->where('employer_id', $request->input('employer_id'))
             ->join('employer_qualities', 'employer_qualities.id', '=', 'employer_rates.quality_id')
             ->select('quality_id', 'quality_name', 'quality_rate')
             ->get();
-        $description = Review::where('entity_id', $vacancy_id)
+        $description = Review::where('entity_id', $request->input('employer_id'))
             ->where('reviewer_id', Auth::user()->id)
             ->where('type', 1)
             ->select('text')
@@ -125,7 +127,7 @@ class RateController extends Controller
             ]);
             $i++;
         }
-        $review = Review::where('entity_id', $request->vacancy_id)
+        $review = Review::where('entity_id', $request->employer_id)
             ->where('reviewer_id', Auth::user()->id)->where('type', 1)->first();
         $review->text = $request->description;
         $review->save();

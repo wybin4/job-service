@@ -8,6 +8,7 @@
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
 	<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment-with-locales.min.js"></script>
+	<script src="{{asset('/js/range-functions.js')}}"></script>
 </head>
 @php function YearTextArg($year) {
 $year = abs($year);
@@ -40,6 +41,9 @@ return ($t1 == 1 && $t2 != 11 ? "год" : ($t1 >= 2 && $t1 <= 4 && ($t2 < 10 ||
 						@if($parsed_desc)
 						<a href="#parsed_desc" class="click-tab-active click-tab"><i class="fa-regular fa-file-lines pt-2 mr-2"></i>Описание</a>
 						@endif
+						@if(count($employer_rates))
+						<a href="#review" class="click-tab"><i class="fa-regular fa-comment pt-2 mr-2"></i>Отзывы</a>
+						@endif
 						@if (count($latest_vacancies))
 						<a href="#latest_vacancies" class="click-tab"><i class="fa-solid fa-list pt-2 mr-2"></i>Последние вакансии</a>
 						@endif
@@ -53,6 +57,43 @@ return ($t1 == 1 && $t2 != 11 ? "год" : ($t1 >= 2 && $t1 <= 4 && ($t2 < 10 ||
 						</script>
 					</div>
 					@else <div class="mt-4"></div>
+					@endif
+					@if(count($employer_rates))
+					<div id="review">
+						<h3 class="little-header-text">Отзывы</h3>
+						<div class="row rate-body">
+							<div class="col-md-auto">
+								<div class="review-rate"></div>
+								<div class="stud-review-count"></div>
+							</div>
+							<div class="col-md-auto employer-rates">
+							</div>
+						</div>
+						<div class="review-body">
+							@foreach($reviews as $review)
+							<div class="mb-4">
+								<div class="row">
+									<div class="col-md-auto">
+										@if (!$review->image)
+										<div class="review-future-pic future-pic">
+											<div>{{mb_substr($review->student_fio, 0, 1)}}</div>
+										</div>
+										@else
+										<img class="review-pic pic" src="{{asset('/storage/images/'.$review->image)}}" />
+										@endif
+									</div>
+									<div class="col-md-auto">
+										<div class="review-student-name">{{explode(" ", $review->student_fio)[0]}} {{explode(" ", $review->student_fio)[1]}}</div>
+										<div class="review-student-time">{{$review->review_updated_at}}</div>
+									</div>
+								</div>
+								<div class="review-text">
+									{{$review->text}}
+								</div>
+							</div>
+							@endforeach
+						</div>
+					</div>
 					@endif
 				</div>
 				<div class="col-md-4">
@@ -177,10 +218,15 @@ return ($t1 == 1 && $t2 != 11 ? "год" : ($t1 >= 2 && $t1 <= 4 && ($t2 < 10 ||
 			color: var(--link-hover-color) !important;
 		}
 
-		#parsed_desc {
+		#parsed_desc,
+		#review {
 			margin-left: 120px;
 			margin-top: 50px;
 			width: 900px;
+		}
+
+		#review {
+			margin-bottom: -40px;
 		}
 
 		.side-card {
@@ -293,6 +339,85 @@ return ($t1 == 1 && $t2 != 11 ? "год" : ($t1 >= 2 && $t1 <= 4 && ($t2 < 10 ||
 			width: 1000px;
 			margin-bottom: 20px;
 		}
+
+		/*** */
+
+		.rate-body {
+			margin-top: 20px;
+		}
+
+		.review-rate {
+			color: var(--link-hover-color);
+			font-size: 36px;
+			font-weight: bold;
+			text-align: center;
+		}
+
+		.stud-review-count {
+			color: grey;
+		}
+
+		.self-progress,
+		.emp-progress {
+			border-radius: 8px;
+			width: 250px;
+			height: 8px;
+			background-color: var(--dot-color);
+		}
+
+		.bar {
+			border-radius: 8px;
+			height: 8px;
+			background-color: var(--link-hover-color);
+		}
+
+		.quality-name {
+			margin-top: -6px;
+			margin-left: 20px;
+		}
+
+		.bar-rate {
+			display: flex;
+			margin-top: 8px;
+		}
+
+		.quality-rate {
+			margin-top: -6px;
+			margin-right: 14px;
+		}
+
+		/** */
+
+		.review-future-pic,
+		.review-pic {
+			margin-left: 0px;
+			width: 40px;
+			height: 40px;
+			font-size: 16px;
+		}
+
+		.review-student-name,
+		.review-student-time {
+			margin-left: -9px;
+		}
+
+		.review-student-name {
+			font-weight: bold;
+		}
+
+		.review-student-time {
+			font-size: 15px;
+			color: grey;
+			margin-top: -5px;
+		}
+
+		.review-body {
+			margin-top: 20px;
+		}
+
+		.review-text {
+			margin-top: 20px;
+		}
 	</style>
 
 </html>
@@ -315,4 +440,63 @@ return ($t1 == 1 && $t2 != 11 ? "год" : ($t1 >= 2 && $t1 <= 4 && ($t2 < 10 ||
 		const fixed_desc = line.replace(re, "$<inmarks>$<link_text>").replace(/\*/g, '').replace(/\#/g, '').replace(/\</g, '');
 		$(this).text(fixed_desc);
 	});
+
+
+
+	/** */
+
+
+	let employer_rates = [];
+	const er = <?php echo json_encode($employer_rates); ?>;
+	if (er.length) {
+		let rates = new Set(er.map(r => r.quality_id));
+		rates = Array.from(rates);
+		let arr;
+		// получаем employer_rates с отдельными quality_id и массивом оценок к нему
+		for (let i = 0; i < rates.length; i++) {
+			arr = er.filter((r) => {
+				return r.quality_id == rates[i]
+			});
+			if (arr.length > 1) {
+				employer_rates.push([rates[i],
+					get_trend([arr.map(a => Math.trunc(new Date(a.updated_at).getTime() / (1000 * 3600 * 24))), arr.map(a => a.quality_rate)])
+				]);
+			} else {
+				employer_rates.push([rates[i],
+					[arr.map(a => Math.trunc(new Date(a.updated_at).getTime() / (1000 * 3600 * 24))), arr.map(a => a.quality_rate)]
+				])
+			}
+		}
+		// получаем ema для employer_rates
+		let employer_ema = [];
+		employer_rates.forEach(function(rate) {
+			employer_ema.push([rate[0], get_ema(rate[1][1])])
+		})
+		for (let i = 0; i < employer_ema.length; i++) {
+			let quality = er.filter((e) => {
+				return e.quality_id == employer_ema[i][0];
+			})[0];
+			let text = `
+					<div class="bar-rate">
+			<div class="quality-rate">${employer_ema[i][1].toFixed(2)}</div>
+			<div class="emp-progress" id="emp-progress-${quality.quality_id}">
+				<div class="bar"></div>
+			</div>
+			<div class="quality-name">${quality.quality_name}</div>
+		</div>
+			`;
+			$(".employer-rates").append(text);
+			$(`#emp-progress-${quality.quality_id}`).find('.bar').css('width', employer_ema[i][1] / 5 * 100 + '%');
+
+		}
+		const sum = employer_ema.reduce((acc, number) => acc + number[1], 0);
+		const length = employer_ema.length;
+		const students_count = <?php echo json_encode($students_count); ?>;
+		$(".review-rate").text((sum / length).toFixed(2));
+		$(".stud-review-count").text(students_count + ' ' + getNoun(students_count, 'студент', 'студента', 'студентов'));
+	}
+	$(".review-student-time").each(function() {
+		let date = moment.duration(moment().diff($(this).text())).humanize();
+		$(this).text(date + ' назад');
+	})
 </script>
