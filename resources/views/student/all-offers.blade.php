@@ -104,7 +104,7 @@
 										<x-dropdown-link class="rate-btn" href="employer-rate-page?employer_id={{$offer->employer_id}}&vacancy_id={{$offer->vacancy_id}}">
 											Оценить
 										</x-dropdown-link>
-										@else
+										@elseif(in_array($offer->employer_offer_status, [3, 8, 9]))
 										<x-dropdown-link class="rate-btn" href="employer-rate-page-edit?employer_id={{$offer->employer_id}}&vacancy_id={{$offer->vacancy_id}}">
 											Изменить оценки
 										</x-dropdown-link>

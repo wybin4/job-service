@@ -100,6 +100,15 @@
 											О собеседовании
 										</x-dropdown-link>
 										@endif
+										@if(!in_array($response->vacancy_id, $vacancies_with_rate) && in_array($response->status, [3, 8, 9]))
+										<x-dropdown-link class="rate-btn" href="employer-rate-page?employer_id={{$response->vacancy->employer_id}}&vacancy_id={{$response->vacancy_id}}">
+											Оценить
+										</x-dropdown-link>
+										@elseif(in_array($response->status, [3, 8, 9]))
+										<x-dropdown-link class="rate-btn" href="employer-rate-page-edit?employer_id={{$response->vacancy->employer_id}}&vacancy_id={{$response->vacancy_id}}">
+											Изменить оценки
+										</x-dropdown-link>
+										@endif
 										<x-dropdown-link class="view-btn" href="vacancy/{{$response->vacancy->id}}">
 											Просмотреть вакансию
 										</x-dropdown-link>
