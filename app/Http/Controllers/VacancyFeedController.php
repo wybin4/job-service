@@ -18,6 +18,75 @@ use Illuminate\Support\Facades\DB;
 
 class VacancyFeedController extends Controller
 {
+    function get_average($arr)
+    {
+        $summ = array_sum(array_map(function ($el) {
+            return $el[1];
+        }, $arr));
+        $length = count($arr);
+        return $summ / $length;
+    }
+    function get_diff($emp_val, $self_val)
+    {
+        return 1 - tanh((max($emp_val, $self_val) - min($emp_val, $self_val)) / 5);
+    }
+    public function get_ema($arr)
+    {
+        $alpha = 2 / (count($arr) + 1);
+        $ema = $arr[0];
+        for ($i = 1; $i < count($arr); $i++) {
+            $ema *= (1 - $alpha);
+            $ema += $arr[$i] * $alpha;
+        }
+        return $ema;
+    }
+    public function solver($a, $b, $c, $d, $e, $f)
+    {
+        $y = ($a * $f - $c * $d) / ($a * $e - $b * $d);
+        $x = ($c * $e - $b * $f) / ($a * $e - $b * $d);
+        return array($x, $y);
+    }
+    function get_trend($arr)
+    {
+        $t = $arr[0];
+        $y = $arr[1];
+        $square_t =
+            array_map(function ($el) {
+                return $el * $el;
+            }, $t);
+        $square_y =
+            array_map(function ($el) {
+                return $el * $el;
+            }, $y);
+        $t_x_y = array();
+        for ($i = 0; $i < count($t); $i++) {
+            array_push($t_x_y, $t[$i] * $y[$i]);
+        }
+        $sum_t = array_sum($t);
+        $sum_y = array_sum($y);
+        $sum_square_t = array_sum($square_t);
+        $sum_square_y = array_sum($square_y);
+        $sum_t_x_y = array_sum($t_x_y);
+        $a_and_b = $this->solver(count($t), $sum_t, $sum_y, $sum_t, $sum_square_t, $sum_t_x_y);
+        $count = ($t[count($t) - 1] - $t[0]) / 30;
+        $result_t = array();
+        $result_y = array();
+        $val = null;
+        for ($i = 0; $i < $count; $i++) {
+            $val = $t[0] + 30 * $i;
+            array_push($result_t, $val);
+            array_push($result_y, $a_and_b[1] * $val + $a_and_b[0]);
+        }
+        return array($result_t, $result_y);
+    }
+    function _group_by($array, $key)
+    {
+        $resultArr = [];
+        foreach ($array as $val) {
+            $resultArr[$val[$key]][] = $val;
+        }
+        return $resultArr;
+    }
     public function index(Request $request)
     {
         $min_salary = Vacancy::min('salary');
@@ -103,8 +172,87 @@ class VacancyFeedController extends Controller
             if ($request->profession_name) {
                 $vacancies = $vacancies->where('profession_name', '=', $request->profession_name);
             }
+
+            ////
+
+            $all_employers = Employer::pluck('id')->toArray();
+            $employer_rates = EmployerRate::join('employer_qualities', 'employer_qualities.id', '=', 'employer_rates.quality_id')
+                ->orderBy('employer_rates.updated_at', 'asc')
+                ->select('*', 'employer_rates.updated_at as updated_at')
+                ->get();
+            $rating = array();
+            //сгруппированные по employer_id оценки работодателей
+            $grouped_employer_rates = $this->_group_by($employer_rates, 'employer_id');
+            foreach ($grouped_employer_rates as $ger) {
+                $employer_id = $ger[0]->employer_id;
+                $unique_quality_ids = array_unique(array_map(function ($el) {
+                    return $el->quality_id;
+                }, $ger)); //выделяем уникальные quality_id из оценок по одному работодателю
+                $employer_rates = array();
+                $unique_quality_ids = array_values($unique_quality_ids);
+                //проходим по оценкам за каждого работодателя
+                for ($i = 0; $i < count($unique_quality_ids); $i++) {
+                    $usi = $unique_quality_ids[$i];
+                    //выбираем оценки одного и того же качества для данного работодателя
+                    $current_qualities = array_filter($ger, function ($el) use ($usi) {
+                        return $el->quality_id == $usi;
+                    });
+                    //выделяем updated_at и переводим его в дни
+                    $time = array_values(array_map(function ($el) {
+                        return strtotime($el->updated_at->toDateString()) / (3600 * 24);
+                    }, $current_qualities));
+                    //выделяем оценки за навык
+                    $quality_rate = array_values(array_map(function ($el) {
+                        return $el->quality_rate;
+                    }, $current_qualities));
+                    //если оценок больше одной, то рассчет тренда по методу наименьших квадратов
+                    if (count($current_qualities) > 1) {
+                        array_push($employer_rates, array($unique_quality_ids[$i], $this->get_trend(array($time, $quality_rate))));
+                    } else { //если оценка только одна, то тренда не будет
+                        array_push($employer_rates, array($unique_quality_ids[$i], array($time, $quality_rate)));
+                    }
+                }
+                $employer_ema = array();
+                //получаем ema для каждой оценки
+                foreach ($employer_rates as $rate) {
+                    array_push($employer_ema, array($rate[0], $this->get_ema($rate[1][1])));
+                }
+
+                $employer_average = $this->get_average($employer_ema); //среднее по оценкам работодателя
+                array_push($rating, array($ger[0]['employer_id'], $employer_average));
+            }
+            //отделяем оцененных работодателей
+            $used_employers = array_map(function ($r) {
+                return $r[0];
+            }, $rating);
+            $ue = $used_employers;
+            //выделяем резюме только с самооценкой
+            $ungrouped = array_filter($all_employers, function ($all) use ($ue) {
+                return !in_array($all, $ue);
+            });
+            $nonused = array();
+            //всех работодателей без оценок оцениваем как 4.2
+            foreach ($ungrouped as $u) {
+                array_push($nonused, [$u, 4.2]);
+            }
+            $rating = array_merge($rating, $nonused); //объединяем всех работодателей
+            //сортируем по оценкам
+            usort($rating, function ($a, $b) {
+                if ($a[1] == $b[1]) return 0;
+                return ($a[1] < $b[1]) ? 1 : -1;
+            });
+
+            $rate_order = array_map(function ($el) {
+                return $el[0];
+            }, $rating);
+
+            /////
+
+
             $vacancies = $vacancies->where('status', '=', 0);
-            $vacancies = $vacancies->orderBy('vacancy_created_at', 'desc')->paginate(6);
+            $vacancies = $vacancies->orderByRaw('FIELD (employers.id, ' . implode(', ', $rate_order) . ') ASC')->paginate(6);
+
+            //$vacancies = $vacancies->orderBy('vacancy_created_at', 'desc')->paginate(6);
             return response()->json(
                 [
                     'vacancies' => $vacancies,
