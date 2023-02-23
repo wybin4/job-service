@@ -65,6 +65,7 @@
 						<td><span class="work-status rejected">Уволен</span></td>
 						@endif
 						<td>
+							@if($my_worker->work_status != 9)
 							<div class="hidden sm:flex sm:items-center sm:ml-4">
 								<x-dropdown align="left">
 									<x-slot name="trigger">
@@ -94,6 +95,7 @@
 									</x-slot>
 								</x-dropdown>
 							</div>
+							@endif
 						</td>
 					</tr>
 					@endforeach
