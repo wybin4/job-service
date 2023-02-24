@@ -1962,6 +1962,12 @@ a:hover {
   --interview-text-color: #3965f5;
   --work-status-color: #BCEB98;
   --work-text-color: #00B33C;
+  --regular-background-color: #fef5e3;
+  --regular-text-color: #FFC100;
+  --excellent-background-color: #e7f5df;
+  --excellent-text-color: #62c72a;
+  --low-background-color: #ffebe8;
+  --low-text-color: #fe6051;
 }
 
 .input {
@@ -2231,6 +2237,16 @@ a:hover {
 }
 
 .work-status {
+  margin-right: 3px;
+  border-radius: 8px;
+  padding: 3px 10px;
+  white-space: nowrap;
+  margin-top: 10px;
+}
+
+.match {
+  width: 65%;
+  text-align: center;
   margin-right: 3px;
   border-radius: 8px;
   padding: 3px 10px;

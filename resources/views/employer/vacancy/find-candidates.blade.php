@@ -53,6 +53,7 @@
 					<td>Кандидат</td>
 					<td>Опыт работы</td>
 					<td>Навыки</td>
+					<td>Статус</td>
 					<td></td>
 				</tr>
 				@php function YearTextArg($year) {
@@ -100,13 +101,13 @@
 							@endif
 							@php $i++; @endphp
 							<td class="student_skills_area">
-								@php $student_hard_skills = App\Models\StudentSkill::where('resume_id', $student->resume_id)
+								@php $student_skills = App\Models\StudentSkill::where('resume_id', $student->resume_id)
 								->join('skills', 'skills.id', '=', 'student_skills.skill_id')
 								->where('skill_type', 1)
 								->get()
 								@endphp
 								@php $j = 0; @endphp
-								@foreach ($student_hard_skills as $shs)
+								@foreach ($student_skills as $shs)
 								@if ($j < 4) <span class="student_skill">{{$shs->skill_name}}</span>
 									@endif
 									@php $j++; @endphp
@@ -114,6 +115,16 @@
 									@if ($j >= 4)
 									<span class="student_skill">+1</span>
 									@endif
+							</td>
+							<td>
+								@php $status = $resume_order[array_search($student->resume_id, array_column($resume_order, 0))][1]; @endphp
+								@if ($status == 3)
+								<div class="regular-match match">Средняя совместимость</div>
+								@elseif ($status == 4)
+								<div class="regular-match match">Высокая совместимость</div>
+								@elseif ($status == 5)
+								<div class="excellent-match match">Наивысшая совместимость</div>
+								@endif
 							</td>
 							<td>
 								<div class="hidden sm:flex sm:items-center sm:ml-4">
@@ -136,16 +147,6 @@
 							</td>
 						</tr>
 						@endforeach
-						<script>
-							$('.student_skill').each(function(i, elem) {
-								if (i % 3 == 0)
-									$(this).addClass("first-skill");
-								else if (i % 3 == 1)
-									$(this).addClass("second-skill");
-								else if (i % 3 == 2)
-									$(this).addClass("third-skill");
-							})
-						</script>
 			</table>
 		</section>
 		@else
@@ -343,21 +344,23 @@
 		padding: 3px 10px;
 		white-space: nowrap;
 		margin-top: 10px;
+		background-color: var(--dot-color);
+		color: var(--link-hover-color);
 	}
 
-	.first-skill {
-		background-color: #DCF4F9;
-		color: #1EA1C2;
+	.low-match {
+		background-color: var(--rejected-status-color);
+		color: var(--rejected-text-color);
 	}
 
-	.second-skill {
-		background-color: #fde0d8;
-		color: #f67451;
+	.regular-match {
+		color: var(--regular-text-color);
+		background-color: var(--regular-background-color);
 	}
 
-	.third-skill {
-		background-color: #DFF6E0;
-		color: #50CE56;
+	.excellent-match {
+		background-color: var(--excellent-background-color);
+		color: var(--excellent-text-color);
 	}
 
 	/* */
