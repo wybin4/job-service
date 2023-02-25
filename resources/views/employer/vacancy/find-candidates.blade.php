@@ -103,7 +103,6 @@
 							<td class="student_skills_area">
 								@php $student_skills = App\Models\StudentSkill::where('resume_id', $student->resume_id)
 								->join('skills', 'skills.id', '=', 'student_skills.skill_id')
-								->where('skill_type', 1)
 								->get()
 								@endphp
 								@php $j = 0; @endphp
