@@ -421,8 +421,8 @@ class VacancyFeedController extends Controller
         $related_we = Vacancy::whereIn('id', $related_vacancies)->select('vacancies.id', 'work_experience')->get()->toArray();
         // различие в опыте
         $related_we = array_map(function ($rwe) use ($this_work_experience) {
-            if ($this_work_experience - $rwe["work_experience"] >= 0) {
-                return [$rwe["id"], $this_work_experience - $rwe["work_experience"]];
+            if ($rwe["work_experience"] - $this_work_experience >= 0) {
+                return [$rwe["id"], $rwe["work_experience"] - $this_work_experience];
             } else return [$rwe["id"], 0];
         }, $related_we);
         usort($related_we, function ($a, $b) {
@@ -438,7 +438,7 @@ class VacancyFeedController extends Controller
             array_push($arr, $related_we[$i][1] / 4);
             array_push($z_x_matrix_3, [$vacancy_id, $arr]);
         }
-        $x_matrix_3 = [[0.4, 0.5, 0.7, 0.8, 0.9], [3, 2.5, 1.3, 1, 0]];
+        $x_matrix_3 = [[0.4, 0.5, 0.7, 0.8, 0.9], [2.8, 2.1, 1.1, 1, 0]];
         $y_matrix = [0.2, 0.4, 0.6, 0.8, 1];
         $u3 = [1, 4];
 
@@ -460,6 +460,7 @@ class VacancyFeedController extends Controller
         $related = array_map(function ($ro) {
             return $ro[0];
         }, $related);
+        //dd($res_3, $z_x_matrix_3);
         $related_vacancies = DB::table('vacancies')
             ->join('professions', 'professions.id', '=', 'vacancies.profession_id')
             ->join('work_types', 'work_types.id', '=', 'vacancies.work_type_id')
