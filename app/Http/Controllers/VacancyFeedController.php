@@ -421,9 +421,7 @@ class VacancyFeedController extends Controller
         $related_we = Vacancy::whereIn('id', $related_vacancies)->select('vacancies.id', 'work_experience')->get()->toArray();
         // различие в опыте
         $related_we = array_map(function ($rwe) use ($this_work_experience) {
-            if ($rwe["work_experience"] - $this_work_experience >= 0) {
-                return [$rwe["id"], $rwe["work_experience"] - $this_work_experience];
-            } else return [$rwe["id"], 0];
+            return [$rwe["id"], abs($rwe["work_experience"] - $this_work_experience)];
         }, $related_we);
         usort($related_we, function ($a, $b) {
             if ($a[0] == $b[0]) return 0;

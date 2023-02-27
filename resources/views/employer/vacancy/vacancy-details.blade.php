@@ -174,7 +174,7 @@
 								</div>
 							</div>
 						</div>
-						<div class="side-card" class="second-card">
+						<div class="side-card second-card">
 							<h3 class="little-header-text ml-4 pt-4 pb-2">О вакансии</h3>
 							@php
 							$currentDate = $vacancy->created_at;

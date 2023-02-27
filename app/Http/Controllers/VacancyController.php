@@ -216,6 +216,7 @@ class VacancyController extends Controller
 			$resume = $resume->where('type_of_employment_id', '=', $vacancy->type_of_employment_id);
 			$resume = $resume->where('location', '=', $vacancy->location);
 		}
+		//$resume = $resume->where('work_type_id', '=', $vacancy->work_type_id);
 		$resume = $resume->pluck('resumes.id')->toArray();
 		$ungrouped_ss = StudentSkill::whereIn('resume_id', $resume)->get();
 		$grouped_student_skills = $this->_group_by($ungrouped_ss, 'resume_id');
@@ -277,11 +278,7 @@ class VacancyController extends Controller
 		$work_exps_diff = array_map(function ($awe) use ($vacancy_work_exp) {
 			$days_resume = $awe[2] * 30.417 + $awe[1] * 365;
 			$days_vacancy = $vacancy_work_exp * 365;
-			if ($days_vacancy - $days_resume <= 0) { // если у студента опыта больше, чем нужно работодателю
-				return [$awe[0], 0];
-			} else {
-				return [$awe[0], ($days_vacancy - $days_resume) / 365];
-			}
+			return [$awe[0], abs($days_vacancy - $days_resume) / 365];
 		}, $work_exps_diff);
 		$employer_rates = ResumeSkillRate::whereIn('resume_id', $resume)
 			->orderBy('updated_at', 'asc')
@@ -447,6 +444,7 @@ class VacancyController extends Controller
 		$work_exps = array_filter($work_exps, function($we) use($resume_order_ids){
 			return in_array($we[0], $resume_order_ids);
 		});
+		$work_exps = array_values($work_exps);
 		$student_skills = StudentSkill::whereIn('resume_id', $resume_order_ids)
 			->join('skills', 'skills.id', '=', 'student_skills.skill_id')
 			->get();
