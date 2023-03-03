@@ -104,6 +104,9 @@
                             <x-dropdown-link href="/student/resume/{{Auth::User()->resume->id}}">
                                 {{ __('Резюме') }}
                             </x-dropdown-link>
+                            <x-dropdown-link href="/student/find-vacancies">
+                                {{ __('Подбор вакансий') }}
+                            </x-dropdown-link>
                             @else
                             <x-dropdown-link :href="route('student.create-resume')">
                                 {{ __('Резюме') }}

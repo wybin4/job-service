@@ -190,7 +190,7 @@ class VacancyController extends Controller
 	public function findCandidates($id)
 	{
 		$vacancy = Vacancy::find($id);
-		//проверяем взаимодействия с работодателей по откликам
+		//проверяем взаимодействия с работодателем по откликам
 		$employer_vacancies = Auth::guard('employer')->user()->active_vacancy;
 		$employer_vacancies_ids = DB::table('vacancies')->select('id')->where('status', 0)->where('employer_id', Auth::user()->id)->get()->toArray();
 		$ids = array();
@@ -216,7 +216,7 @@ class VacancyController extends Controller
 			$resume = $resume->where('type_of_employment_id', '=', $vacancy->type_of_employment_id);
 			$resume = $resume->where('location', '=', $vacancy->location);
 		}
-		//$resume = $resume->where('work_type_id', '=', $vacancy->work_type_id);
+		$resume = $resume->where('work_type_id', '=', $vacancy->work_type_id);
 		$resume = $resume->pluck('resumes.id')->toArray();
 		$ungrouped_ss = StudentSkill::whereIn('resume_id', $resume)->get();
 		$grouped_student_skills = $this->_group_by($ungrouped_ss, 'resume_id');
@@ -440,6 +440,7 @@ class VacancyController extends Controller
 			->join('professions', 'professions.id', '=', 'resumes.profession_id')
 			->select('*', 'resumes.id as resume_id', 'students.id as student_id', 'resumes.created_at as resume_created_at')
 			->whereIn('resumes.id', $resume_order_ids)
+			->orderByRaw('FIELD (resumes.id, ' . implode(', ', $resume_order_ids) . ') ASC')
 			->get();
 		$work_exps = array_filter($work_exps, function($we) use($resume_order_ids){
 			return in_array($we[0], $resume_order_ids);

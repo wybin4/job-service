@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Course;
 use App\Models\Education;
+use App\Models\Interaction;
 use App\Models\Profession;
 use Illuminate\Http\Request;
 use App\Providers\RouteServiceProvider;
@@ -14,14 +15,122 @@ use App\Models\Student;
 use App\Models\StudentSkill;
 use App\Models\SubsphereOfActivity;
 use App\Models\TypeOfEmployment;
+use App\Models\Vacancy;
+use App\Models\VacancySkill;
 use App\Models\WorkExperience;
 use App\Models\WorkType;
+use DateTime;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class ResumeController extends Controller
 {
+    public function findVacancies()
+    {
+        $algo = new AlgorithmController;
+
+        $resume_id = Auth::user()->resume->id;
+        $binded_vacancies = Interaction::where('student_id', Auth::user()->id)
+            ->pluck('vacancy_id')
+            ->toArray();
+        $vacancies = Vacancy::whereNotIn('vacancies.id', $binded_vacancies)
+            ->where('status', 0);
+        $resume = Auth::user()->resume;
+        $location = Auth::user()->location;
+        // очищаем от вакансий с неверным местоположением, видом раюоты и типом занятости
+        if ($resume->type_of_employment_id == 3) {
+            $vacancies = $vacancies->where('type_of_employment_id', '=', $resume->type_of_employment_id);
+        } else {
+            $vacancies = $vacancies->where('type_of_employment_id', '=', $resume->type_of_employment_id);
+            $vacancies = $vacancies->where('location', '=', $location);
+        }
+        $vacancies = $vacancies->where('work_type_id', '=', $resume->work_type_id);
+        $vacancies = $vacancies->pluck('vacancies.id')->toArray(); // очистили
+        $ungrouped_vs = VacancySkill::whereIn('vacancy_id', $vacancies)->get(); // получаем навыки вакансий
+        $grouped_vacancy_skills = $algo->_group_by($ungrouped_vs, 'vacancy_id');
+        $curr_resume_skills = StudentSkill::where('resume_id', $resume_id)->pluck('skill_id')->toArray();
+        $percent = []; // процент совпадения навыков в резюме и навыков в каждой из вакансий
+        foreach ($grouped_vacancy_skills as $gvs) {
+            array_push($percent, [$gvs[0]->vacancy_id, count(array_intersect($curr_resume_skills, array_map(function ($g) {
+                return $g->skill_id;
+            }, $gvs))) / count($curr_resume_skills)]);
+        }
+        usort($percent, function ($a, $b) {
+            if ($a[0] == $b[0]) return 0;
+            return ($a[0] < $b[0]) ? -1 : 1;
+        });
+        $x1 = $percent; // x1 - процент совпадения навыков
+        $curr_work_exp = Auth::user()->resume->work_experience;
+        if (count($curr_work_exp)) {
+            $result = new DateTime();
+            $diff_res = clone $result;
+            for ($i = 0; $i < count($curr_work_exp); $i++) {
+                $ds = date_create($curr_work_exp[$i]->date_start);
+                $de = date_create($curr_work_exp[$i]->date_end);
+                $diff = date_diff($ds, $de);
+                $result->add($diff);
+            }
+            $work_exps = [$result->diff($diff_res)->y, $result->diff($diff_res)->m];
+        } else $work_exps = [0, 0];
+        $vacancy_work_exp = Vacancy::whereIn('vacancies.id', $vacancies)
+            ->select('id', 'work_experience')
+            ->get()->toArray();
+        $x2 = array_map(function ($vwe) use ($work_exps) {
+            $days_resume = $work_exps[1] * 30.417 + $work_exps[0] * 365;
+            $days_vacancy = $vwe['work_experience'] * 365;
+            return [$vwe["id"], abs($days_vacancy - $days_resume) / 365];
+        }, $vacancy_work_exp); // x2 - разница в опыте работы
+        $x_matrix_4 = [[0.4, 0.5, 0.7, 0.87, 0.9], [3, 3, 2, 1, 0]];
+        $u4 = [1, 4];
+        $y_matrix = [0.2, 0.4, 0.6, 0.8, 1];
+        $equation_4 = $algo->find_linear_regression($x_matrix_4, $y_matrix, $u4);
+        $z_x_matrix_4 = [];
+        for ($i = 0; $i < count($x1); $i++) {
+            $arr = [];
+            $vacancy_id = $x1[$i][0];
+            array_push($arr, $x1[$i][1]);
+            array_push($arr, $x2[array_search($vacancy_id, array_column($x2, 0))][1] / 4);
+            array_push($z_x_matrix_4, [$vacancy_id, $arr]);
+        }
+        $res_4 = array_map(function ($matrix) use ($equation_4, $algo) {
+            if ($algo->vectorvectormult($equation_4, $matrix[1]) * 5 > 0) {
+                return [$matrix[0], intval(round($algo->vectorvectormult($equation_4, $matrix[1]) * 5, 0))];
+            }
+        }, $z_x_matrix_4);
+        $res_4 = array_filter($res_4, function ($r) {
+            if ($r) {
+                return $r;
+            }
+        });
+        $res_4 = array_values($res_4);
+        $res_4 = array_filter($res_4, function ($ro) {
+            return ($ro[1] > 2);
+        });
+        usort($res_4, function ($a, $b) {
+            if ($a[1] == $b[1]) return 0;
+            return ($a[1] < $b[1]) ? 1 : -1;
+        });
+        $vacancy_order = $res_4;
+        $vacancy_ids = array_map(function ($r) {
+            return $r[0];
+        }, $vacancy_order);
+        $vacancies = DB::table('vacancies')
+            ->join('employers', 'employers.id', '=', 'vacancies.employer_id')
+            ->join('professions', 'professions.id', '=', 'vacancies.profession_id')
+            ->select(
+                '*',
+                'vacancies.id as vacancy_id',
+                'employers.id as employer_id',
+                'employers.name as employer_name',
+                'vacancies.created_at as vacancy_created_at'
+            )
+            ->whereIn('vacancies.id', $vacancy_ids)
+            ->orderByRaw('FIELD (vacancies.id, ' . implode(', ', $vacancy_ids) . ') ASC')
+            ->get();
+        return view("student.resume.find-vacancies", compact("vacancies", "resume", "vacancy_order"));
+    }
     public function addExperience(Request $request)
     {
         WorkExperience::create([
@@ -224,7 +333,7 @@ class ResumeController extends Controller
         ]);
         if ($request->skill_type == 0) {
             return redirect()->back()->with('title', 'Добавление качества')->with('text', 'Успешно добавили качество');
-        }else {
+        } else {
             return redirect()->back()->with('title', 'Добавление навыка')->with('text', 'Успешно добавили навык');
         }
     }

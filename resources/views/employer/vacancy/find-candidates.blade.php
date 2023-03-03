@@ -333,16 +333,16 @@
 	}
 
 	.student_skills_area {
-		flex-wrap: wrap;
+		display: flex;
+		justify-content: space-between;
 	}
 
 	.student_skill {
+		margin-top: 5px;
+		display: inline-block;
 		margin-right: 3px;
-		background-color: #AAA6F2;
 		border-radius: 8px;
 		padding: 3px 10px;
-		white-space: nowrap;
-		margin-top: 10px;
 		background-color: var(--dot-color);
 		color: var(--link-hover-color);
 	}
