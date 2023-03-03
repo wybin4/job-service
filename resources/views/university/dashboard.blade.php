@@ -42,6 +42,15 @@
         </div>
         <div class="col-md-3">
             <div class="col-title font-bold mb-2">Другое</div>
+            <a class="row btn-area" href="{{ url('/university/statistics') }}">
+                <div class="col-md-auto btn-i">
+                    <i class="fa-solid fa-trophy"></i>
+                </div>
+                <div class="col-md-auto">
+                    <div class="btn-title">Статистика</div>
+                    <div class="btn-text">Просмотр</div>
+                </div>
+            </a>
         </div>
     </div>
 </x-university-layout>

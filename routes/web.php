@@ -7,10 +7,12 @@ use App\Http\Controllers\AddUniversityController as ControllersAddUniversityCont
 use App\Http\Controllers\Location;
 use App\Models\Skill;
 use App\Http\Controllers\Admin\AdminDuties;
+use App\Http\Controllers\University\UniversityDuties;
 use App\Models\Employer;
 use App\Models\Resume;
 use App\Models\SphereOfActivity;
 use App\Models\Student;
+use App\Models\University;
 use App\Models\Vacancy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -35,6 +37,7 @@ Route::get('/university/add-one', [AddStudentController::class, 'openAddOne']);
 Route::post('/university/add-one', [AddStudentController::class, 'addOneStudent']);
 Route::get('/university/add-many', [AddStudentController::class, 'openAddMany']);
 Route::post('/university/add-many', [AddStudentController::class, 'addManyStudents']);
+Route::get('/university/statistics', [UniversityDuties::class, 'viewStatictics']);
 Route::group(['middleware' => ['guest']], function () {
     Route::get('/university/password-link/{token}', [ControllersAddUniversityController::class, 'showUniversityPasswordSetter'])->name('university.password-link');
     Route::post('/university/password-link/{token}', [ControllersAddUniversityController::class, 'setPassword'])->name('university.password-link');
