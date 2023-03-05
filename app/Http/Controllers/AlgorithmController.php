@@ -179,4 +179,24 @@ class AlgorithmController extends Controller
         }
         return $resultArr;
     }
+    public function std_deviation($arr)
+    {
+        $num_of_elements = count($arr);
+        $variance = 0.0;
+        $average = array_sum($arr) / $num_of_elements;
+        foreach ($arr as $i) {
+            $variance += pow(($i - $average), 2);
+        }
+        return (float)sqrt($variance / $num_of_elements);
+    }
+    public function z_normalize($val, $arr)
+    {
+        //среднее количество
+        $avg_xi = array_sum($arr) / count($arr);
+        $standard_deviation_xi = $this->std_deviation($arr);
+        if ($standard_deviation_xi != 0) {
+            $xi_result = ($val - $avg_xi) / $standard_deviation_xi; //z-нормализованное значение xi
+            return $xi_result;
+        } else return 1;
+    }
 }
