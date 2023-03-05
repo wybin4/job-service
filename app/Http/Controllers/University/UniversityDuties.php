@@ -65,13 +65,59 @@ class UniversityDuties extends Controller
             return $el["total"];
         }, $arr)) / count($arr);
     }
-    public function viewStatictics()
+    public function viewStatictics(Request $request)
     {
+        $stats = $request->stats;
+        $today = Carbon::now();
+        $month_ago = date('d.m.y', strtotime('-1 month'));
+        $year_ago = date('d.m.y', strtotime('-1 year'));
+        if ($stats == "month") {
+            $start = $month_ago;
+            $last_per_start = date('d.m.y', strtotime('-2 month'));
+        } else {
+            $start = $year_ago;
+            $last_per_start = date('d.m.y', strtotime('-2 year'));
+        }
+        $end = $today;
         $algo = new AlgorithmController;
         $university_id = Auth::guard('university')->user()->id;
         $grouped_total_count = Student::join('resumes', 'students.id', '=', 'resumes.student_id')
             ->where('status', 0)->groupBy('university_id')
             ->select('university_id', DB::raw('count(*) as total'))->get()->toArray();
+        ////
+        ////
+        ////
+        $current_interactions = Interaction::whereBetween('interactions.hired_at', [date_format(date_create_from_format('d.m.y', $start), 'Y-m-d') . ' 00:00:00', date_format($end, 'Y-m-d') . ' 23:59:59'])
+            ->join('students', 'students.id', '=', 'interactions.student_id')
+            ->where('university_id', $university_id)
+            ->count();
+        $last_interactions = Interaction::whereBetween('interactions.hired_at', [date_format(date_create_from_format('d.m.y', $last_per_start), 'Y-m-d') . ' 00:00:00', date_format(date_create_from_format('d.m.y', $start), 'Y-m-d') . ' 23:59:59'])
+            ->join('students', 'students.id', '=', 'interactions.student_id')
+            ->where('university_id', $university_id)
+            ->count();
+        if ($last_interactions > 0) {
+            $percent_interactions = ($current_interactions - $last_interactions) / $last_interactions * 100;
+        } else $percent_interactions = $current_interactions * 100;
+        $last_resumes = Student::where('university_id', $university_id)
+            ->join('resumes', 'students.id', '=', 'resumes.student_id')
+            ->whereBetween('resumes.created_at', [
+                date_format(date_create_from_format('d.m.y', $last_per_start), 'Y-m-d') . ' 00:00:00',
+                date_format(date_create_from_format('d.m.y', $start), 'Y-m-d') . ' 23:59:59'
+            ])
+            ->where('status', 0)->count();
+        $last_rates = ResumeSkillRate::join('resumes', 'resume_skill_rates.resume_id', '=', 'resumes.id')
+            ->join('students', 'students.id', '=', 'resumes.student_id')
+            ->whereDate('resume_skill_rates.updated_at', '<=', date_format(date_create_from_format('d.m.y', $start), 'Y-m-d') . ' 00:00:00')
+            ->where('university_id', $university_id)
+            ->where('resumes.status', 0)
+            ->select('*', 'resume_skill_rates.updated_at as updated_at')
+            ->get();
+        $last_grouped_rates = $algo->_group_by($last_rates, 'resume_id');
+        $last_rating = $this->get_average_marks($algo, $last_grouped_rates);
+        $last_x3 = array_sum(array_map(function ($el) {
+            return $el[1];
+        }, $last_rating)) / count($last_rating);
+
         /////
         ///
         ////
@@ -97,8 +143,6 @@ class UniversityDuties extends Controller
         ///
         ///
         ///
-        $start = '2023/01/01';
-        $end = '2023/03/01';
         //все офферы студентам за период
         $ungrouped_uni_offers_count = Interaction::whereBetween('interactions.created_at', [$start . ' 00:00:00', $end . ' 23:59:59'])
             ->join('students', 'students.id', '=', 'interactions.student_id')
@@ -112,14 +156,19 @@ class UniversityDuties extends Controller
         //офферы текущего вуза
         $current_uni_offers_count = array_values(array_filter($grouped_uni_offers_count, function ($all) use ($university_id) {
             return $all[0]['university_id'] == $university_id;
-        }))[0];
-        //среднее количество офферов студенту по данному вузу
-        $x2 = $this->avg_by_student($current_uni_offers_count);
-        //среднее количество офферов студенту по каждому
-        $all_x2 = array_map(function ($uni) {
-            return $this->avg_by_student($uni);
-        }, $grouped_uni_offers_count);
-        $x2_result = $algo->z_normalize($x2, $all_x2);
+        }));
+        if ($current_uni_offers_count) {
+            $current_uni_offers_count = $current_uni_offers_count[0];
+            //среднее количество офферов студенту по данному вузу
+            $x2 = $this->avg_by_student($current_uni_offers_count);
+            //среднее количество офферов студенту по каждому
+            $all_x2 = array_map(function ($uni) {
+                return $this->avg_by_student($uni);
+            }, $grouped_uni_offers_count);
+            $x2_result = $algo->z_normalize($x2, $all_x2);
+        } else {
+            $x2_result = -1;
+        }
 
         ///
         //
@@ -134,12 +183,20 @@ class UniversityDuties extends Controller
         //количество работающих студентов данного вуза
         $current_uni_with_work = array_values(array_filter($with_work, function ($all) use ($university_id) {
             return $all['university_id'] == $university_id;
-        }))[0]["total"];
-        $x5 = $current_uni_with_work / count($uni_resumes);
-        $all_x5 = array_map(function ($uni) use ($grouped_total_count) {
-            return $uni["total"] / $grouped_total_count[array_search($uni["university_id"], $grouped_total_count)]["total"];
-        }, $with_work);
-        $x5_result = $algo->z_normalize($x5, $all_x5);
+        }));
+        if ($current_uni_with_work) {
+            $current_uni_with_work = $current_uni_with_work[0]["total"];
+            $x5 = $current_uni_with_work / count($uni_resumes);
+            $all_x5 = array_map(function ($uni) use ($grouped_total_count) {
+                return $uni["total"] / $grouped_total_count[array_search($uni["university_id"], $grouped_total_count)]["total"];
+            }, $with_work);
+            $x5_result = $algo->z_normalize($x5, $all_x5);
+        } else {
+            $x5_result = -1;
+        }
+
+        //
+        //
         ///
         ///
         ///
@@ -174,17 +231,26 @@ class UniversityDuties extends Controller
         //оценки резюме текущего вуза
         $current_uni_rates = array_values(array_filter($all_x3, function ($all) use ($university_id) {
             return $all[0] == $university_id;
-        }))[0][1];
-        //средняя оценка по всем резюме
-        $all_rate = array_sum(array_map(function ($el) {
-            return $el[1];
-        }, $all_rating)) / count($all_rating);
-        $x3 = $current_uni_rates / $all_rate; //относительная оценка по текущему вузу
-        $all_x3 = array_map(function ($uni) use ($all_rate) {
-            return $uni[1] / $all_rate;
-        }, $all_x3); //относительные оценки по всем вузам
-        $x3_result = $algo->z_normalize($x3, $all_x3);
+        }));
+        if ($current_uni_rates) {
+            $current_uni_rates = $current_uni_rates[0][1]; //средняя оценка по всем резюме
+            $all_rate = array_sum(array_map(function ($el) {
+                return $el[1];
+            }, $all_rating)) / count($all_rating);
+            $x3 = $current_uni_rates / $all_rate; //относительная оценка по текущему вузу
+            $all_x3 = array_map(function ($uni) use ($all_rate) {
+                return $uni[1] / $all_rate;
+            }, $all_x3); //относительные оценки по всем вузам
+            $x3_result = $algo->z_normalize($x3, $all_x3);
+        } else {
+            $x3_result = -1;
+        }
         //
+        //
+        //
+        //
+        //
+        //опыт работы по всем резюме всех вузов
         $work_experience = Interaction::whereIn('interactions.status', [3, 8, 9])
             ->join('students', 'students.id', '=', 'interactions.student_id')
             ->join('resumes', 'students.id', '=', 'resumes.student_id')
@@ -192,26 +258,34 @@ class UniversityDuties extends Controller
             ->get()
             ->toArray();
         $work_experience_days = [];
+        //считаем разность
         foreach ($work_experience as $we) {
+            //если работает, то до сегодняшнего дня
             if ($we["status"] == 8 || $we["status"] == 3) {
                 $ds = date_create($we["hired_at"]);
-                $de = Carbon::now();
+                $de = $today;
+                //если уже там не работает, то дата выставлена 9 статуса - дата найма
             } else if ($we["status"] == 9) {
                 $ds = date_create($we["hired_at"]);
                 $de = date_create($we["updated_at"]);
             }
             $diff = date_diff($ds, $de);
+            //переводим в дни
             $days = 365.25 * $diff->y + 30.4167 * $diff->m + $diff->d;
+            //если что-то пошло не так и опыт работы больше 12 лет
             if ($days > 4380) {
                 $days = 4380;
             }
             array_push($work_experience_days, ["resume_id" => $we["resume_id"], "university_id" => $we["university_id"], "work_type_id" => $we["work_type_id"],  "days" => $days]);
         }
+        //группируем по вузу
         $work_experience = $algo->_group_by($work_experience_days, 'university_id');
         $grouped_uni_we = [];
         foreach ($work_experience as $we) {
+            //внутри вуза группируем по типу работу
             $grouped_by_wt = $algo->_group_by($we, 'work_type_id');
             $avg_wt = [];
+            //по каждому типу работы получаем среднее количество дней
             foreach ($grouped_by_wt as $wt) {
                 array_push($avg_wt, [$wt[0]["work_type_id"], array_sum(array_map(function ($el) {
                     return $el["days"];
@@ -219,25 +293,43 @@ class UniversityDuties extends Controller
             }
             array_push($grouped_uni_we, ["university_id" => $we[0]["university_id"], "total" => $avg_wt]);
         }
+        //получаем опыты работы у текущего вуза
         $x4 = array_values(array_filter($grouped_uni_we, function ($all) use ($university_id) {
             return $all['university_id'] == $university_id;
-        }))[0]["total"];
-        $all_x4 = array_map(function ($all) {
-            return $all["total"];
-        }, $grouped_uni_we);
-        $x4_result = [];
-        foreach ($x4 as $i) {
-            $arr = [];
-            foreach ($all_x4 as $all) {
-                array_push($arr, ...array_filter($all, function ($a) use ($i) {
-                    return $a[0] == $i[0];
-                }));
+        }));
+        if ($x4) {
+            $x4 = $x4[0]["total"]; //опыт работы по всем вузам
+            $all_x4 = array_map(function ($all) {
+                return $all["total"];
+            }, $grouped_uni_we);
+            $x4_result = [];
+            //соотносим опыт работы по каждому виду у текущего вуза с остальными
+            foreach ($x4 as $i) {
+                $arr = [];
+                foreach ($all_x4 as $all) {
+                    array_push($arr, ...array_filter($all, function ($a) use ($i) {
+                        return $a[0] == $i[0];
+                    }));
+                }
+                $arr = array_map(function ($a) {
+                    return $a[1];
+                }, $arr);
+                array_push($x4_result, $algo->z_normalize($i[1], $arr));
             }
-            $arr = array_map(function ($a) {
-                return $a[1];
-            }, $arr);
-            array_push($x4_result, $algo->z_normalize($i[1], $arr));
+            $x4_result = array_sum($x4_result) / count($x4_result);
+        } else {
+            $x4_result = -1;
         }
-        return view('university.statictics');
+        $rating = $x1_result + $x2_result + $x3_result + $x4_result + $x5_result + 100;
+        //
+        if ($last_resumes > 0) {
+            $percent_resumes = (count($uni_resumes) - $last_resumes) / $last_resumes * 100;
+        } else $percent_resumes = count($uni_resumes) * 100;
+        $rate_percent = ($current_uni_rates - $last_x3) / $last_x3 * 100;
+        return view(
+            'university.statictics',
+            compact("rating", "today", "month_ago", "year_ago", "stats", "current_interactions", "uni_resumes", "current_uni_rates", "percent_interactions", "percent_resumes", "rate_percent"),
+            compact("x1_result", "x2_result", "x3_result", "x4_result", "x5_result", "current_uni_with_work")
+        );
     }
 }
