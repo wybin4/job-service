@@ -9,6 +9,7 @@
 
 </head>
 <x-university-layout>
+	@if (!$no_stats)
 	<div class="row choose-period">
 		@if ($stats == "month")
 		<div class="col-md-auto month-stat chosen text-muted">Месяц</div>
@@ -61,18 +62,18 @@
 				<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.0/chart.min.js"></script>
 				<script>
 					var marksCanvas = document.getElementById("marksChart");
-					let dataset = "{{$x1_result}},{{$x2_result}},{{$x3_result}},{{$x4_result}},{{$x5_result}}";
-					dataset = dataset.split(",");
+					let dataset = <?php echo json_encode($spider); ?>;
+					let labels = dataset.map(function($el) {
+						return $el[0];
+					});
+					let datas = dataset.map(function($el) {
+						return $el[1];
+					});
+					console.log(labels)
 					const data = {
-						labels: [
-							'Популярность',
-							'Востребованность',
-							'Оценки',
-							'Продолжительность работы',
-							'Трудоустроенность',
-						],
+						labels: labels,
 						datasets: [{
-							data: [dataset[0], dataset[1], dataset[2], dataset[3], dataset[4]],
+							data: datas,
 							fill: true,
 							backgroundColor: 'rgba(165, 180, 252, 0.3)',
 							borderColor: '#3965f5',
@@ -114,6 +115,7 @@
 			</div>
 			<div class="second-sc px-6 py-4 shadow-sm sm:rounded-lg bg-white">
 				<div class="text-xl">Результативность</div>
+				@if ($current_uni_with_work)
 				<p class="doughnut-text">{{$current_uni_with_work / count($uni_resumes) * 100}}%</p>
 				<div style="width:300px;margin-top:-60px;margin-bottom:-60px;"><canvas width="500" id="myChart"></canvas></div>
 				<script>
@@ -142,9 +144,11 @@
 						},
 					});
 				</script>
+				@endif
 			</div>
 		</div>
 	</div>
+	@endif
 </x-university-layout>
 <style>
 	.fa-marker {

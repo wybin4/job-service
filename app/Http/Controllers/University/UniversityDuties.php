@@ -115,10 +115,13 @@ class UniversityDuties extends Controller
             ->get();
         $last_grouped_rates = $algo->_group_by($last_rates, 'resume_id');
         $last_rating = $this->get_average_marks($algo, $last_grouped_rates);
-        $last_x3 = array_sum(array_map(function ($el) {
-            return $el[1];
-        }, $last_rating)) / count($last_rating);
-
+        if ($last_rating) {
+            $last_x3 = array_sum(array_map(function ($el) {
+                return $el[1];
+            }, $last_rating)) / count($last_rating);
+        } else {
+            $last_x3 = 0;
+        }
         /////
         ///
         ////
@@ -126,6 +129,10 @@ class UniversityDuties extends Controller
         $uni_resumes = Student::where('university_id', $university_id)
             ->join('resumes', 'students.id', '=', 'resumes.student_id')
             ->where('status', 0)->pluck('resumes.id')->toArray();
+        if (!count($uni_resumes)) {
+            $no_stats = true;
+            return view('university.statictics', compact("no_stats"));
+        }
         //количество резюме в каждом университете
         $grouped_uni_resume_count = Student::join('resumes', 'students.id', '=', 'resumes.student_id')
             ->where('status', 0)
@@ -158,6 +165,10 @@ class UniversityDuties extends Controller
         $current_uni_offers_count = array_values(array_filter($grouped_uni_offers_count, function ($all) use ($university_id) {
             return $all[0]['university_id'] == $university_id;
         }));
+        if (!$current_uni_offers_count) {
+            $no_stats = true;
+            return view('university.statictics', compact("no_stats"));
+        }
         if ($current_uni_offers_count) {
             $current_uni_offers_count = $current_uni_offers_count[0];
             //среднее количество офферов студенту по данному вузу
@@ -167,8 +178,6 @@ class UniversityDuties extends Controller
                 return $this->avg_by_student($uni);
             }, $grouped_uni_offers_count);
             $x2_result = $algo->z_normalize($x2, $all_x2);
-        } else {
-            $x2_result = -1;
         }
 
         ///
@@ -185,6 +194,10 @@ class UniversityDuties extends Controller
         $current_uni_with_work = array_values(array_filter($with_work, function ($all) use ($university_id) {
             return $all['university_id'] == $university_id;
         }));
+        if (!$current_uni_with_work) {
+            $no_stats = true;
+            return view('university.statictics', compact("no_stats"));
+        }
         if ($current_uni_with_work) {
             $current_uni_with_work = $current_uni_with_work[0]["total"];
             $x5 = $current_uni_with_work / count($uni_resumes);
@@ -192,10 +205,7 @@ class UniversityDuties extends Controller
                 return $uni["total"] / $grouped_total_count[array_search($uni["university_id"], $grouped_total_count)]["total"];
             }, $with_work);
             $x5_result = $algo->z_normalize($x5, $all_x5);
-        } else {
-            $x5_result = -1;
         }
-
         //
         //
         ///
@@ -233,6 +243,11 @@ class UniversityDuties extends Controller
         $current_uni_rates = array_values(array_filter($all_x3, function ($all) use ($university_id) {
             return $all[0] == $university_id;
         }));
+        if (!$current_uni_rates) {
+            $no_stats = true;
+            return view('university.statictics', compact("no_stats"));
+        }
+
         if ($current_uni_rates) {
             $current_uni_rates = $current_uni_rates[0][1]; //средняя оценка по всем резюме
             $all_rate = array_sum(array_map(function ($el) {
@@ -243,8 +258,6 @@ class UniversityDuties extends Controller
                 return $uni[1] / $all_rate;
             }, $all_x3); //относительные оценки по всем вузам
             $x3_result = $algo->z_normalize($x3, $all_x3);
-        } else {
-            $x3_result = -1;
         }
         //
         //
@@ -298,6 +311,10 @@ class UniversityDuties extends Controller
         $x4 = array_values(array_filter($grouped_uni_we, function ($all) use ($university_id) {
             return $all['university_id'] == $university_id;
         }));
+        if (!$x4) {
+            $no_stats = true;
+            return view('university.statictics', compact("no_stats"));
+        }
         if ($x4) {
             $x4 = $x4[0]["total"]; //опыт работы по всем вузам
             $all_x4 = array_map(function ($all) {
@@ -318,19 +335,33 @@ class UniversityDuties extends Controller
                 array_push($x4_result, $algo->z_normalize($i[1], $arr));
             }
             $x4_result = array_sum($x4_result) / count($x4_result);
-        } else {
-            $x4_result = -1;
         }
         $rating = $x1_result + $x2_result + $x3_result + $x4_result + $x5_result + 100;
+        $spider = [
+            ['Популярность', $x1_result],
+            ['Востребованность', $x2_result],
+            ['Оценки', $x3_result],
+            ['Продолжительность работы', $x4_result],
+            ['Трудоустроенность', $x5_result]
+        ];
+        
         //
-        if ($last_resumes > 0) {
+        if ($last_resumes > 0 && $last_resumes > 0) {
             $percent_resumes = (count($uni_resumes) - $last_resumes) / $last_resumes * 100;
         } else $percent_resumes = count($uni_resumes) * 100;
-        $rate_percent = ($current_uni_rates - $last_x3) / $last_x3 * 100;
+        if ($current_uni_rates && $last_x3 > 0) {
+            $rate_percent = ($current_uni_rates - $last_x3) / $last_x3 * 100;
+        } else {
+            $rate_percent = 0;
+            if (!$current_uni_rates) {
+                $current_uni_rates = 0;
+            }
+        }
+        $no_stats = false;
         return view(
             'university.statictics',
             compact("rating", "today", "month_ago", "year_ago", "stats", "current_interactions", "uni_resumes", "current_uni_rates", "percent_interactions", "percent_resumes", "rate_percent"),
-            compact("x1_result", "x2_result", "x3_result", "x4_result", "x5_result", "current_uni_with_work")
+            compact("spider", "current_uni_with_work", "no_stats")
         );
     }
     public function viewTotalStatistics()
