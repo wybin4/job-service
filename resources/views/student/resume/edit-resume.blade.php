@@ -23,12 +23,18 @@
 			create_notify('success', '{{session()->get("title")}}', '{{session()->get("text")}}');
 		</script>
 		@endif
+		@if ($errors->any())
+		@foreach ($errors->all() as $error)
+		<script>
+			create_notify('error', '{{$error}}');
+		</script>
+		@endforeach
+		@endif
 		<div class="tabs-div">
 			<div class="tab" id="add-resume"><i class="fa-solid fa-file-circle-plus"></i><span style="padding-left:10px">Редактирование резюме</span></div>
 			<div class="tab" id="rate-skills"><i class="fa-regular fa-star"></i><span style="padding-left:10px">Оценка навыков</span></div>
 		</div>
 		<x-big-card>
-			<x-errors class="mb-4" :errors="$errors" />
 			<form method="POST" action="{{ route('student.edit-resume') }}">
 				<input type="hidden" name="resume_id" value="{{$resume->id}}" />
 				<div id="rating-card" style="display:none">
@@ -61,7 +67,6 @@
 				</div>
 				<div id="resume-card">
 					<h2 class="header-text text-center">Редактирование резюме</h2>
-					<x-errors class="mb-4 mt-3" :errors="$errors" />
 					@csrf
 					<div id="profession_id"></div>
 					<div style="margin-top:20px">
