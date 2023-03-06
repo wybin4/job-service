@@ -368,7 +368,7 @@
 							$modal.hide();
 						}
 					});
-					location.reload();
+					//location.reload();
 				}
 			});
 		})

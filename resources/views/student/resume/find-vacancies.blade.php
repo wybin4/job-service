@@ -5,10 +5,12 @@
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous" />
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/simplePagination.js/1.6/jquery.simplePagination.js"></script>
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.css" />
 	<script src="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.js"></script>
 	<script src="{{asset('/js/toast.js')}}"></script>
 	<meta name="csrf-token" content="{{ csrf_token() }}">
+	<script src="{{asset('/js/range-functions.js')}}"></script>
 </head>
 <x-student-layout>
 
@@ -21,7 +23,7 @@
 	<div class="row">
 		<div class="col-md-auto">
 			<p class="font-bold text-4xl" style="margin-left:130px;margin-top:20px;"><a href="/student/resume-details">{{$resume->profession->profession_name}}</a></p>
-			<p class="text-muted" style="margin-left:130px;margin-top:-15px;">{{date_format(date_create($resume->created_at), 'd-m-Y')}}</p>
+			<p class="text-muted" style="margin-left:130px;">{{date_format(date_create($resume->created_at), 'd-m-Y')}}</p>
 		</div>
 		<div class="col-md-auto">
 			@if($resume->status == 0)
@@ -37,114 +39,156 @@
 		</div>
 	</div>
 	<section class='center'>
-		<table id='candidates' class='table table-hover'>
-			<tr class='t-head'>
-				<td>Компания</td>
-				<td>Опыт работы</td>
-				<td>Навыки</td>
-				<td>Статус</td>
-				<td></td>
-			</tr>
-			@php function YearTextArg($year) {
-			$year = abs($year);
-			$t1 = $year % 10;
-			$t2 = $year % 100;
-			return ($t1 == 1 && $t2 != 11 ? "год" : ($t1 >= 2 && $t1 <= 4 && ($t2 < 10 || $t2>= 20) ? "года" : "лет"));
-				}@endphp
-				@php function MonthTextArg($month) {
-				$month = abs($month);
-				$t1 = $month % 10;
-				$t2 = $month % 100;
-				return ($t1 == 1 && $t2 != 11 ? "месяц" : ($t1 >= 2 && $t1 <= 4 && ($t2 < 10 || $t2>= 20) ? "месяца" : "месяцев"));
+		<table id='candidates-table' class='table table-hover'>
+			<thead>
+				<tr class='t-head'>
+					<td>Компания</td>
+					<td>Оценка компании</td>
+					<td>Опыт работы</td>
+					<td>Навыки</td>
+					<td>Статус</td>
+					<td></td>
+				</tr>
+			</thead>
+			<tbody>
+				@php function YearTextArg($year) {
+				$year = abs($year);
+				$t1 = $year % 10;
+				$t2 = $year % 100;
+				return ($t1 == 1 && $t2 != 11 ? "год" : ($t1 >= 2 && $t1 <= 4 && ($t2 < 10 || $t2>= 20) ? "года" : "лет"));
 					}@endphp
-					@php $i = 0; @endphp
-					@foreach($vacancies as $vacancy)
-					<tr>
-						<td>
-							<div class="row">
-								<div class="col-md-3">
-									@if (!$vacancy->image)
-									<div class="future-pic">
-										<div>{{mb_substr($vacancy->employer_name, 0, 1)}}</div>
+					@php function MonthTextArg($month) {
+					$month = abs($month);
+					$t1 = $month % 10;
+					$t2 = $month % 100;
+					return ($t1 == 1 && $t2 != 11 ? "месяц" : ($t1 >= 2 && $t1 <= 4 && ($t2 < 10 || $t2>= 20) ? "месяца" : "месяцев"));
+						}@endphp
+						@php $i = 0; @endphp
+						@foreach($vacancies as $vacancy)
+						<tr>
+							<td>
+								<div class="row">
+									<div class="col-md-3">
+										@if (!$vacancy->image)
+										<div class="future-pic">
+											<div>{{mb_substr($vacancy->employer_name, 0, 1)}}</div>
+										</div>
+										@else
+										<img class="pic" src="{{asset('/storage/images/'.$vacancy->image)}}" />
+										@endif
 									</div>
-									@else
-									<img class="pic" src="{{asset('/storage/images/'.$vacancy->image)}}" />
-									@endif
+									<div class="col-md-9 mt-1">
+										<a class="font-bold" href="/student/employer/{{$vacancy->employer_id}}">{{$vacancy->employer_name}}</a>
+										<div class="text-gray-500">{{$vacancy->profession_name}}</div>
+									</div>
 								</div>
-								<div class="col-md-9 mt-1">
-									<div class="font-bold">{{$vacancy->employer_name}}</div>
-									<div class="text-gray-500">{{$vacancy->profession_name}}</div>
-								</div>
-							</div>
-						</td>
-						@if($vacancy->work_experience > 0)
-						<td>{{ $vacancy->work_experience . " " . MonthTextArg($vacancy->work_experience) }}</td>
-						@else
-						<td>Без опыта</td>
-						@endif
-						@php $i++; @endphp
-						<td class="vacancy_skills_area">
-							@php $vacancy_skills = App\Models\VacancySkill::where('vacancy_id', $vacancy->vacancy_id)
-							->join('skills', 'skills.id', '=', 'vacancy_skills.skill_id')
-							->get()
-							@endphp
-							@php $j = 0; @endphp
-							@foreach ($vacancy_skills as $vs)
-							@if ($j < 4) <div class="vacancy_skill">{{$vs->skill_name}}</div>
-								@endif
-								@php $j++; @endphp
-								@endforeach
-								@if ($j >= 4)
-								<div class="vacancy_skill">+1</div>
-								@endif
-						</td>
-						<td>
-							@php $status = $vacancy_order[array_search($vacancy->vacancy_id, array_column($vacancy_order, 0))][1]; @endphp
-							@if ($status == 3)
-							<div class="regular-match match">Средняя совместимость</div>
-							@elseif ($status == 4)
-							<div class="regular-match match">Высокая совместимость</div>
-							@elseif ($status == 5)
-							<div class="excellent-match match">Наивысшая совместимость</div>
+							</td>
+							<td id="rate-{{$vacancy->employer_id}}">—</td>
+							@if($vacancy->work_experience > 0)
+							<td>{{ $vacancy->work_experience . " " . YearTextArg($vacancy->work_experience) }}</td>
+							@else
+							<td>Без опыта</td>
 							@endif
-						</td>
-						<td>
-							<div class="hidden sm:flex sm:items-center sm:ml-4">
-								<x-dropdown align="left" width="78">
-									<x-slot name="trigger">
-										<button class="flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none focus:text-gray-700 focus:border-gray-300 transition duration-150 ease-in-out">
-											<div>⋮</div>
-										</button>
-									</x-slot>
-									<x-slot name="content">
-										<x-dropdown-link class="view-btn" href="/student/vacancy/{{$vacancy->vacancy_id}}" target="_blank">
-											Просмотреть вакансию
-										</x-dropdown-link>
-										<x-dropdown-link class="response-btn" id="response-btn-{{$vacancy->vacancy_id}}">
-											Откликнуться
-										</x-dropdown-link>
-									</x-slot>
-								</x-dropdown>
-							</div>
-						</td>
-					</tr>
-					@endforeach
+							@php $i++; @endphp
+							<td class="vacancy_skills_area">
+								@php $vacancy_skills = App\Models\VacancySkill::where('vacancy_id', $vacancy->vacancy_id)
+								->join('skills', 'skills.id', '=', 'vacancy_skills.skill_id')
+								->get()
+								@endphp
+								@php $j = 0; @endphp
+								@foreach ($vacancy_skills as $vs)
+								@if ($j < 4) <div class="vacancy_skill">{{$vs->skill_name}}</div>
+									@endif
+									@php $j++; @endphp
+									@endforeach
+									@if ($j >= 4)
+									<div class="vacancy_skill">+1</div>
+									@endif
+							</td>
+							<td>
+								@php $status = $vacancy_order[array_search($vacancy->vacancy_id, array_column($vacancy_order, 0))][1]; @endphp
+								@if ($status == 3)
+								<div class="regular-match match">Средняя совместимость</div>
+								@elseif ($status == 4)
+								<div class="regular-match match">Высокая совместимость</div>
+								@elseif ($status == 5)
+								<div class="excellent-match match">Наивысшая совместимость</div>
+								@endif
+							</td>
+							<td>
+								<div class="hidden sm:flex sm:items-center sm:ml-4">
+									<x-dropdown align="left" width="78">
+										<x-slot name="trigger">
+											<button class="flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none focus:text-gray-700 focus:border-gray-300 transition duration-150 ease-in-out">
+												<div>⋮</div>
+											</button>
+										</x-slot>
+										<x-slot name="content">
+											<x-dropdown-link class="view-btn" href="/student/vacancy/{{$vacancy->vacancy_id}}" target="_blank">
+												Просмотреть вакансию
+											</x-dropdown-link>
+											<x-dropdown-link class="response-btn" id="response-btn-{{$vacancy->vacancy_id}}">
+												Откликнуться
+											</x-dropdown-link>
+										</x-slot>
+									</x-dropdown>
+								</div>
+							</td>
+						</tr>
+						@endforeach
+			</tbody>
 		</table>
+		<div id="pagination"></div>
 	</section>
+	<script>
+		let er = <?php echo json_encode($employer_rates); ?>;
+		er = group_by(er, "employer_id");
+		for (let k in er) {
+			let employer_rates = [];
+			if (er[k].length) {
+				let rates = new Set(er[k].map(r => r.quality_id));
+				rates = Array.from(rates);
+				let arr;
+				// получаем employer_rates с отдельными quality_id и массивом оценок к нему
+				for (let i = 0; i < rates.length; i++) {
+					arr = er[k].filter((r) => {
+						return r.quality_id == rates[i]
+					});
+					if (arr.length > 1) {
+						employer_rates.push([rates[i],
+							get_trend([arr.map(a => Math.trunc(new Date(a.updated_at).getTime() / (1000 * 3600 * 24))), arr.map(a => a.quality_rate)])
+						]);
+					} else {
+						employer_rates.push([rates[i],
+							[arr.map(a => Math.trunc(new Date(a.updated_at).getTime() / (1000 * 3600 * 24))), arr.map(a => a.quality_rate)]
+						])
+					}
+				}
+				// получаем ema для employer_rates
+				let employer_ema = [];
+				employer_rates.forEach(function(rate) {
+					employer_ema.push([rate[0], get_ema(rate[1][1])])
+				})
+				const sum = employer_ema.reduce((acc, number) => acc + number[1], 0);
+				const length = employer_ema.length;
+				$("#rate-" + er[k][0].employer_id).text((sum / length).toFixed(2));
+			}
+		}
+	</script>
 	@else
 	<div style="height:100vh;background-color:white">
 		<div class="first-div text-center">
 
-			<h1 class="big-text">Подходящих резюме не найдено. Воспользуйтесь <span class="big-indigo-text">общим поиском</span>.</h1>
+			<h1 class="big-text">Подходящих вакансий не найдено. Воспользуйтесь <span class="big-indigo-text">общим поиском</span>.</h1>
 			<span class="big-indigo-underline"></span>
 			<p id="popular"><span class="text-muted font-bold examples-p">Популярные запросы:</span>
 				<span>
 					@php $i = 1; @endphp
 					@foreach($popular_professions as $pp)
 					@if ($i == count($popular_professions))
-					<a href="/employer/resume-feed?profession_name={{$pp->profession_name}}" class="text-gray-500">{{$pp->profession_name}}</a>
+					<a href="/student/vacancy-feed?profession_name={{$pp->profession_name}}" class="text-gray-500">{{$pp->profession_name}}</a>
 					@else
-					<a href="/employer/resume-feed?profession_name={{$pp->profession_name}}" class="text-gray-500">{{$pp->profession_name}}, </a>
+					<a href="/student/vacancy-feed?profession_name={{$pp->profession_name}}" class="text-gray-500">{{$pp->profession_name}}, </a>
 					@endif
 					@php $i++; @endphp
 					@endforeach
@@ -156,11 +200,6 @@
 	@endif
 </x-student-layout>
 
-<head>
-	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
-	<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
-</head>
 <style>
 	@import url('https://fonts.googleapis.com/css2?family=Montserrat&display=swap');
 
@@ -221,6 +260,7 @@
 	}
 
 	.table {
+		margin-top: 20px;
 		width: 1200px !important;
 		font-size: 14px;
 		margin-left: auto;
@@ -386,8 +426,85 @@
 	.search-vacancy a {
 		color: white !important;
 	}
+
+
+	/* */
+	/** */
+	.simple-pagination ul {
+		margin: 0 0 20px;
+		padding: 0;
+		list-style: none;
+		text-align: center;
+	}
+
+	.simple-pagination li {
+		display: inline-block;
+		margin-right: 5px;
+
+	}
+
+	.simple-pagination li a,
+	.simple-pagination li span {
+		color: black;
+		transition: all .3s;
+		border: none;
+		padding: 8px 16px;
+		text-decoration: none;
+		border-radius: 5px;
+		font-size: 15px;
+		background-color: transparent;
+	}
+
+	.simple-pagination li a:hover {
+		background-color: var(--dot-color);
+	}
+
+	.simple-pagination .current {
+		color: white;
+		background-color: var(--link-hover-color);
+		border-color: none;
+	}
+
+	.simple-pagination .prev.current,
+	.simple-pagination .next.current {
+		background: transparent;
+		color: black;
+	}
+
+	#pagination {
+		margin-top: 35px;
+	}
+
+	html {
+		overflow-x: hidden;
+	}
 </style>
 <script>
+	function paginate() {
+		let items = $("#candidates-table tbody tr");
+		let numItems = items.length;
+		let perPage = 5;
+		items.slice(perPage).hide();
+		if (numItems < perPage) {
+			$("#pagination").hide();
+		} else {
+			$("#pagination").show();
+		}
+		$("#pagination").pagination({
+			items: numItems,
+			itemsOnPage: perPage,
+			cssStyle: "light-theme",
+			prevText: "«",
+			nextText: "»",
+			onPageClick: function(pageNumber) {
+				let showFrom = perPage * (pageNumber - 1);
+				let showTo = showFrom + perPage;
+				items.hide()
+					.slice(showFrom, showTo).show();
+			}
+		});
+	}
+	paginate();
 	$(".response-btn").click(function() {
 		let id = $(this).attr('id');
 		id = id.split('-');

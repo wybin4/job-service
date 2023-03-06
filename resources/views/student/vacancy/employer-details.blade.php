@@ -113,7 +113,9 @@ return ($t1 == 1 && $t2 != 11 ? "год" : ($t1 >= 2 && $t1 <= 4 && ($t2 < 10 ||
 						</div>
 						<script>
 							moment.locale('ru');
-							$("#latest-date").text(moment.duration(moment().diff($("#latest-date").text())).humanize() + " назад");
+							let date = moment.duration(moment().diff($("#latest-date").text())).humanize() + " назад";
+							date = date.charAt(0).toUpperCase() + date.slice(1);
+							$("#latest-date").text(date);
 						</script>
 						@endif
 						<div class="side-info mb-4">
@@ -448,6 +450,7 @@ return ($t1 == 1 && $t2 != 11 ? "год" : ($t1 >= 2 && $t1 <= 4 && ($t2 < 10 ||
 
 	let employer_rates = [];
 	const er = <?php echo json_encode($employer_rates); ?>;
+	console.log(er)
 	if (er.length) {
 		let rates = new Set(er.map(r => r.quality_id));
 		rates = Array.from(rates);

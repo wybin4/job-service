@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Course;
 use App\Models\Education;
+use App\Models\EmployerRate;
 use App\Models\Interaction;
 use App\Models\Profession;
 use Illuminate\Http\Request;
@@ -74,6 +75,7 @@ class ResumeController extends Controller
             }
             $work_exps = [$result->diff($diff_res)->y, $result->diff($diff_res)->m];
         } else $work_exps = [0, 0];
+
         $vacancy_work_exp = Vacancy::whereIn('vacancies.id', $vacancies)
             ->select('id', 'work_experience')
             ->get()->toArray();
@@ -116,20 +118,37 @@ class ResumeController extends Controller
         $vacancy_ids = array_map(function ($r) {
             return $r[0];
         }, $vacancy_order);
-        $vacancies = DB::table('vacancies')
-            ->join('employers', 'employers.id', '=', 'vacancies.employer_id')
-            ->join('professions', 'professions.id', '=', 'vacancies.profession_id')
-            ->select(
-                '*',
-                'vacancies.id as vacancy_id',
-                'employers.id as employer_id',
-                'employers.name as employer_name',
-                'vacancies.created_at as vacancy_created_at'
-            )
-            ->whereIn('vacancies.id', $vacancy_ids)
-            ->orderByRaw('FIELD (vacancies.id, ' . implode(', ', $vacancy_ids) . ') ASC')
+        if ($vacancy_ids) {
+            $vacancies = DB::table('vacancies')
+                ->join('employers', 'employers.id', '=', 'vacancies.employer_id')
+                ->join('professions', 'professions.id', '=', 'vacancies.profession_id')
+                ->select(
+                    '*',
+                    'vacancies.id as vacancy_id',
+                    'employers.id as employer_id',
+                    'employers.name as employer_name',
+                    'vacancies.created_at as vacancy_created_at'
+                )
+                ->whereIn('vacancies.id', $vacancy_ids)
+                ->orderByRaw('FIELD (vacancies.id, ' . implode(', ', $vacancy_ids) . ') ASC')
+                ->get();
+            $employer_ids = Vacancy::whereIn('vacancies.id', $vacancy_ids)->groupBy("employer_id")->pluck("employer_id")->toArray();
+            $employer_rates = EmployerRate::whereIn('employer_id', $employer_ids)
+            ->join('employer_qualities', 'employer_qualities.id', '=', 'employer_rates.quality_id')
+            ->select('*', 'employer_rates.updated_at as updated_at')
+            ->orderBy('employer_rates.updated_at', 'asc')
             ->get();
-        return view("student.resume.find-vacancies", compact("vacancies", "resume", "vacancy_order"));
+            return view("student.resume.find-vacancies", compact("vacancies", "resume", "vacancy_order", "employer_rates"));
+        } else {
+            $vacancies = [];
+            $popular_professions = Vacancy::where('status', 0)
+            ->join('professions', 'professions.id', '=', 'vacancies.profession_id')
+            ->select(DB::raw('count(*) as profession_name_count, profession_name'))
+            ->groupBy('profession_name')
+            ->orderBy('profession_name_count', 'desc')
+            ->paginate(3);
+            return view("student.resume.find-vacancies", compact("popular_professions", "vacancies"));
+        }
     }
     public function addExperience(Request $request)
     {

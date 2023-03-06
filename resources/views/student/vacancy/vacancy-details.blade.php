@@ -43,8 +43,8 @@
 								</div>
 							</div>
 							<div class="col-md-auto mt-4">
-								<h3 class="little-header-text">{{$employer->name}}</h3>
-								<div class="text-muted">{{$profession->profession_name}}</div>
+								<div class="little-header-text">{{$profession->profession_name}}</div>
+								<a class="text-muted" href="/student/employer/{{$employer->id}}">{{$employer->name}}</a>
 							</div>
 						</div>
 						<div class="tabs">

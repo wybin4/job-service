@@ -79,4 +79,10 @@ function get_average(arr) {
 
 function compare(a, b) {
 	return a[1] - b[1]
-}
+} 
+function group_by(xs, key) {
+	return xs.reduce(function (rv, x) {
+		(rv[x[key]] = rv[x[key]] || []).push(x);
+		return rv;
+	}, {});
+};

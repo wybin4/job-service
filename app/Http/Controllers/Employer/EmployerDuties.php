@@ -92,7 +92,7 @@ class EmployerDuties extends Controller
             $employer->save();
         }
         if ($request->image) {
-            $folderPath = 'C:\11\new_try\laravel-9-multi-auth-system\storage\app\public\images\\';
+            $folderPath = storage_path() . '\app\public\images\\';
 
             $image_parts = explode(";base64,", $request->image);
             $image_type_aux = explode("image/", $image_parts[0]);
