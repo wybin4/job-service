@@ -25,12 +25,18 @@
 			create_notify('success', '{{session()->get("title")}}', '{{session()->get("text")}}');
 		</script>
 		@endif
+		@if ($errors->any())
+		@foreach ($errors->all() as $error)
+		<script>
+			create_notify('error', '{{$error}}');
+		</script>
+		@endforeach
+		@endif
 		<div class="tabs-div">
 			<div class="tab" id="add-resume"><i class="fa-solid fa-file-circle-plus"></i><span style="padding-left:10px">Добавление резюме</span></div>
 			<div class="tab" id="rate-skills"><i class="fa-regular fa-star"></i><span style="padding-left:10px">Оценка навыков</span></div>
 		</div>
 		<x-big-card>
-			<x-errors class="mb-4" :errors="$errors" />
 			<form method="POST" action="{{ route('student.create-resume') }}">
 				<div id="rating-card" style="display:none">
 					<h2 class="medium-text text-center">Оценка навыков</h2>
@@ -216,6 +222,28 @@
 					<!---->
 					<div id="edu-div" class="card-div">
 						<x-label for="btn-add-edu">Образование</x-label>
+						<div class="ready-div" id="ready-edu-div-1">
+							<div class="input-hidden-area">
+								<input type="hidden" name="university_name[]" value="{{$university->name}}" class="hidden-input" />
+								<input type="hidden" name="edu_location[]" value="{{Auth::user()->location}}" class="hidden-input" />
+								<input type="hidden" name="speciality_name[]" value="" class="hidden-input" />
+								<input type="hidden" name="edu_date_start[]" value="" class="hidden-input" />
+								<input type="hidden" name="edu_date_end[]" value="" class="hidden-input" />
+								<input type="hidden" name="edu_description[]" value="" />
+							</div>
+							<div class="row">
+								<div class="col-md-10 edu-view">
+									<p class="card-name">{{$university->name}}</p>
+									<p>
+										<span class="card-location">{{Auth::user()->location}}</span>
+									</p>
+								</div>
+								<div class="col-md-2">
+									<i class="fa-solid fa-pen edu-edit" id="edu-edit-1" style="margin-top:3px;cursor:pointer;margin-left:10px;"></i>
+									<i class="fa-solid fa-trash edu-delete" style="margin-top:3px;cursor:pointer;margin-left:5px;"></i>
+								</div>
+							</div>
+						</div>
 						<p id="btn-add-edu" style="margin-top:10px;cursor:pointer;"><i style="margin-top:10px" class="fa-solid fa-graduation-cap"></i><span style="padding-left:10px">Добавить сведения об образовании</span></p>
 						<div id="area-add-edu" style="display:none">
 							<div style="margin-top:20px">
@@ -457,7 +485,6 @@
 		} else if (!skills.length) {
 			$('html,body').scrollTop(0);
 			create_notify('error', 'Ошибка добавления резюме', 'Добавьте навыки');
-
 		}
 	}
 	$('#next-page').on('click', open_rate_area);
@@ -1040,6 +1067,58 @@
 		}
 		reset_edu_values('add');
 	});
+	$('.edu-delete').on('click', function() {
+		$(this).closest('.ready-div').remove();
+	})
+	$('.edu-edit').on('click', function() {
+		const our_div = $(this).closest('.ready-div');
+		let id = ($(this).attr('id')).split('-');
+		id = id[id.length - 1];
+		$("#id-edu-edit").val(id);
+		const values = our_div.find(".input-hidden-area");
+		let university_name = values.children('input[name="university_name[]"]').val();
+		let speciality_name = values.children('input[name="speciality_name[]"]').val();
+		let edu_location = values.children('input[name="edu_location[]"]').val();
+		let edu_date_start = values.children('input[name="edu_date_start[]"]').val();
+		let edu_date_end = values.children('input[name="edu_date_end[]"]').val();
+		let edu_month_start = edu_date_start.split('-')[1];
+		let edu_year_start = edu_date_start.split('-')[0];
+		let edu_month_end = edu_date_end.split('-')[1];
+		let edu_year_end = edu_date_end.split('-')[0];
+		let edu_description = values.children('input[name="edu_description[]"]').val();
+		///
+		$('#btn-add-edu').hide();
+		$('#area-edit-edu').show();
+		our_div.hide();
+		$('#edit_university_name').val(university_name);
+		$('#edit_edu_location').val(edu_location);
+		$('#edit_speciality_name').val(speciality_name);
+		edit_smth();
+
+		$(`#edit-normal-select-8`).attr("placeholder-text", $(`#edit-normal-select-8 option[value="${edu_month_start}"]`).text());
+		$(`#edit-normal-select-9`).attr("placeholder-text", $(`#edit-normal-select-9 option[value="${edu_year_start}"]`).text());
+		$(`#edit-normal-select-10`).attr("placeholder-text", $(`#edit-normal-select-10 option[value="${edu_month_end}"]`).text());
+		$(`#edit-normal-select-11`).attr("placeholder-text", $(`#edit-normal-select-11 option[value="${edu_year_end}"]`).text());
+
+		$(`#edit-normal-select-8 option[value="${edu_month_start}"]`).attr("selected", true);
+		$(`#edit-normal-select-9 option[value="${edu_year_start}"]`).attr("selected", true);
+		$(`#edit-normal-select-10 option[value="${edu_month_end}"]`).attr("selected", true);
+		$(`#edit-normal-select-11 option[value="${edu_year_end}"]`).attr("selected", true);
+		createSelect();
+		$('#edit_edu_description').val(edu_description);
+		//
+		//
+		$('#delete-editable-edu').click({
+				our_div: our_div,
+			},
+			function() {
+				our_div.show();
+				$('#btn-add-edu').show();
+				$('#area-edit-edu').hide();
+				reset_edu_values('edit');
+			})
+		//
+	})
 	$('#edit-edu').click(function() {
 		const id = $("#id-edu-edit").val();
 		const our_div = $(`#ready-edu-div-${id}`);

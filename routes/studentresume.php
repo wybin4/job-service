@@ -20,13 +20,15 @@ Route::group(['middleware' => ['auth:student'], 'prefix' => 'student', 'as' => '
 		$type_of_employment = TypeOfEmployment::all();
 		$work_type = WorkType::all();
 		$skill = Skill::all();
+		$university = Auth::user()->university;
 		return view('student.resume.create-resume')
 		->with('sphere', $sphere)
 			->with('category', $category)
 			->with('profession', $profession)
 			->with('type_of_employment', $type_of_employment)
 			->with('work_type', $work_type)
-			->with('skill', $skill);
+			->with('skill', $skill)
+			->with('university', $university);
 	})->name('create-resume');
 	Route::post('/create-resume', [ResumeController::class, 'createResume'])->name('create-resume');
 	Route::get('/resume/{id}', [ResumeController::class, 'resumeDetails'])->name('resume');

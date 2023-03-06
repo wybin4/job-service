@@ -25,6 +25,10 @@ class University extends Authenticatable
     protected $hidden = [
         'password',
     ];
+    public function students()
+    {
+        return $this->hasMany(Student::class);
+    }
     public function loginTokens()
     {
         return $this->hasMany(UniversityLoginToken::class);

@@ -134,19 +134,19 @@ class ResumeController extends Controller
                 ->get();
             $employer_ids = Vacancy::whereIn('vacancies.id', $vacancy_ids)->groupBy("employer_id")->pluck("employer_id")->toArray();
             $employer_rates = EmployerRate::whereIn('employer_id', $employer_ids)
-            ->join('employer_qualities', 'employer_qualities.id', '=', 'employer_rates.quality_id')
-            ->select('*', 'employer_rates.updated_at as updated_at')
-            ->orderBy('employer_rates.updated_at', 'asc')
-            ->get();
+                ->join('employer_qualities', 'employer_qualities.id', '=', 'employer_rates.quality_id')
+                ->select('*', 'employer_rates.updated_at as updated_at')
+                ->orderBy('employer_rates.updated_at', 'asc')
+                ->get();
             return view("student.resume.find-vacancies", compact("vacancies", "resume", "vacancy_order", "employer_rates"));
         } else {
             $vacancies = [];
             $popular_professions = Vacancy::where('status', 0)
-            ->join('professions', 'professions.id', '=', 'vacancies.profession_id')
-            ->select(DB::raw('count(*) as profession_name_count, profession_name'))
-            ->groupBy('profession_name')
-            ->orderBy('profession_name_count', 'desc')
-            ->paginate(3);
+                ->join('professions', 'professions.id', '=', 'vacancies.profession_id')
+                ->select(DB::raw('count(*) as profession_name_count, profession_name'))
+                ->groupBy('profession_name')
+                ->orderBy('profession_name_count', 'desc')
+                ->paginate(3);
             return view("student.resume.find-vacancies", compact("popular_professions", "vacancies"));
         }
     }
@@ -212,6 +212,27 @@ class ResumeController extends Controller
         if ($request->company_name || $request->work_title) {
             $i = 0;
             foreach ($request->company_name as $index) {
+                $validator = Validator::make(
+                    $request->all(),
+                    [
+                        'company_name.*' => 'required',
+                        'work_title.*' => 'required',
+                    ],
+                    [
+                        'company_name.*.required' => 'Укажите название компании',
+                        'work_title.*.required' => 'Укажите название должности',
+                    ]
+                );
+                if ($validator->fails()) {
+                    return redirect()->back()
+                        ->withErrors($validator)
+                        ->withInput();
+                }
+                if ($validator->fails()) {
+                    return redirect()->back()
+                        ->withErrors($validator)
+                        ->withInput();
+                }
                 if ($request->company_name || $request->work_title) {
                     if ($request->work_experience_id[$i] != "-1") {
                         $wexp = WorkExperience::find($request->work_experience_id[$i]);
@@ -241,6 +262,22 @@ class ResumeController extends Controller
         }
         if ($request->university_name || $request->speciality_name) {
             $i = 0;
+            $validator = Validator::make(
+                $request->all(),
+                [
+                    'university_name.*' => 'required',
+                    'speciality_name.*' => 'required',
+                ],
+                [
+                    'university_name.*.required' => 'Выберите профессию',
+                    'speciality_name.*.required' => 'Укажите контакты',
+                ]
+            );
+            if ($validator->fails()) {
+                return redirect()->back()
+                    ->withErrors($validator)
+                    ->withInput();
+            }
             foreach ($request->university_name as $index) {
                 if ($request->university_name || $request->speciality_name) {
                     if ($request->education_id[$i] != "-1") {
@@ -270,6 +307,22 @@ class ResumeController extends Controller
         }
         if ($request->platform_name && $request->course_name) {
             $i = 0;
+            $validator = Validator::make(
+                $request->all(),
+                [
+                    'platform_name.*' => 'required',
+                    'course_name.*' => 'required',
+                ],
+                [
+                    'platform_name.*.required' => 'Укажите название платформы',
+                    'course_name.*.required' => 'Укажите название курса',
+                ]
+            );
+            if ($validator->fails()) {
+                return redirect()->back()
+                    ->withErrors($validator)
+                    ->withInput();
+            }
             foreach ($request->platform_name as $index) {
                 if ($request->platform_name && $request->course_name) {
                     if ($request->course_id[$i] != "-1") {
@@ -406,6 +459,22 @@ class ResumeController extends Controller
         }
         if ($request->company_name || $request->work_title) {
             $i = 0;
+            $validator = Validator::make(
+                $request->all(),
+                [
+                    'company_name.*' => 'required',
+                    'work_title.*' => 'required',
+                ],
+                [
+                    'company_name.*.required' => 'Укажите название компании',
+                    'work_title.*.required' => 'Укажите название должности',
+                ]
+            );
+            if ($validator->fails()) {
+                return redirect()->back()
+                    ->withErrors($validator)
+                    ->withInput();
+            }
             foreach ($request->company_name as $index) {
                 if ($request->company_name || $request->work_title) {
                     WorkExperience::create([
@@ -423,6 +492,22 @@ class ResumeController extends Controller
         }
         if ($request->university_name || $request->speciality_name) {
             $i = 0;
+            $validator = Validator::make(
+                $request->all(),
+                [
+                    'university_name.*' => 'required',
+                    'speciality_name.*' => 'required',
+                ],
+                [
+                    'university_name.*.required' => 'Укажите название учебного заведения',
+                    'speciality_name.*.required' => 'Укажите название специальности',
+                ]
+            );
+            if ($validator->fails()) {
+                return redirect()->back()
+                    ->withErrors($validator)
+                    ->withInput();
+            }
             foreach ($request->university_name as $index) {
                 if ($request->university_name || $request->speciality_name) {
                     Education::create([
@@ -440,6 +525,22 @@ class ResumeController extends Controller
         }
         if ($request->platform_name && $request->course_name) {
             $i = 0;
+            $validator = Validator::make(
+                $request->all(),
+                [
+                    'platform_name.*' => 'required',
+                    'course_name.*' => 'required',
+                ],
+                [
+                    'platform_name.*.required' => 'Укажите название платформы',
+                    'course_name.*.required' => 'Укажите название курса',
+                ]
+            );
+            if ($validator->fails()) {
+                return redirect()->back()
+                    ->withErrors($validator)
+                    ->withInput();
+            }
             foreach ($request->platform_name as $index) {
                 if ($request->platform_name && $request->course_name) {
                     Course::create([
