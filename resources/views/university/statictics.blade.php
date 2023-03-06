@@ -103,14 +103,14 @@
 		</div>
 		<div class="col-md-auto">
 			<div class="second-sc px-6 py-4 shadow-sm sm:rounded-lg bg-white">
-				<div class="row">
+				<a class="row" href="/university/total-statistics">
 					<div class="col-md-auto"><i class="fa-solid fa-marker"></i></div>
 					<div class="col-md-auto">
 						<div class="text-md">Общий балл</div>
 						<div class="text-sm text-muted">В статистике учебных заведений</div>
 					</div>
 					<div class="col-md-auto text-2xl mt-1">{{number_format($rating, 2)}}</div>
-				</div>
+				</a>
 			</div>
 			<div class="second-sc px-6 py-4 shadow-sm sm:rounded-lg bg-white">
 				<div class="text-xl">Результативность</div>

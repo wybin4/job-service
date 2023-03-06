@@ -47,7 +47,16 @@
                     <i class="fa-solid fa-trophy"></i>
                 </div>
                 <div class="col-md-auto">
-                    <div class="btn-title">Статистика</div>
+                    <div class="btn-title">Моя статистика</div>
+                    <div class="btn-text">Просмотр</div>
+                </div>
+            </a>
+            <a class="row btn-area" href="{{ url('/university/total-statistics') }}">
+                <div class="col-md-auto btn-i">
+                    <i class="fa-solid fa-earth-europe"></i>
+                </div>
+                <div class="col-md-auto">
+                    <div class="btn-title">Общая статистика</div>
                     <div class="btn-text">Просмотр</div>
                 </div>
             </a>

@@ -33,15 +33,12 @@ Route::get('/university/dashboard', function () {
     return view('university.dashboard');
 })->middleware(['auth:university'])->name('university.dashboard');
 require __DIR__ . '/universityauth.php';
-Route::get('/university/add-one', [AddStudentController::class, 'openAddOne']);
-Route::post('/university/add-one', [AddStudentController::class, 'addOneStudent']);
-Route::get('/university/add-many', [AddStudentController::class, 'openAddMany']);
-Route::post('/university/add-many', [AddStudentController::class, 'addManyStudents']);
-Route::get('/university/statistics', [UniversityDuties::class, 'viewStatictics']);
 Route::group(['middleware' => ['guest']], function () {
     Route::get('/university/password-link/{token}', [ControllersAddUniversityController::class, 'showUniversityPasswordSetter'])->name('university.password-link');
     Route::post('/university/password-link/{token}', [ControllersAddUniversityController::class, 'setPassword'])->name('university.password-link');
 });
+require __DIR__ . '/universityduties.php';
+
 
 /////
 
@@ -125,5 +122,3 @@ Route::post('/employer/mark-as-read', function (Request $request) {
 require __DIR__ . '/employerprofile.php';
 require __DIR__ . '/employervacancy.php';
 require __DIR__ . '/employerresume.php';
-
-
