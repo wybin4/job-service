@@ -48,8 +48,8 @@ class AdminDuties extends Controller
         ///
         //оценки всех qualities всех работодателей
         $all_employer_rates = EmployerRate::join('employers', 'employer_rates.employer_id', '=', 'employers.id')
-        ->select('*', 'employer_rates.updated_at as updated_at')
-        ->get();
+            ->select('*', 'employer_rates.updated_at as updated_at')
+            ->get();
         //группируем скиллы по employer_id
         $all_employer_grouped_rates = $algo->_group_by($all_employer_rates, 'employer_id');
         //получаем оценки по всем работодателям
@@ -93,28 +93,39 @@ class AdminDuties extends Controller
         //////
         ////
         $offers = Interaction::where('type', 1)->selectRaw('year(created_at) year, month(created_at) month_numb, count(*) data')
-        ->groupBy('year', 'month_numb')
-        ->orderBy('year', 'desc')
-        ->orderBy('month_numb', 'desc')
-        ->limit(6)
-        ->get();
+            ->groupBy('year', 'month_numb')
+            ->orderBy('year', 'desc')
+            ->orderBy('month_numb', 'desc')
+            ->limit(6)
+            ->get();
         $responses = Interaction::where('type', 0)->selectRaw('year(created_at) year, month(created_at) month_numb, count(*) data')
-        ->groupBy('year', 'month_numb')
-        ->orderBy('year', 'desc')
-        ->orderBy('month_numb', 'desc')
-        ->limit(6)
-        ->get();
+            ->groupBy('year', 'month_numb')
+            ->orderBy('year', 'desc')
+            ->orderBy('month_numb', 'desc')
+            ->limit(6)
+            ->get();
         $employments = Interaction::selectRaw('year(hired_at) year, month(hired_at) month_numb, count(*) data')
-        ->whereNotNull('hired_at')
-        ->groupBy('year', 'month_numb')
-        ->orderBy('year', 'desc')
-        ->orderBy('month_numb', 'desc')
-        ->limit(6)
-        ->get();
+            ->whereNotNull('hired_at')
+            ->groupBy('year', 'month_numb')
+            ->orderBy('year', 'desc')
+            ->orderBy('month_numb', 'desc')
+            ->limit(6)
+            ->get();
+        ////////
+        //////
+        /////
+        //////
+        $employments_category = Interaction::whereNotNull('hired_at')
+            ->join('students', 'students.id', '=', 'interactions.student_id')
+            ->join('resumes', 'resumes.student_id', '=', 'students.id')
+            ->join('work_types', 'work_types.id', '=', 'resumes.work_type_id')
+            ->selectRaw('work_type_name name, count(*) val')
+            ->groupBy('work_type_name')
+            ->get();
         return view(
             "admin.duties.statistics",
             compact("resume", "vacancy", "curr_resume", "curr_vacancy", "percent_resume", "percent_vacancy", "rivalry"),
-            compact("csat_employer", "csat_student","offers", "responses", "employments"),
+            compact("csat_employer", "csat_student", "offers", "responses", "employments", "employments_category"),
         );
     }
     //навыки

@@ -107,7 +107,7 @@
 				</div>
 			</div>
 			<div class="col-md-auto">
-				<div class="second-sc px-6 py-4 shadow-sm sm:rounded-lg bg-white" style="margin-top:110px">
+				<div class="second-sc px-6 py-4 shadow-sm sm:rounded-lg bg-white">
 					<div class="row">
 						<div class="col-md-auto"><i class="fa-regular fa-face-smile"></i></div>
 						<div class="col-md-auto">
@@ -137,6 +137,19 @@
 					</div>
 				</div>
 				<div class="second-sc px-6 py-4 shadow-sm sm:rounded-lg bg-white">
+					<div class="text-md">Трудоустройства по категориям</div>
+					<div id="donut_types" style="margin-top:-40px"></div>
+					<div class="text-sm text-muted pt-3">
+						<span class="circle-blue"></span>
+						<span class="pr-4">Работа</span>
+						<span class="circle-light"></span>
+						<span class="pr-4">Стажировка</span>
+						<span class="circle-grey"></span>
+						<span>Практика</span>
+					</div>
+				</div>
+				<!--
+				<div class="second-sc px-6 py-4 shadow-sm sm:rounded-lg bg-white">
 					<a class="row" href="/admin/university-statistics">
 						<div class="col-md-auto"><i class="fa-solid fa-magnifying-glass-chart"></i></div>
 						<div class="col-md-auto">
@@ -145,6 +158,7 @@
 						</div>
 					</a>
 				</div>
+-->
 			</div>
 		</div>
 	</x-admin-layout>
@@ -751,4 +765,106 @@
 			}
 		})
 	})
+	/////
+	///////
+	/////
+	///////
+	let data = <?php echo json_encode($employments_category); ?>;
+	let summ = data.map(function(v) {
+			return v.val
+		})
+		.reduce(function(a, b) {
+			return a + b
+		});
+	data = data.map(function(v) {
+		return {
+			name: v.name,
+			val: (v.val / summ * 100).toFixed(2)
+		};
+	})
+
+	margin = {
+		top: 40,
+		right: 40,
+		bottom: 40,
+		left: 40
+	};
+
+	width = 500 - margin.right - margin.left;
+	height = 300 - margin.top - margin.bottom;
+	let radius = 200;
+
+	let svg_3 = d3.select('#donut_types')
+		.append('svg')
+		.attr('width', width)
+		.attr('height', height)
+		.append('g')
+		.attr('transform', 'translate(' + width / 2 + ',' + height + ')');
+
+	svg_3.append('g')
+		.attr('class', 'slices');
+	svg_3.append('g')
+		.attr('class', 'labels');
+	svg_3.append('g')
+		.attr('class', 'lines');
+
+	let color = d3.scaleOrdinal(["#3965f5", "#9eb3fa", "rgba(199, 210, 254, 0.7)"]);
+
+	let pie = d3.pie()
+		.sort(null)
+		.value(function(d) {
+			return d.val;
+		})
+		.startAngle(-90 * (Math.PI / 180))
+		.endAngle(90 * (Math.PI / 180));
+
+	// donut chart arc
+	let arc = d3.arc()
+		.innerRadius(radius - 100)
+		.outerRadius(radius - 50);
+
+	slice = svg_3.select('.slices')
+		.selectAll('path.slice')
+		.data(pie(data));
+
+	slice.enter()
+		.append('path')
+		.on("mouseover", function(d, i) {
+			svg_3.append("text")
+				.attr("dy", "-3em")
+				.style("text-anchor", "middle")
+				.style("font-size", 16)
+				.attr("class", "label")
+				.style("fill", function(d, i) {
+					return "black";
+				})
+				.html(i.data.name);
+			svg_3.append("text")
+				.attr("dy", "-1.5em")
+				.style("text-anchor", "middle")
+				.style("font-size", 16)
+				.attr("class", "label")
+				.style("fill", function(d, i) {
+					return "black";
+				})
+				.html(i.data.val + "%");
+		})
+		.on("mouseout", function(d) {
+			svg_3.select(".label").remove();
+			svg_3.select(".label").remove();
+		})
+		.attr('d', arc)
+		.attr('fill', function(d) {
+			return color(d.data.name);
+		})
+		.attr('class', 'slice');
+
+	// label arc
+	let labelArc = d3.arc()
+		.innerRadius(radius * 0.9)
+		.outerRadius(radius * 0.9);
+
+	let labels = svg_3.select('.labels')
+		.selectAll('text')
+		.data(pie(data));
 </script>
