@@ -332,11 +332,6 @@
 		margin-right: -50px;
 	}
 
-	.student_skills_area {
-		display: flex;
-		justify-content: space-between;
-	}
-
 	.student_skill {
 		margin-top: 5px;
 		display: inline-block;

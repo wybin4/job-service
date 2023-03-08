@@ -19,47 +19,6 @@ use Illuminate\Support\Facades\DB;
 
 class UniversityDuties extends Controller
 {
-    function get_average_marks($algo, $grouped_employer_rates)
-    {
-        $rating = [];
-        foreach ($grouped_employer_rates as $ger) {
-            $unique_skill_ids = array_unique(array_map(function ($el) {
-                return $el->skill_id;
-            }, $ger)); //выделяем уникальные skill_id из оценок по одному резюме
-            $employer_rates = array();
-            $unique_skill_ids = array_values($unique_skill_ids);
-            //проходим по оценкам работодателей за каждый навык
-            for ($i = 0; $i < count($unique_skill_ids); $i++) {
-                $usi = $unique_skill_ids[$i];
-                //выбираем оценки одного и того же навыка разными работодателями в одном и том же резюме
-                $current_skills = array_filter($ger, function ($el) use ($usi) {
-                    return $el->skill_id == $usi;
-                });
-                //выделяем updated_at и переводим его в дни
-                $time = array_values(array_map(function ($el) {
-                    return strtotime($el->updated_at->toDateString()) / (3600 * 24);
-                }, $current_skills));
-                //выделяем оценки за навык
-                $skill_rate = array_values(array_map(function ($el) {
-                    return $el->skill_rate;
-                }, $current_skills));
-                //если оценок больше одной, то рассчет тренда по методу наименьших квадратов
-                if (count($current_skills) > 1) {
-                    array_push($employer_rates, array($unique_skill_ids[$i], $algo->get_trend(array($time, $skill_rate))));
-                } else { //если оценка только одна, то тренда не будет
-                    array_push($employer_rates, array($unique_skill_ids[$i], array($time, $skill_rate)));
-                }
-            }
-            $employer_ema = array();
-            //получаем ema для каждой оценки
-            foreach ($employer_rates as $rate) {
-                array_push($employer_ema, array($rate[0], $algo->get_ema($rate[1][1])));
-            }
-            $employer_average = $algo->get_average($employer_ema); //среднее по оценкам работодателей
-            array_push($rating, array($ger[0]['resume_id'], $employer_average));
-        }
-        return $rating;
-    }
     public function avg_by_student($arr)
     {
         return array_sum(array_map(function ($el) {
@@ -81,6 +40,7 @@ class UniversityDuties extends Controller
         }
         $end = $today;
         $algo = new AlgorithmController;
+        $help = new HelpController;
         $university_id = Auth::guard('university')->user()->id;
         $grouped_total_count = Student::join('resumes', 'students.id', '=', 'resumes.student_id')
             ->where('status', 0)->groupBy('university_id')
@@ -101,10 +61,7 @@ class UniversityDuties extends Controller
         } else $percent_interactions = $current_interactions * 100;
         $last_resumes = Student::where('university_id', $university_id)
             ->join('resumes', 'students.id', '=', 'resumes.student_id')
-            ->whereBetween('resumes.created_at', [
-                date_format(date_create_from_format('d.m.y', $last_per_start), 'Y-m-d') . ' 00:00:00',
-                date_format(date_create_from_format('d.m.y', $start), 'Y-m-d') . ' 23:59:59'
-            ])
+            ->whereDate('resumes.created_at', '<=', date_format(date_create_from_format('d.m.y', $last_per_start), 'Y-m-d') . ' 00:00:00')
             ->where('status', 0)->count();
         $last_rates = ResumeSkillRate::join('resumes', 'resume_skill_rates.resume_id', '=', 'resumes.id')
             ->join('students', 'students.id', '=', 'resumes.student_id')
@@ -114,7 +71,7 @@ class UniversityDuties extends Controller
             ->select('*', 'resume_skill_rates.updated_at as updated_at')
             ->get();
         $last_grouped_rates = $algo->_group_by($last_rates, 'resume_id');
-        $last_rating = $this->get_average_marks($algo, $last_grouped_rates);
+        $last_rating = $help->get_average_marks($algo, $last_grouped_rates);
         if ($last_rating) {
             $last_x3 = array_sum(array_map(function ($el) {
                 return $el[1];
@@ -219,7 +176,7 @@ class UniversityDuties extends Controller
         //группируем скиллы по resume_id
         $all_grouped_rates = $algo->_group_by($all_rates, 'resume_id');
         //получаем оценки по всем резюме
-        $all_rating = $this->get_average_marks($algo, $all_grouped_rates);
+        $all_rating = $help->get_average_marks($algo, $all_grouped_rates);
         //получаем id resume
         $all_rate_ids = array_map(function ($r) {
             return $r[0];
@@ -370,6 +327,7 @@ class UniversityDuties extends Controller
         $start = date('d.m.y', strtotime('-1 year'));
         $end = $today;
         $algo = new AlgorithmController;
+        $help = new HelpController;
 
         $grouped_total_count = Student::join('resumes', 'students.id', '=', 'resumes.student_id')
             ->where('status', 0)->groupBy('university_id')
@@ -428,7 +386,7 @@ class UniversityDuties extends Controller
         //группируем скиллы по resume_id
         $all_grouped_rates = $algo->_group_by($all_rates, 'resume_id');
         //получаем оценки по всем резюме
-        $all_rating = $this->get_average_marks($algo, $all_grouped_rates);
+        $all_rating = $help->get_average_marks($algo, $all_grouped_rates);
         //получаем id resume
         $all_rate_ids = array_map(function ($r) {
             return $r[0];

@@ -29,5 +29,5 @@ Route::group(['middleware' => ['auth:admin'], 'prefix' => 'admin', 'as' => 'admi
 	Route::post('/delete-profession', [AdminDuties::class, 'deleteProfession'])->name('delete-profession');
 	Route::post('/add-profession', [AdminDuties::class, 'addProfession'])->name('add-profession');
 
-
+	Route::get('/statistics', [AdminDuties::class, 'statisticsView'])->name('statistics');
 });

@@ -2,16 +2,115 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\AlgorithmController;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\HelpController;
+use App\Models\EmployerRate;
+use App\Models\Interaction;
 use App\Models\Profession;
+use App\Models\Resume;
+use App\Models\ResumeSkillRate;
 use Illuminate\Http\Request;
 use App\Models\Skill;
 use App\Models\SphereOfActivity;
 use App\Models\SubsphereOfActivity;
+use App\Models\Vacancy;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class AdminDuties extends Controller
 {
+    public function statisticsView()
+    {
+        $algo = new AlgorithmController;
+        $help = new HelpController;
+        //оценки всех скиллов всех резюме
+        $all_resume_rates = ResumeSkillRate::join('resumes', 'resume_skill_rates.resume_id', '=', 'resumes.id')
+            ->where('status', 0)
+            ->select('*', 'resume_skill_rates.updated_at as updated_at')
+            ->get();
+        //группируем скиллы по resume_id
+        $all_grouped_resume_rates = $algo->_group_by($all_resume_rates, 'resume_id');
+        //получаем оценки по всем резюме
+        $all_resume_rating = $help->get_average_marks($algo, $all_grouped_resume_rates);
+        $all_resume_rating = array_map(function ($all) {
+            return round($all[1], 0);
+        }, $all_resume_rating);
+        $csat_employer = $algo->get_csat($all_resume_rating);
+        //
+        /////
+        ///
+        //оценки всех qualities всех работодателей
+        $all_employer_rates = EmployerRate::join('employers', 'employer_rates.employer_id', '=', 'employers.id')
+        ->select('*', 'employer_rates.updated_at as updated_at')
+        ->get();
+        //группируем скиллы по employer_id
+        $all_employer_grouped_rates = $algo->_group_by($all_employer_rates, 'employer_id');
+        //получаем оценки по всем работодателям
+        $all_employer_rating = $help->get_average_quality_marks($algo, $all_employer_grouped_rates);
+        $all_employer_rating = array_map(function ($all) {
+            return round($all[1], 0);
+        }, $all_employer_rating);
+        $csat_student = $algo->get_csat($all_employer_rating);
+        /////
+        ////
+        ////
+        ///
+        /////
+        $today = Carbon::now();
+        $month_ago = date('d.m.y', strtotime('-1 month'));
+        //прирост резюме за месяц
+        $curr_resume = Resume::where('status', 0)->count();
+        $last_month_resume = Resume::whereDate('created_at', '<=', date_format(date_create_from_format('d.m.y', $month_ago), 'Y-m-d') . ' 00:00:00')
+            ->where('status', 0)->count();
+        $percent_resume = ($curr_resume - $last_month_resume) /  $last_month_resume * 100;
+        //прирост вакансий за месяц
+        $curr_vacancy = Vacancy::where('status', 0)->count();
+        $last_month_vacancy = Vacancy::whereDate('created_at', '<=', date_format(date_create_from_format('d.m.y', $month_ago), 'Y-m-d') . ' 00:00:00')->where('status', 0)->count();
+        $percent_vacancy = ($curr_vacancy - $last_month_vacancy) /  $last_month_vacancy * 100;
+        //конкуренция
+        $rivalry = $curr_resume / $curr_vacancy;
+        $resume = Resume::selectRaw('year(created_at) year, month(created_at) month_numb, count(*) data')
+            ->groupBy('year', 'month_numb')
+            ->orderBy('year', 'desc')
+            ->orderBy('month_numb', 'desc')
+            ->limit(6)
+            ->get();
+        $vacancy = Vacancy::selectRaw('year(created_at) year, month(created_at) month_numb, count(*) data')
+            ->groupBy('year', 'month_numb')
+            ->orderBy('year', 'desc')
+            ->orderBy('month_numb', 'desc')
+            ->limit(6)
+            ->get();
+        /////
+        ///
+        //////
+        ////
+        $offers = Interaction::where('type', 1)->selectRaw('year(created_at) year, month(created_at) month_numb, count(*) data')
+        ->groupBy('year', 'month_numb')
+        ->orderBy('year', 'desc')
+        ->orderBy('month_numb', 'desc')
+        ->limit(6)
+        ->get();
+        $responses = Interaction::where('type', 0)->selectRaw('year(created_at) year, month(created_at) month_numb, count(*) data')
+        ->groupBy('year', 'month_numb')
+        ->orderBy('year', 'desc')
+        ->orderBy('month_numb', 'desc')
+        ->limit(6)
+        ->get();
+        $employments = Interaction::selectRaw('year(hired_at) year, month(hired_at) month_numb, count(*) data')
+        ->whereNotNull('hired_at')
+        ->groupBy('year', 'month_numb')
+        ->orderBy('year', 'desc')
+        ->orderBy('month_numb', 'desc')
+        ->limit(6)
+        ->get();
+        return view(
+            "admin.duties.statistics",
+            compact("resume", "vacancy", "curr_resume", "curr_vacancy", "percent_resume", "percent_vacancy", "rivalry"),
+            compact("csat_employer", "csat_student","offers", "responses", "employments"),
+        );
+    }
     //навыки
     public function skillView()
     {

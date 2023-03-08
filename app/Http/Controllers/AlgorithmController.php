@@ -199,4 +199,15 @@ class AlgorithmController extends Controller
             return $xi_result;
         } else return 1;
     }
+    public function get_csat($rating){
+        //количество каждой из оценок - 5, 4, 3...
+        $csat_5 = array_reduce($rating, fn ($acc, $e) => $acc + ($e == 5 ? 1 : 0), 0);
+        $csat_4 = array_reduce($rating, fn ($acc, $e) => $acc + ($e == 4 ? 1 : 0), 0);
+        $csat_3 = array_reduce($rating, fn ($acc, $e) => $acc + ($e == 3 ? 1 : 0), 0);
+        $csat_2 = array_reduce($rating, fn ($acc, $e) => $acc + ($e == 2 ? 1 : 0), 0);
+        $csat_1 = array_reduce($rating, fn ($acc, $e) => $acc + ($e == 1 ? 1 : 0), 0);
+        //метрика удовлетворенности
+        $csat = ($csat_5 + $csat_4 * 0.64 + $csat_3 * 0.36 + $csat_2 * 0.16 + $csat_1 * 0.07) / count($rating) * 100;
+        return $csat;
+    }
 }
