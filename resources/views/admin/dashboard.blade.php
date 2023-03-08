@@ -78,6 +78,15 @@
                     <div class="btn-text">Просмотр</div>
                 </div>
             </a>
+            <a class="row btn-area" href="{{ url('/admin/university-statistics') }}">
+                <div class="col-md-auto btn-i">
+                    <i class="fa-solid fa-building-columns"></i>
+                </div>
+                <div class="col-md-auto">
+                    <div class="btn-title">Рейтинг учебных заведений</div>
+                    <div class="btn-text">Просмотр</div>
+                </div>
+            </a>
         </div>
     </div>
 </x-admin-layout>

@@ -30,4 +30,5 @@ Route::group(['middleware' => ['auth:admin'], 'prefix' => 'admin', 'as' => 'admi
 	Route::post('/add-profession', [AdminDuties::class, 'addProfession'])->name('add-profession');
 
 	Route::get('/statistics', [AdminDuties::class, 'statisticsView'])->name('statistics');
+	Route::get('/university-statistics', [AdminDuties::class, 'universityStatsView'])->name('university-statistics');
 });

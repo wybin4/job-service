@@ -137,13 +137,13 @@
 					</div>
 				</div>
 				<div class="second-sc px-6 py-4 shadow-sm sm:rounded-lg bg-white">
-					<div class="row">
+					<a class="row" href="/admin/university-statistics">
 						<div class="col-md-auto"><i class="fa-solid fa-magnifying-glass-chart"></i></div>
 						<div class="col-md-auto">
 							<div class="text-md">Рейтинг учебных заведений</div>
 							<div class="text-sm text-muted">Просмотр</div>
 						</div>
-					</div>
+					</a>
 				</div>
 			</div>
 		</div>

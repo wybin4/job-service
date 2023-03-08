@@ -20,6 +20,12 @@ use Illuminate\Support\Facades\DB;
 
 class AdminDuties extends Controller
 {
+    public function universityStatsView()
+    {
+        $help = new HelpController;
+        $universities = $help->get_university_statistics();
+        return view("admin.duties.uni-stats", compact("universities"));
+    }
     public function statisticsView()
     {
         $algo = new AlgorithmController;
