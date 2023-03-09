@@ -9,13 +9,19 @@
 
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-wEmeIV1mKuiNpC+IOBjI7aAzPcEZeedi5yW5f2yOq55WWLwNGmvvx4Um1vskeMj0" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
 
     <!-- Styles -->
     <style>
         /*! normalize.css v8.0.1 | MIT License | github.com/necolas/normalize.css */
         html {
             line-height: 1.15;
-            -webkit-text-size-adjust: 100%
+            -webkit-text-size-adjust: 100%;
+        }
+
+        * {
+            overflow-x: hidden;
         }
 
         body {
@@ -397,14 +403,205 @@
     </style>
 
     <style>
+        * {
+            overflow-y: hidden;
+        }
+
         body {
             font-family: 'Nunito', sans-serif;
+        }
+
+        #login_img {
+            width: 400px;
+            height: 600px;
+            margin-top: 120px;
+            margin-left: 125px;
+        }
+
+        .col-md-5 {
+            background-color: #eef1f4;
+        }
+
+        .login-card {
+            border: solid 2px #fafafa;
+            border-radius: 8px;
+            width: 410px;
+            height: 70px;
+        }
+
+        .login-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 150px;
+            grid-gap: 20px;
+        }
+
+        .login-section .login-card {
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+
+        .login-card .row {
+            margin-top: 12px;
+        }
+
+        .btn-i {
+            padding: 12px;
+            color: #3965f5;
+            background-color: #e7edff;
+            border-radius: 50px;
+            margin-left: 25px;
+            width: 45px;
+            height: 45px;
+            display: table-cell;
+            text-align: center;
+            overflow-y: hidden;
+            font-size: 18px;
+        }
+
+        .btn-i-card {
+            padding: 12px;
+            color: #3965f5;
+            border-radius: 50px;
+            margin-left: 25px;
+            width: 45px;
+            height: 45px;
+            display: table-cell;
+            text-align: center;
+            overflow-y: hidden;
+            font-size: 18px;
+        }
+
+        .btn-title {
+            font-weight: 600;
+        }
+
+        .btn-text {
+            font-size: 14px;
+            color: grey;
+            margin-top: -5px;
+        }
+
+        .fa-chevron-right {
+            margin-top: 13px;
+        }
+
+        .login-card:hover {
+            border: solid 1.5px #3965f5;
+            color: #3965f5;
+            transition: 0.5s;
+        }
+
+        .btn-i-card:hover {
+            background-color: #e7edff;
+            color: #3965f5;
+            transition: 0.8s;
+            cursor: pointer;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat&display=swap');
+
+        .big-text {
+            width: 500px;
+            margin-bottom: 55px;
+            font-size: 35px;
+            font-family: 'Montserrat';
+            font-weight: 600;
+            text-align: center;
         }
     </style>
 </head>
 
 <body class="antialiased">
-    <div class="relative flex items-top justify-center min-h-screen bg-gray-100 dark:bg-gray-900 sm:items-center py-4 sm:pt-0">
+    <div class="row">
+        <div class="col-md-7">
+            <div class="login-section">
+                <h1 class="big-text">Сервис по поиску работы и подбору персонала</h1>
+                @if (Route::has('employer.login'))
+                @auth('employer')
+                <a class="login-card" href="{{ url('/employer/dashboard') }}">
+                    <div class="row">
+                        <div class="col-md-3 btn-i">
+                            <i class="fa-solid fa-building"></i>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="btn-title">Панель работодателя</div>
+                            <div class="btn-text">Вы уже вошли в систему</div>
+                        </div>
+                        <div class="col-md-1">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </div>
+                    </div>
+                </a>
+                @else
+                <a class="login-card" href="{{ route('employer.login') }}">
+                    <div class="row">
+                        <div class="col-md-3 btn-i">
+                            <i class="fa-solid fa-building"></i>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="btn-title">Войти как работодатель</div>
+                            <div class="btn-text">Если Вы зарегестрированы в системе</div>
+                        </div>
+                        <div class="col-md-1">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </div>
+                    </div>
+                </a>
+                @endauth
+                @endif
+                @if (Route::has('student.login'))
+                @auth('student')
+                <a class="login-card" href="{{ url('/student/dashboard') }}">
+                    <div class="row">
+                        <div class="col-md-3 btn-i">
+                            <i class="fa-solid fa-graduation-cap"></i>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="btn-title">Панель студента</div>
+                            <div class="btn-text">Вы уже вошли в систему</div>
+                        </div>
+                        <div class="col-md-1">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </div>
+                    </div>
+                </a>
+                @else
+                <a class="login-card" href="{{ route('student.login') }}">
+                    <div class="row">
+                        <div class="col-md-3 btn-i">
+                            <i class="fa-solid fa-graduation-cap"></i>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="btn-title">Войти как студент</div>
+                            <div class="btn-text">Если Вы зарегестрированы в системе</div>
+                        </div>
+                        <div class="col-md-1">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </div>
+                    </div>
+                </a>
+                @endauth
+                @endif
+                <div class="flex" style="margin-left:-25px">
+                    @if (Route::has('university.login'))
+                    <a class="btn-i-card" href="{{ route('university.login') }}">
+                        <i class="fa-solid fa-building-columns"></i>
+                    </a>
+                    @endif
+                    @if (Route::has('admin.login'))
+                    <a class="btn-i-card" href="{{ route('admin.login') }}">
+                        <i class="fa-solid fa-lock"></i>
+                    </a>
+                    @endif
+                </div>
+            </div>
+        </div>
+        <div class="col-md-5">
+            <img id="login_img" src="{{ asset('/storage/app_images/login_page.svg') }}" alt="student main image">
+        </div>
+    </div>
+    <!--<div class="relative flex items-top justify-center min-h-screen bg-gray-100 dark:bg-gray-900 sm:items-center py-4 sm:pt-0">
         @if (Route::has('login'))
         <div class="hidden fixed top-0 right-0 px-6 py-4 sm:block">
             @auth
@@ -466,7 +663,7 @@
             </div>
             @endif
         </div>
-    </div>
+    </div>-->
 </body>
 
 </html>
