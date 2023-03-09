@@ -439,7 +439,7 @@ class VacancyController extends Controller
 			$resume_order_ids = array_map(function ($ro) {
 				return $ro[0];
 			}, $resume_order);
-			if (!$resume_order_ids){
+			if (!$resume_order_ids) {
 				$popular_professions = Resume::where('status', 0)
 					->join('professions', 'professions.id', '=', 'resumes.profession_id')
 					->select(DB::raw('count(*) as profession_name_count, profession_name'))
@@ -570,6 +570,22 @@ class VacancyController extends Controller
 	public function sendVacancyLink($vacancy_id, $email, $profession_name)
 	{
 		Mail::to($email)->queue(new sendStudentVacancyLink($vacancy_id, $profession_name));
+	}
+	public function createVacancyView()
+	{
+		$sphere = SphereOfActivity::all();
+		$category = SubsphereOfActivity::all();
+		$profession = Profession::all();
+		$type_of_employment = TypeOfEmployment::all();
+		$work_type = WorkType::all();
+		$skill = Skill::all();
+		return view('employer.vacancy.create-vacancy')
+			->with('sphere', $sphere)
+			->with('category', $category)
+			->with('profession', $profession)
+			->with('type_of_employment', $type_of_employment)
+			->with('work_type', $work_type)
+			->with('skill', $skill);
 	}
 	public function createVacancy(Request $request)
 	{

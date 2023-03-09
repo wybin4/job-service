@@ -417,6 +417,24 @@ class ResumeController extends Controller
         ]);
         return redirect()->back()->with('title', 'Добавление профессии')->with('text', 'Успешно добавили профессию');
     }
+    public function createResumeView()
+    {
+        $sphere = SphereOfActivity::all();
+        $category = SubsphereOfActivity::all();
+        $profession = Profession::all();
+        $type_of_employment = TypeOfEmployment::all();
+        $work_type = WorkType::all();
+        $skill = Skill::all();
+        $university = Auth::user()->university;
+        return view('student.resume.create-resume')
+            ->with('sphere', $sphere)
+            ->with('category', $category)
+            ->with('profession', $profession)
+            ->with('type_of_employment', $type_of_employment)
+            ->with('work_type', $work_type)
+            ->with('skill', $skill)
+            ->with('university', $university);
+    }
     public function createResume(Request $request)
     {
         $newsletter = false;

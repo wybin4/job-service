@@ -13,21 +13,7 @@ use App\Models\WorkType;
 use App\Models\Skill;
 
 Route::group(['middleware' => ['auth:employer'], 'prefix' => 'employer', 'as' => 'employer.'], function () {
-	Route::get('/create-vacancy', function () {
-		$sphere = SphereOfActivity::all();
-		$category = SubsphereOfActivity::all();
-		$profession = Profession::all();
-		$type_of_employment = TypeOfEmployment::all();
-		$work_type = WorkType::all();
-		$skill = Skill::all();
-		return view('employer.vacancy.create-vacancy')
-			->with('sphere', $sphere)
-			->with('category', $category)
-			->with('profession', $profession)
-			->with('type_of_employment', $type_of_employment)
-			->with('work_type', $work_type)
-			->with('skill', $skill);
-	})->name('create-vacancy');
+	Route::get('/create-vacancy', [VacancyController::class, 'createVacancyView'])->name('create-vacancy');
 	Route::post('/create-vacancy', [VacancyController::class, 'createVacancy']);
 	Route::get('/vacancy-details/{id}', [VacancyController::class, 'vacancyDetails'])->name('vacancy-details');
 	Route::get('/find-candidates/{id}', [VacancyController::class, 'findCandidates'])->name('find-candidates');

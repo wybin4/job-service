@@ -13,23 +13,7 @@ use App\Models\WorkType;
 use App\Models\Skill;
 
 Route::group(['middleware' => ['auth:student'], 'prefix' => 'student', 'as' => 'student.'], function () {
-	Route::get('/create-resume', function () {
-		$sphere = SphereOfActivity::all();
-		$category = SubsphereOfActivity::all();
-		$profession = Profession::all();
-		$type_of_employment = TypeOfEmployment::all();
-		$work_type = WorkType::all();
-		$skill = Skill::all();
-		$university = Auth::user()->university;
-		return view('student.resume.create-resume')
-		->with('sphere', $sphere)
-			->with('category', $category)
-			->with('profession', $profession)
-			->with('type_of_employment', $type_of_employment)
-			->with('work_type', $work_type)
-			->with('skill', $skill)
-			->with('university', $university);
-	})->name('create-resume');
+	Route::get('/create-resume', [ResumeController::class, 'createResumeView'])->name('create-resume');
 	Route::post('/create-resume', [ResumeController::class, 'createResume'])->name('create-resume');
 	Route::get('/resume/{id}', [ResumeController::class, 'resumeDetails'])->name('resume');
 
