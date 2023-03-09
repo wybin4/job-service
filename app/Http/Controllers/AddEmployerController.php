@@ -48,6 +48,5 @@ class AddEmployerController extends Controller
         ]);
         $employer->sendLoginLink();
 
-        return back()->with('message', 'Вы успешно добавили работодателя');
-    }
+        return back()->with('title', 'Добавление работодателя')->with('text', 'Успешно добавили работодателя');    }
 }

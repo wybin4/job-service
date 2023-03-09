@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\StudentsExport;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -10,13 +9,8 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\StudentsImport;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rules;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\sendMail;
-use App\Mail\sendStudentLoginLink;
 use App\Models\StudentLoginToken;
-use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\URL;
 
 class AddStudentController extends Controller
 {

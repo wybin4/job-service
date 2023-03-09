@@ -1,12 +1,25 @@
+<html>
+
+<head>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.css" />
+	<script src="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.js"></script>
+	<script src="{{asset('/js/toast.js')}}"></script>
+</head>
 <x-admin-layout>
 	<div class="min-h-screen flex flex-col items-center pt-6 sm:pt-0 bg-gray-100">
 		<div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
 			<h2 class="header-text text-center" style="margin-bottom:30px;">Зарегестрировать</h2>
-			<x-errors class="mb-4" :errors="$errors" />
-			@if(session('message'))
-			<div class="alert alert-success mb-3" role="alert">
-				{{ session('message') ?? "Успех!"}}
-			</div>
+			@if ($errors->any())
+			@foreach ($errors->all() as $error)
+			<script>
+				create_notify('error', '{{$error}}');
+			</script>
+			@endforeach
+			@endif
+			@if (session()->get('title'))
+			<script>
+				create_notify('success', '{{session()->get("title")}}', '{{session()->get("text")}}');
+			</script>
 			@endif
 			<form method="POST" action="{{ url('admin/add-one-employer') }}">
 				@csrf
@@ -27,3 +40,5 @@
 		</div>
 	</div>
 </x-admin-layout>
+
+</html>

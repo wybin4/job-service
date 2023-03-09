@@ -48,6 +48,6 @@ class AddUniversityController extends Controller
         ]);
         $university->sendLoginLink();
 
-        return back()->with('message', 'Вы успешно добавили образовательное учреждение');
+        return back()->with('title', 'Добавление ВУЗа')->with('text', 'Успешно добавили ВУЗ');
     }
 }

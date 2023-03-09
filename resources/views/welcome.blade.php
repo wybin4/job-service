@@ -584,14 +584,26 @@
                 @endif
                 <div class="flex" style="margin-left:-25px">
                     @if (Route::has('university.login'))
+                    @auth('university')
+                    <a class="btn-i-card" href="{{ url('/university/dashboard') }}">
+                        <i class="fa-solid fa-building-columns"></i>
+                    </a>
+                    @else
                     <a class="btn-i-card" href="{{ route('university.login') }}">
                         <i class="fa-solid fa-building-columns"></i>
                     </a>
+                    @endauth
                     @endif
                     @if (Route::has('admin.login'))
+                    @auth('admin')
+                    <a class="btn-i-card" href="{{ url('/admin/dashboard') }}">
+                        <i class="fa-solid fa-building-columns"></i>
+                    </a>
+                    @else
                     <a class="btn-i-card" href="{{ route('admin.login') }}">
                         <i class="fa-solid fa-lock"></i>
                     </a>
+                    @endauth
                     @endif
                 </div>
             </div>
