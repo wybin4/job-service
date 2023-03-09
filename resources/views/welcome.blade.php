@@ -464,12 +464,11 @@
             color: #3965f5;
             border-radius: 50px;
             margin-left: 25px;
-            width: 45px;
-            height: 45px;
+            width: 46px;
+            height: 46px;
             display: table-cell;
             text-align: center;
-            overflow-y: hidden;
-            font-size: 18px;
+            font-size: 17px;
         }
 
         .btn-title {
@@ -601,69 +600,6 @@
             <img id="login_img" src="{{ asset('/storage/app_images/login_page.svg') }}" alt="student main image">
         </div>
     </div>
-    <!--<div class="relative flex items-top justify-center min-h-screen bg-gray-100 dark:bg-gray-900 sm:items-center py-4 sm:pt-0">
-        @if (Route::has('login'))
-        <div class="hidden fixed top-0 right-0 px-6 py-4 sm:block">
-            @auth
-            <a href="{{ url('/dashboard') }}" class="text-sm text-gray-700 dark:text-gray-500 underline">Dashboard</a>
-            @else
-            <a href="{{ route('login') }}" class="text-sm text-gray-700 dark:text-gray-500 underline">Войти</a>
-
-            @if (Route::has('register'))
-            <a href="{{ route('register') }}" class="ml-4 text-sm text-gray-700 dark:text-gray-500 underline">Зарегестрироваться</a>
-            @endif
-            @endauth
-        </div>
-        @endif
-        <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
-            @if (Route::has('admin.login'))
-            <div class="">
-                @auth('admin')
-                <a href="{{ url('/admin/dashboard') }}" class="text-sm text-gray-700 dark:text-gray-500 underline">Панель администратора</a>
-                @else
-                <a href="{{ route('admin.login') }}" class="text-sm text-gray-700 dark:text-gray-500 underline">Войти как администратор</a>
-
-                @endauth
-            </div>
-            @endif
-        </div>
-        <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
-            @if (Route::has('university.login'))
-            <div class="">
-                @auth('university')
-                <a href="{{ url('/university/dashboard') }}" class="text-sm text-gray-700 dark:text-gray-500 underline">Панель университета</a>
-                @else
-                <a href="{{ route('university.login') }}" class="text-sm text-gray-700 dark:text-gray-500 underline">Войти как университет</a>
-
-                @endauth
-            </div>
-            @endif
-        </div>
-        <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
-            @if (Route::has('student.login'))
-            <div class="">
-                @auth('student')
-                <a href="{{ url('/student/dashboard') }}" class="text-sm text-gray-700 dark:text-gray-500 underline">Панель студента</a>
-                @else
-                <a href="{{ route('student.login') }}" class="text-sm text-gray-700 dark:text-gray-500 underline">Войти как студент</a>
-
-                @endauth
-            </div>
-            @endif
-        </div>
-        <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
-            @if (Route::has('employer.login'))
-            <div class="">
-                @auth('employer')
-                <a href="{{ url('/employer/dashboard') }}" class="text-sm text-gray-700 dark:text-gray-500 underline">Панель работодателя</a>
-                @else
-                <a href="{{ route('employer.login') }}" class="text-sm text-gray-700 dark:text-gray-500 underline">Войти как работодатель</a>
-
-                @endauth
-            </div>
-            @endif
-        </div>
-    </div>-->
 </body>
 
 </html>
