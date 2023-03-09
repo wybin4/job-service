@@ -257,10 +257,7 @@ class HelpController extends Controller
 					return $this->avg_by_student($uni);
 				}, $grouped_uni_offers_count);
 				$x2_result = $algo->z_normalize($x2, $all_x2);
-			} else {
-				$x2_result = -1;
-				$param_2 = 0;
-			}
+			} 
 
 			///
 			//
@@ -276,9 +273,7 @@ class HelpController extends Controller
 					return $uni["total"] / $grouped_total_count[array_search($uni["university_id"], $grouped_total_count)]["total"];
 				}, $with_work);
 				$x5_result = $algo->z_normalize($x5, $all_x5);
-			} else {
-				$x5_result = -1;
-			}
+			} 
 			//
 			//
 			///
@@ -304,9 +299,6 @@ class HelpController extends Controller
 					return $uni[1] / $all_rate;
 				}, $all_x3); //относительные оценки по всем вузам
 				$x3_result = $algo->z_normalize($x3, $all_x3);
-			} else {
-				$x3_result = -1;
-				$param_3 = 0;
 			}
 			//
 			//
@@ -337,16 +329,14 @@ class HelpController extends Controller
 					array_push($x4_result, $algo->z_normalize($i[1], $arr));
 				}
 				$x4_result = array_sum($x4_result) / count($x4_result);
-			} else {
-				$x4_result = -1;
-			}
+			} 
 			$rating = $x1_result + $x2_result + $x3_result + $x4_result + $x5_result + 100;
 			array_push($grouped_total_rating, [$university_id, $param_2, $param_3, $rating]);
 		}
 		//сортируем по оценкам
 		usort($grouped_total_rating, function ($a, $b) {
-			if ($a[1] == $b[1]) return 0;
-			return ($a[1] < $b[1]) ? 1 : -1;
+			if ($a[3] == $b[3]) return 0;
+			return ($a[3] < $b[3]) ? 1 : -1;
 		});
 		$rate_order = array_map(function ($gtr) {
 			return $gtr[0];

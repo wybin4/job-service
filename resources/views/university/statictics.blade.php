@@ -148,9 +148,34 @@
 			</div>
 		</div>
 	</div>
+	@else
+	<div style="height:100vh;background-color:white">
+		<div class="first-div text-center">
+
+			<h1 class="big-text">Статистики ещё нет</h1>
+		</div>
+	</div>
 	@endif
 </x-university-layout>
 <style>
+	@import url('https://fonts.googleapis.com/css2?family=Montserrat&display=swap');
+
+	.first-div {
+		margin: 0 210px;
+		padding-top: 190px;
+	}
+
+	.big-text {
+		font-size: 52px;
+		font-family: 'Montserrat';
+		font-weight: 600;
+	}
+
+	.big-text:first-child {
+		padding-top: 50px;
+	}
+
+	/** */
 	.fa-marker {
 		color: var(--link-hover-color);
 		background-color: var(--future-pic-color);

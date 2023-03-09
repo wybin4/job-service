@@ -6,6 +6,9 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous" />
 	<meta name="csrf-token" content="{{ csrf_token() }}">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.css" />
+	<script src="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.js"></script>
+	<script src="{{asset('/js/toast.js')}}"></script>
 </head>
 @if ($resume_order_ids)
 <div id="offer-popup">
@@ -29,6 +32,11 @@
 </div>
 <div id="blurable-content">
 	<x-employer-layout>
+		@if (session()->get('title'))
+		<script>
+			create_notify('success', '{{session()->get("title")}}', '{{session()->get("text")}}', -290, 'center');
+		</script>
+		@endif
 		<div class="row">
 			<div class="col-md-auto">
 				<p class="font-bold text-4xl" style="margin-left:130px;margin-top:20px;"><a href="/employer/vacancy-details/{{$vacancy->id}}">{{$vacancy->profession->profession_name}}</a></p>
@@ -513,12 +521,12 @@
 			},
 			success: function(data) {
 				console.log("Отправили оффер!");
-				location.reload();
 			},
 			error: function(msg) {
 				console.log("Не получилось отправить оффер")
 			}
 		});
+		location.reload();
 	})
 </script>
 @else
