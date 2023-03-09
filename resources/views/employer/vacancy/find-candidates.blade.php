@@ -7,6 +7,7 @@
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous" />
 	<meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
+@if ($resume_order_ids)
 <div id="offer-popup">
 	<div class="modal" id="offer-modal" tabindex="-1">
 		<div class="modal-dialog">
@@ -28,7 +29,6 @@
 </div>
 <div id="blurable-content">
 	<x-employer-layout>
-		@if (count($students))
 		<div class="row">
 			<div class="col-md-auto">
 				<p class="font-bold text-4xl" style="margin-left:130px;margin-top:20px;"><a href="/employer/vacancy-details/{{$vacancy->id}}">{{$vacancy->profession->profession_name}}</a></p>
@@ -148,29 +148,6 @@
 						@endforeach
 			</table>
 		</section>
-		@else
-		<div style="height:100vh;background-color:white">
-			<div class="first-div text-center">
-
-				<h1 class="big-text">Подходящих резюме не найдено. Воспользуйтесь <span class="big-indigo-text">общим поиском</span>.</h1>
-				<span class="big-indigo-underline"></span>
-				<p id="popular"><span class="text-muted font-bold examples-p">Популярные запросы:</span>
-					<span>
-						@php $i = 1; @endphp
-						@foreach($popular_professions as $pp)
-						@if ($i == count($popular_professions))
-						<a href="/employer/resume-feed?profession_name={{$pp->profession_name}}" class="text-gray-500">{{$pp->profession_name}}</a>
-						@else
-						<a href="/employer/resume-feed?profession_name={{$pp->profession_name}}" class="text-gray-500">{{$pp->profession_name}}, </a>
-						@endif
-						@php $i++; @endphp
-						@endforeach
-					</span>
-				</p>
-
-			</div>
-		</div>
-		@endif
 	</x-employer-layout>
 </div>
 
@@ -180,41 +157,6 @@
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <style>
-	@import url('https://fonts.googleapis.com/css2?family=Montserrat&display=swap');
-
-	.first-div {
-		margin: 0 210px;
-		padding-top: 150px;
-	}
-
-	.big-text {
-		font-size: 52px;
-		font-family: 'Montserrat';
-		font-weight: 600;
-	}
-
-	.big-text:first-child {
-		padding-top: 50px;
-	}
-
-	.big-indigo-text {
-		color: var(--text-selection-color);
-		z-index: 20;
-		position: relative;
-	}
-
-	.big-indigo-underline {
-		width: 443px;
-		height: 30px;
-		background-color: var(--text-underline-color);
-		position: absolute;
-		top: 365px;
-		left: 758px;
-		z-index: 0;
-	}
-
-
-	/** */
 	.view-btn,
 	.offer-btn {
 		cursor: pointer;
@@ -579,5 +521,63 @@
 		});
 	})
 </script>
+@else
+<x-employer-layout>
+	<div style="height:100vh;background-color:white">
+		<div class="first-div text-center">
+
+			<h1 class="big-text">Подходящих резюме не найдено. Воспользуйтесь <span class="big-indigo-text">общим поиском</span>.</h1>
+			<span class="big-indigo-underline"></span>
+			<p id="popular" class="mt-3"><span class="text-muted font-bold examples-p">Популярные запросы:</span>
+				<span>
+					@php $i = 1; @endphp
+					@foreach($popular_professions as $pp)
+					@if ($i == count($popular_professions))
+					<a href="/employer/resume-feed?profession_name={{$pp->profession_name}}" class="text-gray-500">{{$pp->profession_name}}</a>
+					@else
+					<a href="/employer/resume-feed?profession_name={{$pp->profession_name}}" class="text-gray-500">{{$pp->profession_name}}, </a>
+					@endif
+					@php $i++; @endphp
+					@endforeach
+				</span>
+			</p>
+		</div>
+	</div>
+</x-employer-layout>
+<style>
+	@import url('https://fonts.googleapis.com/css2?family=Montserrat&display=swap');
+
+	.first-div {
+		margin: 0 210px;
+		padding-top: 150px;
+	}
+
+	.big-text {
+		font-size: 52px;
+		font-family: 'Montserrat';
+		font-weight: 600;
+	}
+
+	.big-text:first-child {
+		padding-top: 50px;
+	}
+
+	.big-indigo-text {
+		color: var(--text-selection-color);
+		z-index: 20;
+		position: relative;
+	}
+
+	.big-indigo-underline {
+		width: 443px;
+		height: 30px;
+		background-color: var(--text-underline-color);
+		position: absolute;
+		top: 365px;
+		left: 758px;
+		z-index: 0;
+	}
+</style>
+@endif
 
 </html>

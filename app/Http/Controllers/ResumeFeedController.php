@@ -290,12 +290,12 @@ class ResumeFeedController extends Controller
                 }
                 $selfs = array();
                 //выделяем из всех оценок студентов оценки текущего резюме
-                $current_selfs = array_filter($self_rates, function ($sr) use ($resume_id){
+                $current_selfs = array_filter($self_rates, function ($sr) use ($resume_id) {
                     return $sr["resume_id"] == $resume_id;
                 });
                 $current_selfs = array_values($current_selfs);
                 //выделяем те ema_ids, что есть в student_skills - которые мы можем сравнить
-                $need_ema_ids = array_map(function($self){
+                $need_ema_ids = array_map(function ($self) {
                     return $self["skill_id"];
                 }, $current_selfs);
 
@@ -391,33 +391,38 @@ class ResumeFeedController extends Controller
             array_push($ids, $employer_vacancies_ids[$i]->id);
         }
         $resume = Resume::find($id);
-        $student = Student::find($resume->student_id);
+        if (!$resume) {
+            $text = "Резюме, которое Вы хотели посмотреть, не найдено";
+            return view('error.employer-error-404', compact("text"));
+        } else {
+            $student = Student::find($resume->student_id);
 
-        $binded_vacancies = DB::table('vacancies')
-            ->join('interactions', 'vacancies.id', '=', 'interactions.vacancy_id')
-            ->join('professions', 'professions.id', '=', 'vacancies.profession_id')
-            ->whereIn('interactions.vacancy_id', $ids) // id вакансий именно этого работодателя
-            ->where('interactions.student_id', $student->id) // есть взаимодействия с этим студентом
-            ->select('vacancies.id', 'interactions.type', 'professions.profession_name')
-            ->get();
-        $interactions = DB::table('interactions')
-            ->join('vacancies', 'vacancies.id', '=', 'interactions.vacancy_id')
-            ->where('employer_id', Auth::user()->id)
-            ->where('student_id', $student->id)
-            ->pluck('vacancy_id')->toArray();
-        $enabeled_vacancies = DB::table('vacancies')
-            ->join('professions', 'professions.id', '=', 'vacancies.profession_id')
-            ->where('status', 0)
-            ->where('employer_id', Auth::user()->id)
-            ->whereNotIn('vacancies.id', $interactions)
-            ->select('vacancies.id', 'professions.profession_name')->get();
-        if ($resume->about_me) {
-            $about_me = \Illuminate\Support\Str::markdown($resume->about_me);
-        } else $about_me = "";
-        $profession = Profession::find($resume->profession_id);
-        $type_of_employment = TypeOfEmployment::find($resume->type_of_employment_id);
-        $work_type = WorkType::find($resume->work_type_id);
-        $student_skills = DB::table('student_skills')->join('skills', 'skills.id', '=', 'student_skills.skill_id')->where('resume_id', '=', $id)->get();
-        return view('employer.resume.resume-details', compact('resume', 'profession', 'student', 'type_of_employment', 'work_type', 'student_skills', 'about_me', 'employer_vacancies', 'binded_vacancies', 'enabeled_vacancies', 'employer_rates', 'reviews', 'employers_count'));
+            $binded_vacancies = DB::table('vacancies')
+                ->join('interactions', 'vacancies.id', '=', 'interactions.vacancy_id')
+                ->join('professions', 'professions.id', '=', 'vacancies.profession_id')
+                ->whereIn('interactions.vacancy_id', $ids) // id вакансий именно этого работодателя
+                ->where('interactions.student_id', $student->id) // есть взаимодействия с этим студентом
+                ->select('vacancies.id', 'interactions.type', 'professions.profession_name')
+                ->get();
+            $interactions = DB::table('interactions')
+                ->join('vacancies', 'vacancies.id', '=', 'interactions.vacancy_id')
+                ->where('employer_id', Auth::user()->id)
+                ->where('student_id', $student->id)
+                ->pluck('vacancy_id')->toArray();
+            $enabeled_vacancies = DB::table('vacancies')
+                ->join('professions', 'professions.id', '=', 'vacancies.profession_id')
+                ->where('status', 0)
+                ->where('employer_id', Auth::user()->id)
+                ->whereNotIn('vacancies.id', $interactions)
+                ->select('vacancies.id', 'professions.profession_name')->get();
+            if ($resume->about_me) {
+                $about_me = \Illuminate\Support\Str::markdown($resume->about_me);
+            } else $about_me = "";
+            $profession = Profession::find($resume->profession_id);
+            $type_of_employment = TypeOfEmployment::find($resume->type_of_employment_id);
+            $work_type = WorkType::find($resume->work_type_id);
+            $student_skills = DB::table('student_skills')->join('skills', 'skills.id', '=', 'student_skills.skill_id')->where('resume_id', '=', $id)->get();
+            return view('employer.resume.resume-details', compact('resume', 'profession', 'student', 'type_of_employment', 'work_type', 'student_skills', 'about_me', 'employer_vacancies', 'binded_vacancies', 'enabeled_vacancies', 'employer_rates', 'reviews', 'employers_count'));
+        }
     }
 }

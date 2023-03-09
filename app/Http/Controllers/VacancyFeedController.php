@@ -367,106 +367,111 @@ class VacancyFeedController extends Controller
         $response_or_not = count(Interaction::where('student_id', Auth::user()->id)->where('vacancy_id', $id)->where('type', 0)->get());
         $offer_or_not = count(Interaction::where('student_id', Auth::user()->id)->where('vacancy_id', $id)->where('type', 1)->get());
         $vacancy = Vacancy::find($id);
-        if ($vacancy->description) {
-            $parsed_desc = \Illuminate\Support\Str::markdown($vacancy->description);
-        } else $parsed_desc = "";
-        $profession = Profession::find($vacancy->profession_id);
-        $employer = Employer::find($vacancy->employer_id);
-        $type_of_employment = TypeOfEmployment::find($vacancy->type_of_employment_id);
-        $work_type = WorkType::find($vacancy->work_type_id);
-        $vacancy_skills = DB::table('vacancy_skills')->join('skills', 'skills.id', '=', 'vacancy_skills.skill_id')->where('vacancy_id', '=', $id)->get();
-        $employer_vacancies_ids = DB::table('vacancies')->select('id')->where('status', 0)->get()->toArray();
-        $ids = array();
-        for ($i = 0; $i < count($employer_vacancies_ids); $i++) {
-            array_push($ids, $employer_vacancies_ids[$i]->id);
-        }
-        $binded_vacancies = DB::table('vacancies')
-            ->join('interactions', 'vacancies.id', '=', 'interactions.vacancy_id')
-            ->whereIn('interactions.vacancy_id', $ids)
-            ->where('student_id', Auth::user()->id)
-            ->select('vacancy_id')
-            ->pluck('vacancy_id')->toArray();
-
-        $related_vacancies = DB::table('vacancies')
-            ->join('professions', 'professions.id', '=', 'vacancies.profession_id')
-            ->join('work_types', 'work_types.id', '=', 'vacancies.work_type_id')
-            ->join('type_of_employments', 'type_of_employments.id', '=', 'vacancies.type_of_employment_id')
-            ->whereNotIn('vacancies.id', $binded_vacancies) // исключаем вакансии, где уже были взаимодействия 
-            ->select('*', 'vacancies.id as vacancy_id', 'vacancies.created_at as vacancy_created_at');
-        $related_vacancies = $related_vacancies->whereNot('vacancies.id', '=', $id);
-        $related_vacancies = $related_vacancies->where('status', '=', 0);
-        if ($vacancy->type_of_employment_id == 3) {
-            $related_vacancies = $related_vacancies->where('type_of_employment_id', '=', $vacancy->type_of_employment_id);
+        if (!$vacancy) {
+            $text = "Вакансия, которую Вы хотели посмотреть, не найдена";
+            return view('error.student-error-404', compact("text"));
         } else {
-            $related_vacancies = $related_vacancies->where('type_of_employment_id', '=', $vacancy->type_of_employment_id);
-            $related_vacancies = $related_vacancies->where('location', '=', $vacancy->location);
-        }
-        $related_vacancies = $related_vacancies->where('work_type_id', '=', $vacancy->work_type_id);
-        $related_vacancies = $related_vacancies->pluck('vacancy_id')->toArray();
-        $ungrouped_vs = VacancySkill::whereIn('vacancy_id', $related_vacancies)->get();
-        $grouped_vacancy_skills = $this->_group_by($ungrouped_vs, 'vacancy_id');
-        $this_vac_skills_ids = VacancySkill::where('vacancy_id', $id)->pluck('skill_id')->toArray();
-
-        $percent = []; // процент совпадения навыков в вакансии и навыков в каждом из резюме
-        foreach ($grouped_vacancy_skills as $gvs) {
-            array_push($percent, [$gvs[0]->vacancy_id, count(array_intersect($this_vac_skills_ids, array_map(function ($g) {
-                return $g->skill_id;
-            }, $gvs))) / count($this_vac_skills_ids)]);
-        }
-        usort($percent, function ($a, $b) {
-            if ($a[0] == $b[0]) return 0;
-            return ($a[0] < $b[0]) ? -1 : 1;
-        });
-        $this_work_experience = $vacancy->work_experience;
-        $related_we = Vacancy::whereIn('id', $related_vacancies)->select('vacancies.id', 'work_experience')->get()->toArray();
-        // различие в опыте
-        $related_we = array_map(function ($rwe) use ($this_work_experience) {
-            return [$rwe["id"], abs($rwe["work_experience"] - $this_work_experience)];
-        }, $related_we);
-        usort($related_we, function ($a, $b) {
-            if ($a[0] == $b[0]) return 0;
-            return ($a[0] < $b[0]) ? -1 : 1;
-        });
-        // 3) skill_percent = X1, work_exps_diff = X2
-        $z_x_matrix_3 = [];
-        for ($i = 0; $i < count($related_we); $i++) {
-            $arr = [];
-            $vacancy_id = $related_we[$i][0];
-            array_push($arr, $percent[array_search($vacancy_id, array_column($percent, 0))][1]);
-            array_push($arr, $related_we[$i][1] / 4);
-            array_push($z_x_matrix_3, [$vacancy_id, $arr]);
-        }
-        $x_matrix_3 = [[0.4, 0.5, 0.7, 0.8, 0.9], [2.8, 2.1, 1.1, 1, 0]];
-        $y_matrix = [0.2, 0.4, 0.6, 0.8, 1];
-        $u3 = [1, 4];
-
-        $equation_3 = $this->find_linear_regression($x_matrix_3, $y_matrix, $u3);
-        $res_3 = array_map(function ($matrix) use ($equation_3) {
-            if ($this->vectorvectormult($equation_3, $matrix[1]) * 5 > 0) {
-                return [$matrix[0], intval(round($this->vectorvectormult($equation_3, $matrix[1]) * 5, 0))];
-            } else {
-                return [$matrix[0], 0];
+            if ($vacancy->description) {
+                $parsed_desc = \Illuminate\Support\Str::markdown($vacancy->description);
+            } else $parsed_desc = "";
+            $profession = Profession::find($vacancy->profession_id);
+            $employer = Employer::find($vacancy->employer_id);
+            $type_of_employment = TypeOfEmployment::find($vacancy->type_of_employment_id);
+            $work_type = WorkType::find($vacancy->work_type_id);
+            $vacancy_skills = DB::table('vacancy_skills')->join('skills', 'skills.id', '=', 'vacancy_skills.skill_id')->where('vacancy_id', '=', $id)->get();
+            $employer_vacancies_ids = DB::table('vacancies')->select('id')->where('status', 0)->get()->toArray();
+            $ids = array();
+            for ($i = 0; $i < count($employer_vacancies_ids); $i++) {
+                array_push($ids, $employer_vacancies_ids[$i]->id);
             }
-        }, $z_x_matrix_3);
-        usort($res_3, function ($a, $b) {
-            if ($a[1] == $b[1]) return 0;
-            return ($a[1] < $b[1]) ? 1 : -1;
-        });
-        $related = array_filter($res_3, function ($ro) {
-            return ($ro[1] > 2);
-        });
-        $related = array_map(function ($ro) {
-            return $ro[0];
-        }, $related);
-        //dd($res_3, $z_x_matrix_3);
-        $related_vacancies = DB::table('vacancies')
-            ->join('professions', 'professions.id', '=', 'vacancies.profession_id')
-            ->join('work_types', 'work_types.id', '=', 'vacancies.work_type_id')
-            ->join('type_of_employments', 'type_of_employments.id', '=', 'vacancies.type_of_employment_id')
-            ->whereIn('vacancies.id', $related)
-            ->select('*', 'vacancies.id as vacancy_id', 'vacancies.created_at as vacancy_created_at')
-            ->get();
-        return view('student.vacancy.vacancy-details', compact('vacancy', 'profession', 'employer', 'type_of_employment', 'work_type', 'vacancy_skills', 'parsed_desc', 'related_vacancies', 'response_or_not', 'offer_or_not'));
+            $binded_vacancies = DB::table('vacancies')
+                ->join('interactions', 'vacancies.id', '=', 'interactions.vacancy_id')
+                ->whereIn('interactions.vacancy_id', $ids)
+                ->where('student_id', Auth::user()->id)
+                ->select('vacancy_id')
+                ->pluck('vacancy_id')->toArray();
+
+            $related_vacancies = DB::table('vacancies')
+                ->join('professions', 'professions.id', '=', 'vacancies.profession_id')
+                ->join('work_types', 'work_types.id', '=', 'vacancies.work_type_id')
+                ->join('type_of_employments', 'type_of_employments.id', '=', 'vacancies.type_of_employment_id')
+                ->whereNotIn('vacancies.id', $binded_vacancies) // исключаем вакансии, где уже были взаимодействия 
+                ->select('*', 'vacancies.id as vacancy_id', 'vacancies.created_at as vacancy_created_at');
+            $related_vacancies = $related_vacancies->whereNot('vacancies.id', '=', $id);
+            $related_vacancies = $related_vacancies->where('status', '=', 0);
+            if ($vacancy->type_of_employment_id == 3) {
+                $related_vacancies = $related_vacancies->where('type_of_employment_id', '=', $vacancy->type_of_employment_id);
+            } else {
+                $related_vacancies = $related_vacancies->where('type_of_employment_id', '=', $vacancy->type_of_employment_id);
+                $related_vacancies = $related_vacancies->where('location', '=', $vacancy->location);
+            }
+            $related_vacancies = $related_vacancies->where('work_type_id', '=', $vacancy->work_type_id);
+            $related_vacancies = $related_vacancies->pluck('vacancy_id')->toArray();
+            $ungrouped_vs = VacancySkill::whereIn('vacancy_id', $related_vacancies)->get();
+            $grouped_vacancy_skills = $this->_group_by($ungrouped_vs, 'vacancy_id');
+            $this_vac_skills_ids = VacancySkill::where('vacancy_id', $id)->pluck('skill_id')->toArray();
+
+            $percent = []; // процент совпадения навыков в вакансии и навыков в каждом из резюме
+            foreach ($grouped_vacancy_skills as $gvs) {
+                array_push($percent, [$gvs[0]->vacancy_id, count(array_intersect($this_vac_skills_ids, array_map(function ($g) {
+                    return $g->skill_id;
+                }, $gvs))) / count($this_vac_skills_ids)]);
+            }
+            usort($percent, function ($a, $b) {
+                if ($a[0] == $b[0]) return 0;
+                return ($a[0] < $b[0]) ? -1 : 1;
+            });
+            $this_work_experience = $vacancy->work_experience;
+            $related_we = Vacancy::whereIn('id', $related_vacancies)->select('vacancies.id', 'work_experience')->get()->toArray();
+            // различие в опыте
+            $related_we = array_map(function ($rwe) use ($this_work_experience) {
+                return [$rwe["id"], abs($rwe["work_experience"] - $this_work_experience)];
+            }, $related_we);
+            usort($related_we, function ($a, $b) {
+                if ($a[0] == $b[0]) return 0;
+                return ($a[0] < $b[0]) ? -1 : 1;
+            });
+            // 3) skill_percent = X1, work_exps_diff = X2
+            $z_x_matrix_3 = [];
+            for ($i = 0; $i < count($related_we); $i++) {
+                $arr = [];
+                $vacancy_id = $related_we[$i][0];
+                array_push($arr, $percent[array_search($vacancy_id, array_column($percent, 0))][1]);
+                array_push($arr, $related_we[$i][1] / 4);
+                array_push($z_x_matrix_3, [$vacancy_id, $arr]);
+            }
+            $x_matrix_3 = [[0.4, 0.5, 0.7, 0.8, 0.9], [2.8, 2.1, 1.1, 1, 0]];
+            $y_matrix = [0.2, 0.4, 0.6, 0.8, 1];
+            $u3 = [1, 4];
+
+            $equation_3 = $this->find_linear_regression($x_matrix_3, $y_matrix, $u3);
+            $res_3 = array_map(function ($matrix) use ($equation_3) {
+                if ($this->vectorvectormult($equation_3, $matrix[1]) * 5 > 0) {
+                    return [$matrix[0], intval(round($this->vectorvectormult($equation_3, $matrix[1]) * 5, 0))];
+                } else {
+                    return [$matrix[0], 0];
+                }
+            }, $z_x_matrix_3);
+            usort($res_3, function ($a, $b) {
+                if ($a[1] == $b[1]) return 0;
+                return ($a[1] < $b[1]) ? 1 : -1;
+            });
+            $related = array_filter($res_3, function ($ro) {
+                return ($ro[1] > 2);
+            });
+            $related = array_map(function ($ro) {
+                return $ro[0];
+            }, $related);
+            //dd($res_3, $z_x_matrix_3);
+            $related_vacancies = DB::table('vacancies')
+                ->join('professions', 'professions.id', '=', 'vacancies.profession_id')
+                ->join('work_types', 'work_types.id', '=', 'vacancies.work_type_id')
+                ->join('type_of_employments', 'type_of_employments.id', '=', 'vacancies.type_of_employment_id')
+                ->whereIn('vacancies.id', $related)
+                ->select('*', 'vacancies.id as vacancy_id', 'vacancies.created_at as vacancy_created_at')
+                ->get();
+            return view('student.vacancy.vacancy-details', compact('vacancy', 'profession', 'employer', 'type_of_employment', 'work_type', 'vacancy_skills', 'parsed_desc', 'related_vacancies', 'response_or_not', 'offer_or_not'));
+        }
     }
     function displayEmployerDetails($id)
     {

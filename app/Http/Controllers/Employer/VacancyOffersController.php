@@ -41,22 +41,27 @@ class VacancyOffersController extends Controller
     public function vacancyOffers($id)
     {
         $vacancy = Vacancy::find($id);
-        $interactions = Interaction::where('vacancy_id', $id)
-            ->join('students', 'students.id', '=', 'interactions.student_id')
-            ->join('resumes', 'resumes.student_id', '=', 'students.id')
-            ->where('resumes.status', 0)
-            ->where('interactions.type', 1)
-            ->select(
-                '*',
-                'students.id as student_id',
-                'resumes.profession_id as resume_profession_id',
-                'resumes.id as student_resume_id',
-                'interactions.id as student_offer_id',
-                'interactions.status as student_offer_status',
-                'interactions.created_at as student_offer_created_at'
-            )
-            ->get();
-        return view("employer.vacancy.vacancy-offers", compact('vacancy', 'interactions'));
+        if (!$vacancy) {
+            $text = "Вакансия, которую Вы хотели посмотреть, не найдена";
+            return view('error.employer-error-404', compact("text"));
+        } else {
+            $interactions = Interaction::where('vacancy_id', $id)
+                ->join('students', 'students.id', '=', 'interactions.student_id')
+                ->join('resumes', 'resumes.student_id', '=', 'students.id')
+                ->where('resumes.status', 0)
+                ->where('interactions.type', 1)
+                ->select(
+                    '*',
+                    'students.id as student_id',
+                    'resumes.profession_id as resume_profession_id',
+                    'resumes.id as student_resume_id',
+                    'interactions.id as student_offer_id',
+                    'interactions.status as student_offer_status',
+                    'interactions.created_at as student_offer_created_at'
+                )
+                ->get();
+            return view("employer.vacancy.vacancy-offers", compact('vacancy', 'interactions'));
+        }
     }
     public function allOffers()
     {

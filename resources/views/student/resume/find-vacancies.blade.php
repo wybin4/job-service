@@ -181,7 +181,7 @@
 
 			<h1 class="big-text">Подходящих вакансий не найдено. Воспользуйтесь <span class="big-indigo-text">общим поиском</span>.</h1>
 			<span class="big-indigo-underline"></span>
-			<p id="popular"><span class="text-muted font-bold examples-p">Популярные запросы:</span>
+			<p id="popular" class="mt-3"><span class="text-muted font-bold examples-p">Популярные запросы:</span>
 				<span>
 					@php $i = 1; @endphp
 					@foreach($popular_professions as $pp)
