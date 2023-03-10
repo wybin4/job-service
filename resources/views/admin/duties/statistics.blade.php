@@ -350,6 +350,9 @@
 			'vacancy': vac,
 		});
 	})
+	dataset.sort(function(a, b) {
+		return new Date(b.date) - new Date(a.date);
+	});
 	let second_dataset = dataset;
 	let margin = {
 		top: 30,

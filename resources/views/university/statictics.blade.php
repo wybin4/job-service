@@ -69,7 +69,6 @@
 					let datas = dataset.map(function($el) {
 						return $el[1];
 					});
-					console.log(labels)
 					const data = {
 						labels: labels,
 						datasets: [{
