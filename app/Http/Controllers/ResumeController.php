@@ -2,6 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\References\AddProfession;
+use App\Http\Requests\References\AddSkill;
+use App\Http\Requests\Resume\CreateResumeRequest;
+use App\Http\Requests\Resume\EditResumeRequest;
+use App\Http\Requests\Vacancy\CreateRequest;
 use App\Models\Course;
 use App\Models\Education;
 use App\Models\EmployerRate;
@@ -187,63 +192,9 @@ class ResumeController extends Controller
             ->with('work_type', $work_type)
             ->with('skill', $skill);
     }
-    public function editResume(Request $request)
+    public function editResume(EditResumeRequest $request)
     {
-        $validator = Validator::make(
-            $request->all(),
-            [
-                'type_of_employment' => 'required|integer',
-                'work_type' => 'required|integer',
-            ]
-        );
-        $validator = Validator::make(
-            $request->all(),
-            [
-                'company_name.*' => 'required',
-                'work_title.*' => 'required',
-            ],
-            [
-                'company_name.*.required' => 'Укажите название компании',
-                'work_title.*.required' => 'Укажите название должности',
-            ]
-        );
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-        $validator = Validator::make(
-            $request->all(),
-            [
-                'university_name.*' => 'required',
-                'speciality_name.*' => 'required',
-            ],
-            [
-                'university_name.*.required' => 'Укажите название учебного заведения',
-                'speciality_name.*.required' => 'Укажите название специальности',
-            ]
-        );
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-        $validator = Validator::make(
-            $request->all(),
-            [
-                'platform_name.*' => 'required',
-                'course_name.*' => 'required',
-            ],
-            [
-                'platform_name.*.required' => 'Укажите название платформы',
-                'course_name.*.required' => 'Укажите название курса',
-            ]
-        );
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
+        $request->validated();
         if ($request->skills) {
             $i = 0;
             if ($request->skills) {
@@ -392,8 +343,10 @@ class ResumeController extends Controller
         $resume->save();
         return redirect()->back()->with('title', 'Архивация резюме')->with('text', 'Резюме успешно архивировано');
     }
-    public function addSkill(Request $request)
+    public function addSkill(AddSkill $request)
     {
+        $request->validated();
+
         Skill::create([
             'skill_name' => $request->skill_name,
             'skill_type' => $request->skill_type,
@@ -404,8 +357,10 @@ class ResumeController extends Controller
             return redirect()->back()->with('title', 'Добавление навыка')->with('text', 'Успешно добавили навык');
         }
     }
-    public function addProfession(Request $request)
+    public function addProfession(AddProfession $request)
     {
+        $request->validated();
+
         Profession::create([
             'profession_name' => $request->profession_name,
             'subsphere_id' => $request->subsphere_id,
@@ -421,17 +376,11 @@ class ResumeController extends Controller
         $work_type = WorkType::all();
         $skill = Skill::all();
         $university = Auth::user()->university;
-        return view('student.resume.create-resume')
-            ->with('sphere', $sphere)
-            ->with('category', $category)
-            ->with('profession', $profession)
-            ->with('type_of_employment', $type_of_employment)
-            ->with('work_type', $work_type)
-            ->with('skill', $skill)
-            ->with('university', $university);
+        return view('student.resume.create-resume', compact('sphere', 'category', 'profession', 'type_of_employment', 'work_type', 'skill', 'university'));
     }
-    public function createResume(Request $request)
+    public function createResume(CreateResumeRequest $request)
     {
+        $request->validated();
         $newsletter = false;
         if ($request->newsletter_subscription) {
             $newsletter = true;
@@ -440,64 +389,7 @@ class ResumeController extends Controller
         $student->newsletter_subscription = $newsletter;
         $student->save();
         $profession_id = $request->profession_id;
-        $validator = Validator::make($request->all(), [
-            'profession_id' => 'required|integer',
-            'type_of_employment' => 'required|integer',
-            'work_type' => 'required|integer',
-        ]);
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-        $validator = Validator::make(
-            $request->all(),
-            [
-                'company_name.*' => 'required',
-                'work_title.*' => 'required',
-            ],
-            [
-                'company_name.*.required' => 'Укажите название компании',
-                'work_title.*.required' => 'Укажите название должности',
-            ]
-        );
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-        $validator = Validator::make(
-            $request->all(),
-            [
-                'university_name.*' => 'required',
-                'speciality_name.*' => 'required',
-            ],
-            [
-                'university_name.*.required' => 'Укажите название учебного заведения',
-                'speciality_name.*.required' => 'Укажите название специальности',
-            ]
-        );
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-        $validator = Validator::make(
-            $request->all(),
-            [
-                'platform_name.*' => 'required',
-                'course_name.*' => 'required',
-            ],
-            [
-                'platform_name.*.required' => 'Укажите название платформы',
-                'course_name.*.required' => 'Укажите название курса',
-            ]
-        );
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
+
         Resume::create([
             'student_id' => Auth::guard('student')->id(),
             'profession_id' => $profession_id,
@@ -538,7 +430,7 @@ class ResumeController extends Controller
         }
         if ($request->university_name || $request->speciality_name) {
             $i = 0;
-            
+
             foreach ($request->university_name as $index) {
                 if ($request->university_name || $request->speciality_name) {
                     Education::create([
@@ -556,7 +448,7 @@ class ResumeController extends Controller
         }
         if ($request->platform_name && $request->course_name) {
             $i = 0;
-            
+
             foreach ($request->platform_name as $index) {
                 if ($request->platform_name && $request->course_name) {
                     Course::create([

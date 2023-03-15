@@ -2,6 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\References\AddSkill;
+use App\Http\Requests\Vacancy\CreateRequest;
+use App\Http\Requests\Vacancy\CreateVacancyRequest;
+use App\Http\Requests\Vacancy\EditRequest;
+use App\Http\Requests\Vacancy\EditVacancyRequest;
 use Illuminate\Http\Request;
 use App\Providers\RouteServiceProvider;
 use App\Models\Vacancy;
@@ -23,172 +28,15 @@ use App\Models\TypeOfEmployment;
 use App\Models\WorkExperience;
 use App\Models\WorkType;
 use DateTime;
+use GuzzleHttp\Promise\Create;
 
 class VacancyController extends Controller
 {
-	function reverse($matrix)
-	{
-		$a = $matrix;
-		$e = array();
-		$count = count($a);
-		for ($i = 0; $i < $count; $i++)
-			for ($j = 0; $j < $count; $j++)
-				$e[$i][$j] = ($i == $j) ? 1 : 0;
 
-		for ($i = 0; $i < $count; $i++) {
-			$tmp = $a[$i][$i];
-			for ($j = $count - 1; $j >= 0; $j--) {
-				$e[$i][$j] /= $tmp;
-				$a[$i][$j] /= $tmp;
-			}
-
-			for ($j = 0; $j < $count; $j++) {
-				if ($j != $i) {
-					$tmp = $a[$j][$i];
-					for ($k = $count - 1; $k >= 0; $k--) {
-						$e[$j][$k] -= $e[$i][$k] * $tmp;
-						$a[$j][$k] -= $a[$i][$k] * $tmp;
-					}
-				}
-			}
-		}
-
-		for ($i = 0; $i < $count; $i++)
-			for ($j = 0; $j < $count; $j++)
-				$a[$i][$j] = $e[$i][$j];
-
-
-		return $a;
-	}
-	function vectorvectormult($vector1, $vector2)
-	{
-		$v2_size = count($vector2);
-		$m3 = 0;
-		$m3 += $vector1[0];
-		for ($j = 0; $j < $v2_size; $j++) {
-			$m3 += $vector1[$j + 1] * $vector2[$j];
-		}
-		return $m3;
-	}
-	function vectormatrixmult($vector, $matrix)
-	{
-		$m3 = [];
-		for ($i = 0; $i < count($matrix); $i++) {
-			$m3[$i] = 0;
-			for ($j = 0; $j < count($matrix[0]); $j++) {
-				$m3[$i] += $matrix[$i][$j] * $vector[$j];
-			}
-		}
-		return $m3;
-	}
-	function matrixmult($m1, $m2)
-	{
-		$r = count($m1);
-		$c = count($m2[0]);
-		$p = count($m2);
-		$m3 = array();
-		for ($i = 0; $i < $r; $i++) {
-			for ($j = 0; $j < $c; $j++) {
-				$m3[$i][$j] = 0;
-				for ($k = 0; $k < $p; $k++) {
-					$m3[$i][$j] += $m1[$i][$k] * $m2[$k][$j];
-				}
-			}
-		}
-		return ($m3);
-	}
-	function transpose($array)
-	{
-		return array_map(null, ...$array);
-	}
-	function find_linear_regression($x, $y, $u)
-	{
-		for ($i = 0; $i < count($x); $i++) {
-			$divizor = $u[$i];
-			$x[$i] = array_map(function ($l_x) use ($divizor) {
-				return $l_x / $divizor;
-			}, $x[$i]);
-		}
-		$arr = array_fill(0, count($x[0]), 1);
-		array_unshift($x, $arr);
-		$x_t = $this->transpose($x);
-		$x_t_and_x = $this->matrixmult($x, $x_t);
-		$x_t_and_y = $this->vectormatrixmult($y, $x);
-		$x_t_and_x_reverse = $this->reverse($x_t_and_x);
-		$result = $this->vectormatrixmult($x_t_and_y, $x_t_and_x_reverse);
-		return $result;
-	}
-	function get_average($arr)
-	{
-		$summ = array_sum(array_map(function ($el) {
-			return $el[1];
-		}, $arr));
-		$length = count($arr);
-		return $summ / $length;
-	}
-	function get_diff($emp_val, $self_val)
-	{
-		return 1 - tanh((max($emp_val, $self_val) - min($emp_val, $self_val)) / 5);
-	}
-	public function get_ema($arr)
-	{
-		$alpha = 2 / (count($arr) + 1);
-		$ema = $arr[0];
-		for ($i = 1; $i < count($arr); $i++) {
-			$ema *= (1 - $alpha);
-			$ema += $arr[$i] * $alpha;
-		}
-		return $ema;
-	}
-	public function solver($a, $b, $c, $d, $e, $f)
-	{
-		$y = ($a * $f - $c * $d) / ($a * $e - $b * $d);
-		$x = ($c * $e - $b * $f) / ($a * $e - $b * $d);
-		return array($x, $y);
-	}
-	function get_trend($arr)
-	{
-		$t = $arr[0];
-		$y = $arr[1];
-		$square_t =
-			array_map(function ($el) {
-				return $el * $el;
-			}, $t);
-		$square_y =
-			array_map(function ($el) {
-				return $el * $el;
-			}, $y);
-		$t_x_y = array();
-		for ($i = 0; $i < count($t); $i++) {
-			array_push($t_x_y, $t[$i] * $y[$i]);
-		}
-		$sum_t = array_sum($t);
-		$sum_y = array_sum($y);
-		$sum_square_t = array_sum($square_t);
-		$sum_square_y = array_sum($square_y);
-		$sum_t_x_y = array_sum($t_x_y);
-		$a_and_b = $this->solver(count($t), $sum_t, $sum_y, $sum_t, $sum_square_t, $sum_t_x_y);
-		$count = ($t[count($t) - 1] - $t[0]) / 30;
-		$result_t = array();
-		$result_y = array();
-		$val = null;
-		for ($i = 0; $i < $count; $i++) {
-			$val = $t[0] + 30 * $i;
-			array_push($result_t, $val);
-			array_push($result_y, $a_and_b[1] * $val + $a_and_b[0]);
-		}
-		return array($result_t, $result_y);
-	}
-	function _group_by($array, $key)
-	{
-		$resultArr = [];
-		foreach ($array as $val) {
-			$resultArr[$val[$key]][] = $val;
-		}
-		return $resultArr;
-	}
 	public function findCandidates($id)
 	{
+		$algo = new AlgorithmController;
+
 		$vacancy = Vacancy::find($id);
 		if (!$vacancy) {
 			$text = "Такой вакансии не существует, подбор кандидатов невозможен";
@@ -223,7 +71,7 @@ class VacancyController extends Controller
 			$resume = $resume->where('work_type_id', '=', $vacancy->work_type_id);
 			$resume = $resume->pluck('resumes.id')->toArray();
 			$ungrouped_ss = StudentSkill::whereIn('resume_id', $resume)->get();
-			$grouped_student_skills = $this->_group_by($ungrouped_ss, 'resume_id');
+			$grouped_student_skills = $algo->_group_by($ungrouped_ss, 'resume_id');
 			$vacancy_skills = VacancySkill::where('vacancy_id', $id)->pluck('skill_id')->toArray();
 			$percent = []; // процент совпадения навыков в вакансии и навыков в каждом из резюме
 			foreach ($grouped_student_skills as $gss) {
@@ -291,7 +139,7 @@ class VacancyController extends Controller
 				->select('skill_id', 'skill_rate', 'resume_id')
 				->get()->toArray();
 			//сгруппированные по resume_id оценки работодателей
-			$grouped_employer_rates = $this->_group_by($employer_rates, 'resume_id');
+			$grouped_employer_rates = $algo->_group_by($employer_rates, 'resume_id');
 			$self_diff_averages = [];
 			$employer_averages = [];
 			foreach ($grouped_employer_rates as $ger) {
@@ -318,7 +166,7 @@ class VacancyController extends Controller
 					}, $current_skills));
 					//если оценок больше одной, то рассчет тренда по методу наименьших квадратов
 					if (count($current_skills) > 1) {
-						array_push($employer_rates, array($unique_skill_ids[$i], $this->get_trend(array($time, $skill_rate))));
+						array_push($employer_rates, array($unique_skill_ids[$i], $algo->get_trend(array($time, $skill_rate))));
 					} else { //если оценка только одна, то тренда не будет
 						array_push($employer_rates, array($unique_skill_ids[$i], array($time, $skill_rate)));
 					}
@@ -326,7 +174,7 @@ class VacancyController extends Controller
 				$employer_ema = array();
 				//получаем ema для каждой оценки
 				foreach ($employer_rates as $rate) {
-					array_push($employer_ema, array($rate[0], $this->get_ema($rate[1][1])));
+					array_push($employer_ema, array($rate[0], $algo->get_ema($rate[1][1])));
 				}
 				$selfs = array();
 				//выделяем из всех оценок студентов оценки текущего резюме
@@ -351,8 +199,8 @@ class VacancyController extends Controller
 						array_push($self_diff, [$need_ema[$i][0], $need_ema[$i][1] - $current_selfs[$i]['skill_rate']]);
 					}
 				}
-				$self_diff_average = $this->get_average($self_diff); //среднее по разности оценок студента и оценок работодателя
-				$employer_average = $this->get_average($employer_ema); //среднее по оценкам работодателей
+				$self_diff_average = $algo->get_average($self_diff); //среднее по разности оценок студента и оценок работодателя
+				$employer_average = $algo->get_average($employer_ema); //среднее по оценкам работодателей
 				array_push($self_diff_averages, array($ger[0]['resume_id'], $self_diff_average));
 				array_push($employer_averages, array($ger[0]['resume_id'], $employer_average));
 			}
@@ -367,7 +215,7 @@ class VacancyController extends Controller
 				return !in_array($skill['resume_id'], $ur);
 			});
 			//группируем по resume_id
-			$grouped_self = array_values($this->_group_by($ungrouped_selfs, 'resume_id'));
+			$grouped_self = array_values($algo->_group_by($ungrouped_selfs, 'resume_id'));
 			$self_average = array();
 			for ($i = 0; $i < count($grouped_self); $i++) {
 				//вычисляем среднее по каждому резюме и умножаем на вес?????
@@ -416,16 +264,16 @@ class VacancyController extends Controller
 			$u1 = [5, 4, 1, 4];
 			$u2 = [5, 1, 4];
 			$y_matrix = [0.2, 0.4, 0.6, 0.8, 1];
-			$equation_1 = $this->find_linear_regression($x_matrix_1, $y_matrix, $u1);
-			$res_1 = array_map(function ($matrix) use ($equation_1) {
-				if ($this->vectorvectormult($equation_1, $matrix[1]) * 5 > 0) {
-					return [$matrix[0], intval(round($this->vectorvectormult($equation_1, $matrix[1]) * 5, 0))];
+			$equation_1 = $algo->find_linear_regression($x_matrix_1, $y_matrix, $u1);
+			$res_1 = array_map(function ($matrix) use ($equation_1, $algo) {
+				if ($algo->vectorvectormult($equation_1, $matrix[1]) * 5 > 0) {
+					return [$matrix[0], intval(round($algo->vectorvectormult($equation_1, $matrix[1]) * 5, 0))];
 				}
 			}, $z_x_matrix_1);
-			$equation_2 = $this->find_linear_regression($x_matrix_2, $y_matrix, $u2);
-			$res_2 = array_map(function ($matrix) use ($equation_2) {
-				if ($this->vectorvectormult($equation_2, $matrix[1]) * 5 > 0) {
-					return [$matrix[0], intval(round($this->vectorvectormult($equation_2, $matrix[1]) * 5, 0))];
+			$equation_2 = $algo->find_linear_regression($x_matrix_2, $y_matrix, $u2);
+			$res_2 = array_map(function ($matrix) use ($equation_2, $algo) {
+				if ($algo->vectorvectormult($equation_2, $matrix[1]) * 5 > 0) {
+					return [$matrix[0], intval(round($algo->vectorvectormult($equation_2, $matrix[1]) * 5, 0))];
 				}
 			}, $z_x_matrix_2);
 			$resume_order = array_merge($res_1, $res_2);
@@ -495,23 +343,15 @@ class VacancyController extends Controller
 		$work_type = WorkType::find($vacancy->work_type_id);
 		$vacancy_skills = VacancySkill::where('vacancy_id', $id)->get()->pluck('skill_id')->toArray();
 		$skill = Skill::whereNotIn('id', $vacancy_skills)->get();
-		return view('employer.vacancy.edit-vacancy', compact('vacancy', 'description', 'vacancy_skills'))->with('sphere', $sphere)
-			->with('category', $category)
-			->with('profession', $profession)
-			->with('type_of_employment', $type_of_employment)
-			->with('work_type', $work_type)
-			->with('skill', $skill);
-	}
-	public function editVacancy(Request $request)
-	{
-		$validator = Validator::make(
-			$request->all(),
-			[
-				'type_of_employment' => 'required|integer',
-				'work_type' => 'required|integer',
-				'contacts' => ['required', 'string', 'email', 'max:255']
-			]
+		return view(
+			'employer.vacancy.edit-vacancy',
+			compact('vacancy', 'description', 'vacancy_skills'),
+			compact('sphere', 'category', 'profession', 'type_of_employment', 'work_type', 'skill')
 		);
+	}
+	public function editVacancy(EditVacancyRequest $request)
+	{
+		$request->validated();
 		if ($request->hard_skills || $request->soft_skills) {
 			$i = 0;
 			if ($request->soft_skills) {
@@ -579,35 +419,12 @@ class VacancyController extends Controller
 		$type_of_employment = TypeOfEmployment::all();
 		$work_type = WorkType::all();
 		$skill = Skill::all();
-		return view('employer.vacancy.create-vacancy')
-			->with('sphere', $sphere)
-			->with('category', $category)
-			->with('profession', $profession)
-			->with('type_of_employment', $type_of_employment)
-			->with('work_type', $work_type)
-			->with('skill', $skill);
+		return view('employer.vacancy.create-vacancy', compact("sphere", "category", "profession", "type_of_employment", "work_type", "skill"));
 	}
-	public function createVacancy(Request $request)
+	public function createVacancy(CreateVacancyRequest $request)
 	{
+		$request->validated();
 		$profession_id = $request->profession_id;
-		$validator = Validator::make(
-			$request->all(),
-			[
-				'profession_id' => 'required|integer',
-				'type_of_employment' => 'required|integer',
-				'work_type' => 'required|integer',
-				'contacts' => ['required', 'string', 'email', 'max:255']
-			],
-			[
-				'profession_id.required' => 'Выберите профессию',
-				'contacts.required' => 'Укажите контакты',
-			]
-		);
-		if ($validator->fails()) {
-			return redirect()->back()
-				->withErrors($validator)
-				->withInput();
-		}
 
 		if ($request->salary === null) {
 			$salary = 0;
@@ -673,8 +490,10 @@ class VacancyController extends Controller
 		}
 		return redirect(RouteServiceProvider::EMPLOYER_HOME)->with('title', 'Создание вакансии')->with('text', 'Вакансия успешно создана');
 	}
-	public function addSkill(Request $request)
+	public function addSkill(AddSkill $request)
 	{
+		$request->validated();
+
 		Skill::create([
 			'skill_name' => $request->skill_name,
 			'skill_type' => $request->skill_type,
@@ -698,13 +517,6 @@ class VacancyController extends Controller
 		$all_vacancies = Auth::User()->all_vacancy->sortByDesc('created_at');
 		$active_vacancies = Auth::User()->active_vacancy->sortByDesc('created_at');
 		$archive_vacancies = Auth::User()->archived_vacancy->sortByDesc('created_at');
-		return view('employer.vacancy.vacancies-list')
-			->with('all_vacancies', $all_vacancies)
-			->with('active_vacancies', $active_vacancies)
-			->with('archive_vacancies', $archive_vacancies);
-	}
-	public function deleteVacancy(Request $request)
-	{
-		Vacancy::find($request->id)->delete();
+		return view('employer.vacancy.vacancies-list', compact('all_vacancies', 'active_vacancies', 'archive_vacancies'));
 	}
 }

@@ -29,7 +29,6 @@
 			<form method="POST" action="{{ route('employer.edit-vacancy') }}">
 				<input type="hidden" name="vacancy_id" value="{{$vacancy->id}}" />
 				<h2 class="header-text text-center">Редактирование вакансии</h2>
-				<x-errors class="mb-4 mt-3" :errors="$errors" />
 				@csrf
 				<div id="profession_id"></div>
 				<div style="margin-top:20px">
