@@ -609,7 +609,7 @@
             </div>
         </div>
         <div class="col-md-5">
-            <img id="login_img" src="{{ asset('/storage/app_images/login_page.svg') }}" alt="student main image">
+            <img id="login_img" src="{{ asset('/public/app_images/login_page.svg') }}" alt="student main image">
         </div>
     </div>
 </body>
