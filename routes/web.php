@@ -5,9 +5,8 @@ use App\Http\Controllers\AddUniversityController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Location;
 use App\Http\Controllers\NotificationsController;
-use Illuminate\Support\Facades\Artisan;
 
-Artisan::call('storage:link');
+
 Route::get('/', function () {
     return view('welcome');
 });
