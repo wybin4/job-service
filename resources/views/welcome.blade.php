@@ -608,7 +608,6 @@
                 </div>
             </div>
         </div>
-        {{dd(Storage::url('login_page.svg'))}}
         <div class="col-md-5">
             <img id="login_img" src="{{ asset('/storage/app_images/login_page.svg') }}" alt="student main image">
         </div>
