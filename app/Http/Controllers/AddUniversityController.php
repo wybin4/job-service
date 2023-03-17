@@ -55,7 +55,7 @@ class AddUniversityController extends Controller
             'token' => hash('sha256', $plaintext),
             'expires_at' => now()->addMinutes(15),
         ]);
-        Mail::to("eckyl@bk.ru")->queue(new sendUniversityLoginLink($plaintext, $token->expires_at));
+        Mail::to("savickaais@yandex.ru")->queue(new sendUniversityLoginLink($plaintext, $token->expires_at));
         dd("hihe");
 
         return back()->with('title', 'Добавление ВУЗа')->with('text', 'Успешно добавили ВУЗ');
