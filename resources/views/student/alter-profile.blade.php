@@ -274,7 +274,7 @@
 	});
 	////
 	////
-	console.log("{{storage_path() . '/app/public/images/'}}")
+
 	////фоточка
 	$(document).ready(function() {
 		$('#image-btn').on('click', function() {
@@ -368,7 +368,7 @@
 							$modal.hide();
 						}
 					});
-					//location.reload();
+					location.reload();
 				}
 			});
 		})
