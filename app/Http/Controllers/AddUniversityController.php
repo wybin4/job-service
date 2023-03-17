@@ -48,13 +48,15 @@ class AddUniversityController extends Controller
             'email' => $request->email,
             'password' => Hash::make(Str::random(8))
         ]);*/
-        //$university->sendLoginLink();
+        //$university->sendLoginLink();        
+
         $plaintext = Str::random(32);
         $token = $this->loginTokens()->create([
             'token' => hash('sha256', $plaintext),
             'expires_at' => now()->addMinutes(15),
         ]);
-        dd(new sendUniversityLoginLink($plaintext, $token->expires_at));
+        dd($plaintext, $token->expires_at);
+
         Mail::to("savickaais@yandex.ru")->queue(new sendUniversityLoginLink($plaintext, $token->expires_at));
         dd("hihe");
 
