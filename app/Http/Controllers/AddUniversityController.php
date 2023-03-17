@@ -39,6 +39,7 @@ class AddUniversityController extends Controller
     }
     public function addOneUniversity(Request $request)
     {
+        dd('hi00');
         /*$request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:universities'],
