@@ -125,7 +125,7 @@ class StudentDuties extends Controller
         }
         if ($request->image) {
             $folderPath = storage_path() . '\app\public\images\\';
-            
+            dd($folderPath);
             $image_parts = explode(";base64,", $request->image);
             $image_type_aux = explode("image/", $image_parts[0]);
             $image_type = $image_type_aux[1];
