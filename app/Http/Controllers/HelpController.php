@@ -45,6 +45,7 @@ class HelpController extends Controller
 					return $el->skill_rate;
 				}, $current_skills));
 				//если оценок больше одной, то рассчет тренда по методу наименьших квадратов
+				var_dump(count($current_skills) . ", ");
 				if (count($current_skills) > 1) {
 					array_push($employer_rates, array($unique_skill_ids[$i], $algo->get_trend(array($time, $skill_rate))));
 				} else { //если оценка только одна, то тренда не будет
