@@ -51,4 +51,7 @@
 - Выставление оценок работодателям во время работы у них
 
 ## Материалы
-  [UseCase](https://drive.google.com/file/d/1wW9Du9CE2hkdw6p7I7h_5B0-WB8PWS26/view?usp=sharing)
+- [UseCase](https://drive.google.com/file/d/1wW9Du9CE2hkdw6p7I7h_5B0-WB8PWS26/view?usp=sharing), несколько уровней детализации
+- [Диаграмма классов](https://drive.google.com/file/d/1FJNAPDURpdWECHmWyTDBPteH6_oAPt7W/view?usp=sharing)
+- SADT, DFD, ERD
+- Часть дизайна в [Figma](https://www.figma.com/file/hJZ0JDXeuobYIYmFKmvt2t/%D0%B2%D0%B5%D0%B1?node-id=0-1&t=RXojOQLTWAAHdUk4-0)
