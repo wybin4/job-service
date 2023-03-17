@@ -34,10 +34,10 @@ require __DIR__ . '/studentvacancy.php';
 ////
 
 Route::group(['middleware' => ['auth:admin'], 'prefix' => 'admin', 'as' => 'admin.'], function () {
-    Route::get('/add-one-employer', [AddEmployerController::class, 'openAddOne']);
-    Route::post('/add-one-employer', [AddEmployerController::class, 'addOneEmployer']);
-    Route::get('/add-one-university', [AddUniversityController::class, 'openAddOne']);
-    Route::post('/add-one-university', [AddUniversityController::class, 'addOneUniversity']);
+    Route::get('/add-one-employer', [AddEmployerController::class, 'openAddOne'])->name('add-one-employer');
+    Route::post('/add-one-employer', [AddEmployerController::class, 'addOneEmployer'])->name('add-one-employer');
+    Route::get('/add-one-university', [AddUniversityController::class, 'openAddOne'])->name('add-one-university');
+    Route::post('/add-one-university', [AddUniversityController::class, 'addOneUniversity'])->name('add-one-university');
 });
 require __DIR__ . '/adminauth.php';
 require __DIR__ . '/adminduties.php';
