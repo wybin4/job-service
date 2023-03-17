@@ -44,6 +44,7 @@
 			<table class='table table-hover' id="all-workers-table">
 				<thead>
 					<tr class='t-head'>
+						<td>ФИО</td>
 						<td>Должность</td>
 						<td>Дата начала</td>
 						<td>Статус</td>
@@ -53,6 +54,7 @@
 				<tbody>
 					@foreach($my_workers as $my_worker)
 					<tr id="row-{{$my_worker->interaction_id}}">
+						<td>{{$my_worker->student_fio}}</td>
 						<td class="work_title">{{$my_worker->profession_name}}</td>
 						<td class="date_start">{{date_format(date_create($my_worker->hired_at), 'd.m.Y')}}</td>
 						<input type="hidden" class="date_end" value="{{date_format(date_create($my_worker->date_end), 'd.m.Y')}}" />
