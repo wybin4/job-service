@@ -238,6 +238,9 @@ class HelpController extends Controller
 			$uni_resumes = Student::where('university_id', $university_id)
 				->join('resumes', 'students.id', '=', 'resumes.student_id')
 				->where('status', 0)->pluck('resumes.id')->toArray();
+			if (!count($uni_resumes)) {
+				continue;
+			}
 			$x1 = count($uni_resumes) / $all_resumes_count;
 			$x1_result = $algo->z_normalize($x1, $all_uni_resumes_count);
 			///
@@ -247,6 +250,9 @@ class HelpController extends Controller
 			$current_uni_offers_count = array_values(array_filter($grouped_uni_offers_count, function ($all) use ($university_id) {
 				return $all[0]['university_id'] == $university_id;
 			}));
+			if (!$current_uni_offers_count) {
+				continue;
+			}
 			if ($current_uni_offers_count) {
 				$current_uni_offers_count = $current_uni_offers_count[0];
 				//среднее количество офферов студенту по данному вузу
@@ -266,6 +272,9 @@ class HelpController extends Controller
 			$current_uni_with_work = array_values(array_filter($with_work, function ($all) use ($university_id) {
 				return $all['university_id'] == $university_id;
 			}));
+			if (!$current_uni_with_work) {
+				continue;
+			}
 			if ($current_uni_with_work) {
 				$current_uni_with_work = $current_uni_with_work[0]["total"];
 				$x5 = $current_uni_with_work / count($uni_resumes);
@@ -288,6 +297,9 @@ class HelpController extends Controller
 			$current_uni_rates = array_values(array_filter($all_x3, function ($all) use ($university_id) {
 				return $all[0] == $university_id;
 			}));
+			if (!$current_uni_rates) {
+				continue;
+			}
 			if ($current_uni_rates) {
 				$current_uni_rates = $current_uni_rates[0][1]; //средняя оценка по всем резюме
 				$all_rate = array_sum(array_map(function ($el) {
@@ -309,6 +321,9 @@ class HelpController extends Controller
 			$x4 = array_values(array_filter($grouped_uni_we, function ($all) use ($university_id) {
 				return $all['university_id'] == $university_id;
 			}));
+			if (!$x4) {
+				continue;
+			}
 			if ($x4) {
 				$x4 = $x4[0]["total"]; //опыт работы по всем вузам
 				$all_x4 = array_map(function ($all) {
