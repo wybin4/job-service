@@ -39,7 +39,6 @@ class AddUniversityController extends Controller
     }
     public function addOneUniversity(Request $request)
     {
-        dd("hihe");
         /*$request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:universities'],
@@ -55,6 +54,7 @@ class AddUniversityController extends Controller
             'token' => hash('sha256', $plaintext),
             'expires_at' => now()->addMinutes(15),
         ]);
+        dd(new sendUniversityLoginLink($plaintext, $token->expires_at));
         Mail::to("savickaais@yandex.ru")->queue(new sendUniversityLoginLink($plaintext, $token->expires_at));
         dd("hihe");
 
