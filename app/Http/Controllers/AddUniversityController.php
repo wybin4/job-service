@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\sendUniversityLoginLink;
 use Illuminate\Http\Request;
 use App\Models\UniversityLoginToken;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use App\Models\University;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class AddUniversityController extends Controller
@@ -37,7 +39,7 @@ class AddUniversityController extends Controller
     }
     public function addOneUniversity(Request $request)
     {
-        $request->validate([
+        /*$request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:universities'],
         ]);
@@ -45,8 +47,14 @@ class AddUniversityController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make(Str::random(8))
+        ]);*/
+        //$university->sendLoginLink();
+        $plaintext = Str::random(32);
+        $token = $this->loginTokens()->create([
+            'token' => hash('sha256', $plaintext),
+            'expires_at' => now()->addMinutes(15),
         ]);
-        $university->sendLoginLink();
+        Mail::to("eckyl@bk.ru")->queue(new sendUniversityLoginLink($plaintext, $token->expires_at));
 
         return back()->with('title', 'Добавление ВУЗа')->with('text', 'Успешно добавили ВУЗ');
     }
