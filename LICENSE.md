@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2023 Горбоносова Анна
+Copyright (c) 2023 wybin4
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
