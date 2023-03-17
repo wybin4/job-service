@@ -274,7 +274,7 @@
 	});
 	////
 	////
-	console.log("{{storage_path() . '\app\public\images\\'}}")
+	console.log("{{storage_path() . '/app/public/images/'}}")
 	////фоточка
 	$(document).ready(function() {
 		$('#image-btn').on('click', function() {
