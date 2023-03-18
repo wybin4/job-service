@@ -80,7 +80,7 @@
 									@endif
 								</div>
 								<div class="text-sm text-muted mt-4">Конкуренция</div>
-								<div class="text-2xl">{{$rivalry}}</div>
+								<div class="text-2xl">{{number_format($rivalry, 2)}}</div>
 								<div class="text-xs text-muted">резюме на вакансию</div>
 							</div>
 						</div>
