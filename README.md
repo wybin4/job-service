@@ -1,6 +1,6 @@
 # JobService
 
-<img width="600" src="https://cdn.dribbble.com/userupload/5447921/file/original-63ecc24db89efa804f4cf4684a48ec99.png?compress=1&resize=1200x776">
+<img width="800" src="https://cdn.dribbble.com/userupload/5447921/file/original-63ecc24db89efa804f4cf4684a48ec99.png?compress=1&resize=1200x776">
 
 Сервис поиска работы и подбора персонала, ориентированный на студентов. Предлагает ряд функций, важных как для студентов-соискателей, так и для работодателей.
 
