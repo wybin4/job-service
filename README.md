@@ -14,7 +14,7 @@
 Здесь показан только тестовый случай, т.е. не отображены все возможности сервиса.
 
 ## Запуск
-- git clone https://github.com/wybin4/job-service.git
+- `git clone https://github.com/wybin4/job-service.git`
 - `cd job-service`
 - `cp .env.example .env`
 - Добавьте DB_DATABASE и DB_PASSWORD в .env
