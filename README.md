@@ -1,4 +1,7 @@
 # JobService
+
+<img width="700" src="https://cdn.dribbble.com/userupload/5447921/file/original-63ecc24db89efa804f4cf4684a48ec99.png?compress=1&resize=1200x776">
+
 Сервис поиска работы и подбора персонала, ориентированный на студентов. Предлагает ряд функций, важных как для студентов-соискателей, так и для работодателей.
 
 Платформа позволяет соискателям добавлять резюме, искать вакансии, используя расширенные фильтры, отслеживать прогресс по трудоустройству. 
@@ -61,6 +64,7 @@
 - [Диаграмма классов](https://drive.google.com/file/d/1FJNAPDURpdWECHmWyTDBPteH6_oAPt7W/view?usp=sharing)
 - SADT, DFD, ERD
 - Часть дизайна в [Figma](https://www.figma.com/file/hJZ0JDXeuobYIYmFKmvt2t/%D0%B2%D0%B5%D0%B1?node-id=0-1&t=RXojOQLTWAAHdUk4-0)
+- Референсы в [Dribble](https://dribbble.com/ajdivof/collections/6148882-job-service?utm_source=Clipboard_%22clipboard_collection%22&utm_campaign=%22ajdivof%22&utm_content=%22job%20service%22&utm_medium=Social_Share)
 
 ## Данные
 Данные вакансий и резюме взяты с открытых источников или придуманы, не стоит придавать значения оценкам и отзывам, я не знакома с этими компаниями и не думаю о них так. Это сделано для демонстрации работы сервиса.
