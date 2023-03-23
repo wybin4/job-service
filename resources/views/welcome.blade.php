@@ -540,7 +540,7 @@
                         </div>
                         <div class="col-md-8">
                             <div class="btn-title">Войти как работодатель</div>
-                            <div class="btn-text">Если Вы зарегестрированы в системе</div>
+                            <div class="btn-text">Если Вы зарегистрированы в системе</div>
                         </div>
                         <div class="col-md-1">
                             <i class="fa-solid fa-chevron-right"></i>
@@ -573,7 +573,7 @@
                         </div>
                         <div class="col-md-8">
                             <div class="btn-title">Войти как студент</div>
-                            <div class="btn-text">Если Вы зарегестрированы в системе</div>
+                            <div class="btn-text">Если Вы зарегистрированы в системе</div>
                         </div>
                         <div class="col-md-1">
                             <i class="fa-solid fa-chevron-right"></i>
