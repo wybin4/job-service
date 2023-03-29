@@ -139,7 +139,7 @@ class HelpController extends Controller
 			->get()
 			->toArray();*/
 		var_dump($end);
-		dd(Interaction::whereDate('interactions.created_at', '>=', $end)->get());
+		dd(Interaction::whereDate('interactions.created_at', '>=', $start . ' 00:00:00')->get());
 		//группируем офферы по вузам
 		$grouped_uni_offers_count = $algo->_group_by($ungrouped_uni_offers_count, "university_id");
 		//////
