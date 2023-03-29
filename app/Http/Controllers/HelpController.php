@@ -238,7 +238,6 @@ class HelpController extends Controller
 			$uni_resumes = Student::where('university_id', $university_id)
 				->join('resumes', 'students.id', '=', 'resumes.student_id')
 				->where('status', 0)->pluck('resumes.id')->toArray();
-			var_dump($uni_resumes);
 			if (!count($uni_resumes)) {
 				continue;
 			}
@@ -251,6 +250,7 @@ class HelpController extends Controller
 			$current_uni_offers_count = array_values(array_filter($grouped_uni_offers_count, function ($all) use ($university_id) {
 				return $all[0]['university_id'] == $university_id;
 			}));
+			dd($current_uni_offers_count);
 			if (!$current_uni_offers_count) {
 				continue;
 			}
