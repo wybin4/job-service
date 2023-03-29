@@ -250,7 +250,7 @@ class HelpController extends Controller
 			$current_uni_offers_count = array_values(array_filter($grouped_uni_offers_count, function ($all) use ($university_id) {
 				return $all[0]['university_id'] == $university_id;
 			}));
-			dd($current_uni_offers_count);
+			var_dump($current_uni_offers_count);
 			if (!$current_uni_offers_count) {
 				continue;
 			}
