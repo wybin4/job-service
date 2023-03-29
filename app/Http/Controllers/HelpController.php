@@ -346,7 +346,7 @@ class HelpController extends Controller
 				$x4_result = array_sum($x4_result) / count($x4_result);
 			} 
 			$rating = $x1_result + $x2_result + $x3_result + $x4_result + $x5_result + 100;
-			var_dump($x1_result, $x2_result, $x3_result, $x4_result, $x5_result);
+			dd($x1_result, $x2_result, $x3_result, $x4_result, $x5_result);
 			array_push($grouped_total_rating, [$university_id, $param_2, $param_3, $rating]);
 		}
 		//сортируем по оценкам
