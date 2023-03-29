@@ -131,15 +131,9 @@ class HelpController extends Controller
 		////
 		///
 		//все офферы студентам за период
-		/*$ungrouped_uni_offers_count = Interaction::whereBetween('interactions.created_at', [$start . ' 00:00:00', $end . ' 23:59:59'])
+		$ungrouped_uni_offers_count = Interaction::whereBetween('interactions.created_at', [date_create($start), date_create($end)])
 		->join('students', 'students.id', '=', 'interactions.student_id')
 		->where('type', 1)
-			->groupBy('students.id')
-			->select('university_id', 'students.id', DB::raw('count(*) as total'))
-			->get()
-			->toArray();*/
-		$ungrouped_uni_offers_count = Interaction::join('students', 'students.id', '=', 'interactions.student_id')
-			->where('type', 1)
 			->groupBy('students.id')
 			->select('university_id', 'students.id', DB::raw('count(*) as total'))
 			->get()

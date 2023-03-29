@@ -43,11 +43,11 @@ class UniversityDuties extends Controller
         ////
         ////
         ////
-        $current_interactions = Interaction::whereBetween('interactions.hired_at', [date_format(date_create_from_format('d.m.y', $start), 'Y-m-d') . ' 00:00:00', date_format($end, 'Y-m-d') . ' 23:59:59'])
+        $current_interactions = Interaction::whereBetween('interactions.hired_at', [date_create($start), date_create($end)])
             ->join('students', 'students.id', '=', 'interactions.student_id')
             ->where('university_id', $university_id)
             ->count();
-        $last_interactions = Interaction::whereBetween('interactions.hired_at', [date_format(date_create_from_format('d.m.y', $last_per_start), 'Y-m-d') . ' 00:00:00', date_format(date_create_from_format('d.m.y', $start), 'Y-m-d') . ' 23:59:59'])
+        $last_interactions = Interaction::whereBetween('interactions.hired_at', [date_create($start), date_create($end)])
             ->join('students', 'students.id', '=', 'interactions.student_id')
             ->where('university_id', $university_id)
             ->count();
@@ -104,7 +104,7 @@ class UniversityDuties extends Controller
         ///
         ///
         //все офферы студентам за период
-        $ungrouped_uni_offers_count = Interaction::whereBetween('interactions.created_at', [$start . ' 00:00:00', $end . ' 23:59:59'])
+        $ungrouped_uni_offers_count = Interaction::whereBetween('interactions.created_at', [date_create($start), date_create($end)])
             ->join('students', 'students.id', '=', 'interactions.student_id')
             ->where('type', 1)
             ->groupBy('students.id')
@@ -117,7 +117,6 @@ class UniversityDuties extends Controller
         $current_uni_offers_count = array_values(array_filter($grouped_uni_offers_count, function ($all) use ($university_id) {
             return $all[0]['university_id'] == $university_id;
         }));
-        dd(Interaction::whereDate('interactions.created_at', '>=', $start)->get());
         if (!$current_uni_offers_count) {
             $no_stats = true;
             return view('university.statictics', compact("no_stats"));
