@@ -47,7 +47,6 @@ class UniversityDuties extends Controller
             ->join('students', 'students.id', '=', 'interactions.student_id')
             ->where('university_id', $university_id)
             ->count();
-        dd($current_interactions);
         $last_interactions = Interaction::whereBetween('interactions.hired_at', [date_format(date_create_from_format('d.m.y', $last_per_start), 'Y-m-d') . ' 00:00:00', date_format(date_create_from_format('d.m.y', $start), 'Y-m-d') . ' 23:59:59'])
             ->join('students', 'students.id', '=', 'interactions.student_id')
             ->where('university_id', $university_id)
@@ -118,6 +117,7 @@ class UniversityDuties extends Controller
         $current_uni_offers_count = array_values(array_filter($grouped_uni_offers_count, function ($all) use ($university_id) {
             return $all[0]['university_id'] == $university_id;
         }));
+        dd($current_uni_offers_count);
         if (!$current_uni_offers_count) {
             $no_stats = true;
             return view('university.statictics', compact("no_stats"));
