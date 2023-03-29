@@ -117,7 +117,7 @@ class UniversityDuties extends Controller
         $current_uni_offers_count = array_values(array_filter($grouped_uni_offers_count, function ($all) use ($university_id) {
             return $all[0]['university_id'] == $university_id;
         }));
-        dd(Interaction::whereBetween('interactions.created_at', [$start . ' 00:00:00', $end . ' 23:59:59'])->get());
+        dd(Interaction::whereDate('interactions.created_at', '>=', $start)->get());
         if (!$current_uni_offers_count) {
             $no_stats = true;
             return view('university.statictics', compact("no_stats"));
