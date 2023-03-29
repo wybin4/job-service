@@ -138,6 +138,7 @@ class HelpController extends Controller
 			->select('university_id', 'students.id', DB::raw('count(*) as total'))
 			->get()
 			->toArray();
+		dd($ungrouped_uni_offers_count);
 		//группируем офферы по вузам
 		$grouped_uni_offers_count = $algo->_group_by($ungrouped_uni_offers_count, "university_id");
 		//////
@@ -250,7 +251,6 @@ class HelpController extends Controller
 			$current_uni_offers_count = array_values(array_filter($grouped_uni_offers_count, function ($all) use ($university_id) {
 				return $all[0]['university_id'] == $university_id;
 			}));
-			var_dump($current_uni_offers_count);
 			if (!$current_uni_offers_count) {
 				continue;
 			}
