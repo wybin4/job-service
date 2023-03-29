@@ -138,8 +138,12 @@ class HelpController extends Controller
 			->select('university_id', 'students.id', DB::raw('count(*) as total'))
 			->get()
 			->toArray();*/
-		dd([$start . ' 00:00:00', $end . ' 23:59:59']);
-		dd(Interaction::whereDate('interactions.created_at', '>=', $start . ' 00:00:00')->get());
+		$ungrouped_uni_offers_count = Interaction::join('students', 'students.id', '=', 'interactions.student_id')
+			->where('type', 1)
+			->groupBy('students.id')
+			->select('university_id', 'students.id', DB::raw('count(*) as total'))
+			->get()
+			->toArray();
 		//группируем офферы по вузам
 		$grouped_uni_offers_count = $algo->_group_by($ungrouped_uni_offers_count, "university_id");
 		//////
