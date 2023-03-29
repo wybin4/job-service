@@ -356,6 +356,7 @@ class HelpController extends Controller
 		$rate_order = array_map(function ($gtr) {
 			return $gtr[0];
 		}, $grouped_total_rating);
+		dd($rate_order);
 		$universities = University::whereIn('universities.id', $rate_order)
 			->orderByRaw('FIELD (universities.id, ' . implode(', ', $rate_order) . ') ASC')
 			->select('id', 'name')
