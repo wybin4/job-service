@@ -238,6 +238,7 @@ class HelpController extends Controller
 			$uni_resumes = Student::where('university_id', $university_id)
 				->join('resumes', 'students.id', '=', 'resumes.student_id')
 				->where('status', 0)->pluck('resumes.id')->toArray();
+			var_dump($uni_resumes);
 			if (!count($uni_resumes)) {
 				continue;
 			}
