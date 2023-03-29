@@ -346,6 +346,7 @@ class HelpController extends Controller
 				$x4_result = array_sum($x4_result) / count($x4_result);
 			} 
 			$rating = $x1_result + $x2_result + $x3_result + $x4_result + $x5_result + 100;
+			var_dump($x1_result, $x2_result, $x3_result, $x4_result, $x5_result);
 			array_push($grouped_total_rating, [$university_id, $param_2, $param_3, $rating]);
 		}
 		//сортируем по оценкам
@@ -356,7 +357,6 @@ class HelpController extends Controller
 		$rate_order = array_map(function ($gtr) {
 			return $gtr[0];
 		}, $grouped_total_rating);
-		dd($rate_order);
 		$universities = University::whereIn('universities.id', $rate_order)
 			->orderByRaw('FIELD (universities.id, ' . implode(', ', $rate_order) . ') ASC')
 			->select('id', 'name')
